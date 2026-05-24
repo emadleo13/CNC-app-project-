@@ -77,6 +77,8 @@ abstract class AppStrings {
   String get errRefFilterAll;
   String get errRefFilterHaas;
   String get errRefFilterSiemens;
+  String get errRefFilterFanuc;
+  String get errRefFilterHeidenhain;
   String get errRefNoResults;
   String get errRefCauses;
   String get errRefSolutions;

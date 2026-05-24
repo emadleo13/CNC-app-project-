@@ -85,11 +85,15 @@ class _ErrorReferenceScreenState extends ConsumerState<ErrorReferenceScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _FilterChip(label: s.errRefFilterAll,     value: 'all',       selected: _filter == 'all',       onTap: () => setState(() => _filter = 'all')),
+                _FilterChip(label: s.errRefFilterAll,         value: 'all',          selected: _filter == 'all',          onTap: () => setState(() => _filter = 'all')),
                 const SizedBox(width: 8),
-                _FilterChip(label: s.errRefFilterHaas,    value: 'haas',      selected: _filter == 'haas',      onTap: () => setState(() => _filter = 'haas')),
+                _FilterChip(label: s.errRefFilterHaas,        value: 'haas',         selected: _filter == 'haas',         onTap: () => setState(() => _filter = 'haas')),
                 const SizedBox(width: 8),
-                _FilterChip(label: s.errRefFilterSiemens, value: 'sinumerik', selected: _filter == 'sinumerik', onTap: () => setState(() => _filter = 'sinumerik')),
+                _FilterChip(label: s.errRefFilterSiemens,     value: 'sinumerik',    selected: _filter == 'sinumerik',    onTap: () => setState(() => _filter = 'sinumerik')),
+                const SizedBox(width: 8),
+                _FilterChip(label: s.errRefFilterFanuc,       value: 'fanuc',        selected: _filter == 'fanuc',        onTap: () => setState(() => _filter = 'fanuc')),
+                const SizedBox(width: 8),
+                _FilterChip(label: s.errRefFilterHeidenhain,  value: 'heidenhain',   selected: _filter == 'heidenhain',   onTap: () => setState(() => _filter = 'heidenhain')),
               ],
             ),
           ),
@@ -275,7 +279,7 @@ class _AlarmCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          alarm.machine == 'haas' ? 'Haas ${alarm.code}' : 'SNK ${alarm.code}',
+                          _machinePrefix(alarm.machine, alarm.code),
                           style: const TextStyle(
                             fontFamily: 'JetBrainsMono',
                             fontSize:   12,
@@ -311,6 +315,14 @@ class _AlarmCard extends StatelessWidget {
     );
   }
 
+  static String _machinePrefix(String machine, String code) => switch (machine) {
+    'haas'       => 'Haas $code',
+    'sinumerik'  => 'SNK $code',
+    'fanuc'      => 'FANUC $code',
+    'heidenhain' => 'TNC $code',
+    _            => code,
+  };
+
   Color _severityColor(String severity) => switch (severity) {
     'info'     => AppColors.primary,
     'warning'  => AppColors.warningYellow,
@@ -327,21 +339,25 @@ class _MachineBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isHaas = machine == 'haas';
+    final (label, bg, fg) = switch (machine) {
+      'haas'       => ('Haas',       const Color(0xFF1A3A5C), const Color(0xFF6EB5FF)),
+      'sinumerik'  => ('Siemens',    const Color(0xFF1A5C3A), const Color(0xFF6EFFC3)),
+      'fanuc'      => ('FANUC',      const Color(0xFF3A1A1A), const Color(0xFFFF9F6E)),
+      'heidenhain' => ('Heidenhain', const Color(0xFF3A1A5C), const Color(0xFFCF9FFF)),
+      _            => (machine,      const Color(0xFF2A2A2A), const Color(0xFFAAAAAA)),
+    };
     return Container(
       padding: EdgeInsets.symmetric(horizontal: small ? 6 : 8, vertical: small ? 2 : 3),
       decoration: BoxDecoration(
-        color:        isHaas
-            ? const Color(0xFF1A3A5C).withValues(alpha: 0.5)
-            : const Color(0xFF1A5C3A).withValues(alpha: 0.5),
+        color:        bg.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        isHaas ? 'Haas' : 'Siemens',
+        label,
         style: TextStyle(
           fontSize:   small ? 10 : 11,
           fontWeight: FontWeight.w600,
-          color:      isHaas ? const Color(0xFF6EB5FF) : const Color(0xFF6EFFC3),
+          color:      fg,
         ),
       ),
     );

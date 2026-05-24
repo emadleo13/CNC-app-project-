@@ -69,10 +69,12 @@ class AppStringsRo implements AppStrings {
 
   @override String get errRefTitle          => 'Referință Erori';
   @override String get errRefSearchHint     => 'Caută cod alarmă sau cuvânt cheie...';
-  @override String get errRefFilterAll      => 'Toate';
-  @override String get errRefFilterHaas     => 'Haas';
-  @override String get errRefFilterSiemens  => 'Siemens';
-  @override String get errRefNoResults      => 'Nicio alarmă găsită';
+  @override String get errRefFilterAll        => 'Toate';
+  @override String get errRefFilterHaas       => 'Haas';
+  @override String get errRefFilterSiemens    => 'Siemens';
+  @override String get errRefFilterFanuc      => 'FANUC';
+  @override String get errRefFilterHeidenhain => 'Heidenhain';
+  @override String get errRefNoResults        => 'Nicio alarmă găsită';
   @override String get errRefCauses         => 'Cauze posibile';
   @override String get errRefSolutions      => 'Soluții';
   @override String get errRefSeverityInfo     => 'INFO';

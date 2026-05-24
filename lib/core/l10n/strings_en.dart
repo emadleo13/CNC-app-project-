@@ -69,10 +69,12 @@ class AppStringsEn implements AppStrings {
 
   @override String get errRefTitle          => 'Error Reference';
   @override String get errRefSearchHint     => 'Search alarm code or keyword...';
-  @override String get errRefFilterAll      => 'All';
-  @override String get errRefFilterHaas     => 'Haas';
-  @override String get errRefFilterSiemens  => 'Siemens';
-  @override String get errRefNoResults      => 'No alarms found';
+  @override String get errRefFilterAll        => 'All';
+  @override String get errRefFilterHaas       => 'Haas';
+  @override String get errRefFilterSiemens    => 'Siemens';
+  @override String get errRefFilterFanuc      => 'FANUC';
+  @override String get errRefFilterHeidenhain => 'Heidenhain';
+  @override String get errRefNoResults        => 'No alarms found';
   @override String get errRefCauses         => 'Possible Causes';
   @override String get errRefSolutions      => 'Solutions';
   @override String get errRefSeverityInfo     => 'INFO';

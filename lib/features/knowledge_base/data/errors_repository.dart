@@ -17,8 +17,14 @@ class ErrorsRepository {
     final sinumerik = (json['sinumerik_alarms'] as List)
         .map((e) => ErrorAlarm.fromJson(e as Map<String, dynamic>, 'sinumerik'))
         .toList();
+    final fanuc = (json['fanuc_alarms'] as List)
+        .map((e) => ErrorAlarm.fromJson(e as Map<String, dynamic>, 'fanuc'))
+        .toList();
+    final heidenhain = (json['heidenhain_alarms'] as List)
+        .map((e) => ErrorAlarm.fromJson(e as Map<String, dynamic>, 'heidenhain'))
+        .toList();
 
-    _cache = [...haas, ...sinumerik];
+    _cache = [...haas, ...sinumerik, ...fanuc, ...heidenhain];
     return _cache!;
   }
 
