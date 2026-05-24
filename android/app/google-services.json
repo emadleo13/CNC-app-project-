@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "127250976550",
+    "project_id": "cnc-assist-59665",
+    "storage_bucket": "cnc-assist-59665.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:127250976550:android:eda56295b88478a827fbe7",
+        "android_client_info": {
+          "package_name": "com.cncassist.cnc_assist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwfC2xzpnCbTBUXql_o6FL4wF4P9Eqb7A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
