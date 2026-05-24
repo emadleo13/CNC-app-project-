@@ -12,15 +12,17 @@ import 'features/history/domain/saved_analysis.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
-    url:     SupabaseConfig.url,
-    anonKey: SupabaseConfig.anonKey,
-  );
-
-  // Auto sign-in anonymously so Edge Functions can authenticate the user
-  final supabase = Supabase.instance.client;
-  if (supabase.auth.currentUser == null) {
-    await supabase.auth.signInAnonymously();
+  try {
+    await Supabase.initialize(
+      url:     SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey,
+    );
+    final supabase = Supabase.instance.client;
+    if (supabase.auth.currentUser == null) {
+      await supabase.auth.signInAnonymously();
+    }
+  } catch (_) {
+    // App continues offline if Supabase is unreachable
   }
 
   await Hive.initFlutter();
