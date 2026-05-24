@@ -1,0 +1,299 @@
+{
+  "version": "1.0",
+  "materials": [
+    {
+      "code": "1018_steel",
+      "name": "1018 Mild Steel",
+      "name_fa": "فولاد نرم ۱۰۱۸",
+      "category": "steel",
+      "hardness_bhn": 131,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 90,   "m_per_min": 27  },
+        "hss_finish":    { "sfm": 120,  "m_per_min": 37  },
+        "carbide_rough": { "sfm": 300,  "m_per_min": 91  },
+        "carbide_finish":{ "sfm": 450,  "m_per_min": 137 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.002,
+        "end_mill_4fl": 0.0015,
+        "drill":        0.004,
+        "face_mill":    0.006
+      },
+      "coolant_required": false,
+      "notes": "Excellent machinability. Free machining grade."
+    },
+    {
+      "code": "4140_steel",
+      "name": "4140 Alloy Steel",
+      "name_fa": "فولاد آلیاژی ۴۱۴۰",
+      "category": "steel",
+      "hardness_bhn": 197,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 70,   "m_per_min": 21  },
+        "hss_finish":    { "sfm": 90,   "m_per_min": 27  },
+        "carbide_rough": { "sfm": 250,  "m_per_min": 76  },
+        "carbide_finish":{ "sfm": 350,  "m_per_min": 107 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0018,
+        "end_mill_4fl": 0.0013,
+        "drill":        0.003,
+        "face_mill":    0.005
+      },
+      "coolant_required": true,
+      "notes": "Pre-hardened. Reduce speeds 20% for hardened versions."
+    },
+    {
+      "code": "304_stainless",
+      "name": "304 Stainless Steel",
+      "name_fa": "استیل ضدزنگ ۳۰۴",
+      "category": "stainless",
+      "hardness_bhn": 201,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 60,   "m_per_min": 18  },
+        "hss_finish":    { "sfm": 80,   "m_per_min": 24  },
+        "carbide_rough": { "sfm": 200,  "m_per_min": 61  },
+        "carbide_finish":{ "sfm": 320,  "m_per_min": 98  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0015,
+        "end_mill_4fl": 0.001,
+        "drill":        0.003,
+        "face_mill":    0.004
+      },
+      "coolant_required": true,
+      "notes": "Work hardening tendency. Maintain feed rate. Use sharp tools."
+    },
+    {
+      "code": "316_stainless",
+      "name": "316 Stainless Steel",
+      "name_fa": "استیل ضدزنگ ۳۱۶",
+      "category": "stainless",
+      "hardness_bhn": 217,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 50,   "m_per_min": 15  },
+        "hss_finish":    { "sfm": 70,   "m_per_min": 21  },
+        "carbide_rough": { "sfm": 180,  "m_per_min": 55  },
+        "carbide_finish":{ "sfm": 280,  "m_per_min": 85  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0013,
+        "end_mill_4fl": 0.001,
+        "drill":        0.0025,
+        "face_mill":    0.004
+      },
+      "coolant_required": true,
+      "notes": "More resistant to corrosion than 304. Higher work hardening rate."
+    },
+    {
+      "code": "6061_aluminum",
+      "name": "6061 Aluminum",
+      "name_fa": "آلومینیوم ۶۰۶۱",
+      "category": "aluminum",
+      "hardness_bhn": 95,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 300,  "m_per_min": 91  },
+        "hss_finish":    { "sfm": 500,  "m_per_min": 152 },
+        "carbide_rough": { "sfm": 1000, "m_per_min": 305 },
+        "carbide_finish":{ "sfm": 1500, "m_per_min": 457 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.004,
+        "end_mill_4fl": 0.003,
+        "drill":        0.007,
+        "face_mill":    0.010
+      },
+      "coolant_required": false,
+      "notes": "Most common aluminum alloy. Excellent machinability."
+    },
+    {
+      "code": "7075_aluminum",
+      "name": "7075 Aluminum",
+      "name_fa": "آلومینیوم ۷۰۷۵",
+      "category": "aluminum",
+      "hardness_bhn": 150,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 250,  "m_per_min": 76  },
+        "hss_finish":    { "sfm": 400,  "m_per_min": 122 },
+        "carbide_rough": { "sfm": 800,  "m_per_min": 244 },
+        "carbide_finish":{ "sfm": 1200, "m_per_min": 366 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.003,
+        "end_mill_4fl": 0.0025,
+        "drill":        0.006,
+        "face_mill":    0.008
+      },
+      "coolant_required": false,
+      "notes": "High strength aluminum. Used in aerospace. Good machinability."
+    },
+    {
+      "code": "brass_360",
+      "name": "Brass 360",
+      "name_fa": "برنج ۳۶۰",
+      "category": "brass",
+      "hardness_bhn": 100,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 200,  "m_per_min": 61  },
+        "hss_finish":    { "sfm": 300,  "m_per_min": 91  },
+        "carbide_rough": { "sfm": 600,  "m_per_min": 183 },
+        "carbide_finish":{ "sfm": 900,  "m_per_min": 274 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.003,
+        "end_mill_4fl": 0.0025,
+        "drill":        0.005,
+        "face_mill":    0.007
+      },
+      "coolant_required": false,
+      "notes": "Free-machining brass. Best machinability of common metals."
+    },
+    {
+      "code": "cast_iron_grey",
+      "name": "Grey Cast Iron",
+      "name_fa": "چدن خاکستری",
+      "category": "cast_iron",
+      "hardness_bhn": 220,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 60,   "m_per_min": 18  },
+        "hss_finish":    { "sfm": 80,   "m_per_min": 24  },
+        "carbide_rough": { "sfm": 350,  "m_per_min": 107 },
+        "carbide_finish":{ "sfm": 500,  "m_per_min": 152 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.002,
+        "end_mill_4fl": 0.0015,
+        "drill":        0.004,
+        "face_mill":    0.006
+      },
+      "coolant_required": false,
+      "notes": "Dry machining preferred. Good vibration damping. Abrasive on tools."
+    },
+    {
+      "code": "titanium_ti6al4v",
+      "name": "Titanium Ti-6Al-4V",
+      "name_fa": "تیتانیوم Ti-6Al-4V",
+      "category": "titanium",
+      "hardness_bhn": 334,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 20,   "m_per_min": 6   },
+        "hss_finish":    { "sfm": 30,   "m_per_min": 9   },
+        "carbide_rough": { "sfm": 80,   "m_per_min": 24  },
+        "carbide_finish":{ "sfm": 130,  "m_per_min": 40  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0008,
+        "end_mill_4fl": 0.0006,
+        "drill":        0.002,
+        "face_mill":    0.003
+      },
+      "coolant_required": true,
+      "notes": "Very difficult to machine. High coolant pressure required. Low cutting speeds."
+    },
+    {
+      "code": "inconel_718",
+      "name": "Inconel 718",
+      "name_fa": "اینکونل ۷۱۸",
+      "category": "superalloy",
+      "hardness_bhn": 363,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 10,   "m_per_min": 3   },
+        "hss_finish":    { "sfm": 15,   "m_per_min": 5   },
+        "carbide_rough": { "sfm": 40,   "m_per_min": 12  },
+        "carbide_finish":{ "sfm": 70,   "m_per_min": 21  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0005,
+        "end_mill_4fl": 0.0004,
+        "drill":        0.001,
+        "face_mill":    0.002
+      },
+      "coolant_required": true,
+      "notes": "Nickel superalloy. Extremely difficult. Use CBN or ceramic for finishing."
+    },
+    {
+      "code": "nylon",
+      "name": "Nylon (PA6/PA66)",
+      "name_fa": "نایلون",
+      "category": "plastic",
+      "hardness_bhn": 25,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 200,  "m_per_min": 61  },
+        "hss_finish":    { "sfm": 400,  "m_per_min": 122 },
+        "carbide_rough": { "sfm": 600,  "m_per_min": 183 },
+        "carbide_finish":{ "sfm": 1000, "m_per_min": 305 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.005,
+        "end_mill_4fl": 0.004,
+        "drill":        0.008,
+        "face_mill":    0.010
+      },
+      "coolant_required": false,
+      "notes": "Use sharp tools. Air blast recommended. Avoid heat buildup."
+    },
+    {
+      "code": "hdpe",
+      "name": "HDPE",
+      "name_fa": "HDPE",
+      "category": "plastic",
+      "hardness_bhn": 15,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 300,  "m_per_min": 91  },
+        "hss_finish":    { "sfm": 500,  "m_per_min": 152 },
+        "carbide_rough": { "sfm": 800,  "m_per_min": 244 },
+        "carbide_finish":{ "sfm": 1200, "m_per_min": 366 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.006,
+        "end_mill_4fl": 0.005,
+        "drill":        0.010,
+        "face_mill":    0.012
+      },
+      "coolant_required": false,
+      "notes": "Very soft. High speeds to prevent melting. Air blast preferred."
+    },
+    {
+      "code": "peek",
+      "name": "PEEK",
+      "name_fa": "PEEK",
+      "category": "plastic",
+      "hardness_bhn": 35,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 200,  "m_per_min": 61  },
+        "hss_finish":    { "sfm": 350,  "m_per_min": 107 },
+        "carbide_rough": { "sfm": 600,  "m_per_min": 183 },
+        "carbide_finish":{ "sfm": 900,  "m_per_min": 274 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.004,
+        "end_mill_4fl": 0.003,
+        "drill":        0.007,
+        "face_mill":    0.008
+      },
+      "coolant_required": false,
+      "notes": "Engineering plastic. Good machinability. Keep cool."
+    },
+    {
+      "code": "copper",
+      "name": "Copper C110",
+      "name_fa": "مس",
+      "category": "copper",
+      "hardness_bhn": 65,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 150,  "m_per_min": 46  },
+        "hss_finish":    { "sfm": 250,  "m_per_min": 76  },
+        "carbide_rough": { "sfm": 500,  "m_per_min": 152 },
+        "carbide_finish":{ "sfm": 750,  "m_per_min": 229 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.003,
+        "end_mill_4fl": 0.0025,
+        "drill":        0.005,
+        "face_mill":    0.007
+      },
+      "coolant_required": false,
+      "notes": "Gummy material. Use sharp tools and high rake angles."
+    }
+  ]
+}

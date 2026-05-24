@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "tool_types": [
+    {
+      "code": "end_mill_2fl",
+      "name": "End Mill 2 Flute",
+      "name_fa": "اندمیل ۲ لبه",
+      "flutes": 2,
+      "category": "milling",
+      "typical_use": "Slotting, profiling aluminum and soft materials",
+      "chip_load_range": { "min_mm": 0.025, "max_mm": 0.20 }
+    },
+    {
+      "code": "end_mill_3fl",
+      "name": "End Mill 3 Flute",
+      "name_fa": "اندمیل ۳ لبه",
+      "flutes": 3,
+      "category": "milling",
+      "typical_use": "General purpose milling, aluminum and steel",
+      "chip_load_range": { "min_mm": 0.020, "max_mm": 0.15 }
+    },
+    {
+      "code": "end_mill_4fl",
+      "name": "End Mill 4 Flute",
+      "name_fa": "اندمیل ۴ لبه",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "Steel and hard materials, finishing",
+      "chip_load_range": { "min_mm": 0.015, "max_mm": 0.12 }
+    },
+    {
+      "code": "end_mill_6fl",
+      "name": "End Mill 6 Flute",
+      "name_fa": "اندمیل ۶ لبه",
+      "flutes": 6,
+      "category": "milling",
+      "typical_use": "High-feed finishing, hard materials",
+      "chip_load_range": { "min_mm": 0.010, "max_mm": 0.08 }
+    },
+    {
+      "code": "face_mill",
+      "name": "Face Mill / Shell Mill",
+      "name_fa": "فیس‌میل",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "Facing flat surfaces",
+      "chip_load_range": { "min_mm": 0.08, "max_mm": 0.40 }
+    },
+    {
+      "code": "drill_hss",
+      "name": "Twist Drill HSS",
+      "name_fa": "مته HSS",
+      "flutes": 2,
+      "category": "drilling",
+      "typical_use": "General drilling in steel and aluminum",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.30 }
+    },
+    {
+      "code": "drill_carbide",
+      "name": "Solid Carbide Drill",
+      "name_fa": "مته کارباید",
+      "flutes": 2,
+      "category": "drilling",
+      "typical_use": "High performance drilling, hard materials",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.25 }
+    },
+    {
+      "code": "ball_nose_2fl",
+      "name": "Ball Nose End Mill 2 Flute",
+      "name_fa": "اندمیل کروی ۲ لبه",
+      "flutes": 2,
+      "category": "milling",
+      "typical_use": "3D contouring, fillets",
+      "chip_load_range": { "min_mm": 0.015, "max_mm": 0.12 }
+    },
+    {
+      "code": "ball_nose_4fl",
+      "name": "Ball Nose End Mill 4 Flute",
+      "name_fa": "اندمیل کروی ۴ لبه",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "3D finishing, hard materials",
+      "chip_load_range": { "min_mm": 0.010, "max_mm": 0.08 }
+    },
+    {
+      "code": "turning_insert",
+      "name": "Turning Insert (CNMG/WNMG)",
+      "name_fa": "اینسرت تراشکاری",
+      "flutes": 1,
+      "category": "turning",
+      "typical_use": "External and internal turning",
+      "chip_load_range": { "min_mm": 0.10, "max_mm": 0.60 }
+    }
+  ],
+  "standard_diameters_mm": [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 20, 25, 32],
+  "standard_diameters_inch": [0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.5, 0.625, 0.75, 1.0, 1.25, 1.5]
+}

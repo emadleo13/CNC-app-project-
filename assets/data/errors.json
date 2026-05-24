@@ -1,0 +1,972 @@
+{
+  "version": "1.0",
+  "haas_alarms": [
+    {
+      "code": "101",
+      "title": "SERVO ERROR TOO LARGE",
+      "description": "The axis position following error exceeded the maximum allowed value. The motor cannot keep up with the commanded position.",
+      "possible_causes": [
+        "Mechanical binding or obstruction on the axis",
+        "Worn or damaged ballscrew, linear guides, or bearings",
+        "Servo drive or motor fault",
+        "Excessive feed rate or acceleration settings",
+        "Low servo drive voltage"
+      ],
+      "solutions": [
+        "Power off and check for mechanical binding — move axis by hand",
+        "Inspect ballscrew, linear guides, wipers, and bearings",
+        "Reduce rapid override to 25% and test — if alarm clears, check parameters",
+        "Check servo drive LEDs for secondary fault codes",
+        "Check Parameters 15 and 16 (following error limits)",
+        "Verify correct lubrication on all axes"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "102",
+      "title": "SERVO DRIVE FAULT",
+      "description": "The servo amplifier/drive has detected an internal fault condition.",
+      "possible_causes": [
+        "Servo drive hardware failure",
+        "Drive overheating",
+        "Short circuit in motor or cables",
+        "Power supply voltage issue"
+      ],
+      "solutions": [
+        "Power cycle the machine and monitor if alarm returns",
+        "Check servo drive LEDs for specific fault code",
+        "Inspect motor cables for damage or shorts",
+        "Verify cabinet cooling fans are operational",
+        "Check incoming power voltage and stability"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "103",
+      "title": "AXIS NOT HOMED",
+      "description": "A program or function was requested that requires the machine to be homed first.",
+      "possible_causes": [
+        "Machine was powered on but axes were not homed",
+        "Homing sequence was interrupted",
+        "E-Stop or alarm occurred during homing"
+      ],
+      "solutions": [
+        "Press POWER/RESTART, then press ZERO RET to home all axes",
+        "If home switch fault, check Parameters 22 and 1 for home direction/offset",
+        "Verify home switch signals in Diagnostics > Inputs"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "107",
+      "title": "AXIS MOTOR OVERLOAD",
+      "description": "The axis motor current draw exceeded the overload limit. Thermal or current overload protection activated.",
+      "possible_causes": [
+        "Mechanical binding or excessive friction",
+        "Worn ballscrew or bearings requiring more force",
+        "Crash or tool contact with fixture",
+        "Incorrect axis tuning parameters"
+      ],
+      "solutions": [
+        "Power off and check for mechanical obstruction on the affected axis",
+        "Lubricate ballscrews and linear guides",
+        "Allow machine to cool for 30 minutes before restarting",
+        "Check for loose motor coupling",
+        "Inspect and replace worn ballscrew/bearings if needed"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "109",
+      "title": "DRIVE OVER TEMPERATURE",
+      "description": "A servo amplifier reached its thermal limit. The drive will shut down to prevent damage.",
+      "possible_causes": [
+        "Cabinet cooling fan failure",
+        "Ambient temperature too high",
+        "Drive has been overloaded for extended period",
+        "Blocked air vents in cabinet"
+      ],
+      "solutions": [
+        "Allow machine to cool — wait 30–60 minutes before restart",
+        "Check all cabinet cooling fans are spinning correctly",
+        "Clean dust from drive heat sinks and cabinet vents",
+        "Verify ambient temperature is within specification (< 40°C)",
+        "Reduce duty cycle or cutting loads"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "111",
+      "title": "SERVO DRIVE DISCONNECT",
+      "description": "Communication between the CNC and servo drive was lost.",
+      "possible_causes": [
+        "Loose or damaged servo drive communication cable",
+        "Drive hardware failure",
+        "Power supply issue to the drive"
+      ],
+      "solutions": [
+        "Check servo drive cable connections at both the drive and the MOCON/IOPCB",
+        "Power cycle the machine fully (main breaker off, wait 30s, on)",
+        "Inspect cables for pinching or damage"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "116",
+      "title": "HARD LIMIT — POSITIVE DIRECTION",
+      "description": "An axis reached its positive hard travel limit switch.",
+      "possible_causes": [
+        "Program error causing axis to exceed travel boundary",
+        "Incorrect work offset (G54–G59) position",
+        "Limit switch wiring fault"
+      ],
+      "solutions": [
+        "Jog axis away from limit switch in negative direction",
+        "Check work offset coordinates — tool may be positioned outside workpiece area",
+        "Verify G-code coordinates are within machine travel limits",
+        "Check limit switch input signal in Diagnostics"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "117",
+      "title": "HARD LIMIT — NEGATIVE DIRECTION",
+      "description": "An axis reached its negative hard travel limit switch.",
+      "possible_causes": [
+        "Program error causing axis to travel past negative boundary",
+        "Incorrect work offset position",
+        "Limit switch malfunction"
+      ],
+      "solutions": [
+        "Jog axis away from limit switch in positive direction",
+        "Verify work offsets and tool length offsets are set correctly",
+        "Check G-code for incorrect negative coordinate values"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "118",
+      "title": "TOOL OFFSET NOT SET",
+      "description": "A G43 tool length compensation call references an H offset that is zero or not set.",
+      "possible_causes": [
+        "Tool not measured or manually entered",
+        "Wrong H number in G43 command",
+        "Offset table was cleared"
+      ],
+      "solutions": [
+        "Measure the tool with the tool setter and enter length in offset table",
+        "Verify the H number matches the tool offset entry number",
+        "Use G43 H[tool_number] matching your tool setup"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "125",
+      "title": "SOFT LIMIT — POSITIVE DIRECTION",
+      "description": "The programmed move would exceed the positive software travel limit.",
+      "possible_causes": [
+        "Program coordinates exceed machine travel",
+        "Incorrect work offset placed near edge of travel",
+        "Tool length offset not applied, causing Z overtravel"
+      ],
+      "solutions": [
+        "Verify work offset (G54) is correctly set — it may be too close to machine limits",
+        "Check all axis coordinates in the program relative to machine travel",
+        "Ensure tool length offset is loaded (G43 H_) before Z moves",
+        "Review soft limit Parameters (43–48)"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "126",
+      "title": "SOFT LIMIT — NEGATIVE DIRECTION",
+      "description": "The programmed move would exceed the negative software travel limit.",
+      "possible_causes": [
+        "Program has excessive negative Z depth",
+        "Work offset Z value incorrect",
+        "Tool length offset not applied"
+      ],
+      "solutions": [
+        "Check Z work offset — if set at zero instead of actual surface, all Z moves will be too deep",
+        "Verify tool length offset is active (G43 H_)",
+        "Reduce depth-of-cut values in program"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "131",
+      "title": "E-STOP — EMERGENCY STOP",
+      "description": "Emergency stop was activated. All motion has been halted.",
+      "possible_causes": [
+        "Operator pressed the E-STOP button",
+        "Safety door was opened during a cycle",
+        "Internal safety circuit fault",
+        "Servo fault triggered the E-STOP chain"
+      ],
+      "solutions": [
+        "Investigate and resolve the cause of the E-STOP before resetting",
+        "Twist the E-STOP button clockwise to release it",
+        "Press RESET to clear the alarm",
+        "Check for other active alarms that may have caused the E-STOP",
+        "Check safety door interlock switch if door-related"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "138",
+      "title": "TOOL NUMBER TOO LARGE",
+      "description": "The T number in the program exceeds the number of pockets in the tool changer.",
+      "possible_causes": [
+        "Program written for a machine with more pockets",
+        "Incorrect T number typed in program",
+        "Machine parameter for tool count is set incorrectly"
+      ],
+      "solutions": [
+        "Check T number in program — it must not exceed the number of available pockets",
+        "Verify machine tool capacity in Parameter 65",
+        "Update program with valid tool numbers"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "146",
+      "title": "NO TOOL IN SPINDLE",
+      "description": "An M06 tool change was commanded but the spindle does not contain the expected tool.",
+      "possible_causes": [
+        "Tool was manually removed from spindle",
+        "Previous tool change did not complete correctly",
+        "ATC carousel is out of sync"
+      ],
+      "solutions": [
+        "Manually insert the correct tool into the spindle",
+        "Use ATC recovery to synchronize the carousel",
+        "Check ATC pocket sensors and verify tool presence detection"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "150",
+      "title": "SPINDLE NOT ORIENTED",
+      "description": "The spindle did not reach its orientation position before tool change.",
+      "possible_causes": [
+        "Spindle encoder fault",
+        "Spindle brake issue",
+        "Orient speed set too low",
+        "Heavy tool causing spindle to coast too far"
+      ],
+      "solutions": [
+        "Check spindle encoder signal in Diagnostics",
+        "Verify orient speed Parameter (Parameters 257, 258)",
+        "Check spindle brake operation",
+        "Power cycle and retry — orient failure can be intermittent"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "156",
+      "title": "MISSING FEEDRATE",
+      "description": "A cutting motion (G01, G02, G03) was commanded without an active feedrate (F word).",
+      "possible_causes": [
+        "F word missing from the program block",
+        "F value is zero",
+        "Modal feedrate was cleared without being reset"
+      ],
+      "solutions": [
+        "Add an F word to the first cutting move: G01 X_ Y_ F100.",
+        "Verify F value is non-zero",
+        "Check that G94 (feed per minute) or G95 (feed per rev) is active as expected"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "160",
+      "title": "DIVIDE BY ZERO",
+      "description": "A program calculation resulted in division by zero.",
+      "possible_causes": [
+        "Macro variable used as divisor is zero or uninitialized",
+        "Formula in G-code macro has zero denominator"
+      ],
+      "solutions": [
+        "Review custom macro code for division operations",
+        "Add a check: IF [#VAR NE 0] before dividing",
+        "Initialize all macro variables to safe values at program start"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "167",
+      "title": "SUBPROGRAM NOT FOUND",
+      "description": "An M98 call references a subprogram that cannot be found in memory or on the device.",
+      "possible_causes": [
+        "Subprogram was not loaded to the machine",
+        "Incorrect P number in M98 call",
+        "Subprogram stored in different location"
+      ],
+      "solutions": [
+        "Load the subprogram to the machine memory",
+        "Verify P number in M98 matches the actual program number O_ of the subprogram",
+        "Check if subprogram is on USB or NetShare — machine may not be searching there"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "171",
+      "title": "SPINDLE LOAD MONITOR",
+      "description": "Spindle load exceeded the programmed threshold. This is a warning alarm — cycle may have been halted.",
+      "possible_causes": [
+        "Dull or broken cutting tool",
+        "Feed rate too high for material and tool",
+        "Depth of cut too aggressive",
+        "Wrong material type entered"
+      ],
+      "solutions": [
+        "Inspect and replace the cutting tool",
+        "Reduce feed rate and/or depth of cut",
+        "Check Material Override and Tool Load Monitor settings",
+        "Verify spindle load limit Parameter (setting 84)"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "190",
+      "title": "DOOR OPEN DURING CYCLE",
+      "description": "The machine door interlock detected the door is open while a cycle is running.",
+      "possible_causes": [
+        "Safety door opened by operator during cycle",
+        "Door latch or interlock switch malfunction",
+        "Door switch signal intermittent"
+      ],
+      "solutions": [
+        "Close the safety door completely and press CYCLE START",
+        "Check door latch mechanism for proper engagement",
+        "Test door switch signal in Diagnostics > Inputs",
+        "Do NOT bypass the interlock — safety hazard"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "199",
+      "title": "PARAMETER OUT OF RANGE",
+      "description": "A parameter value entered is outside the allowed range for that parameter.",
+      "possible_causes": [
+        "Manual parameter entry with invalid value",
+        "Parameter corruption after battery failure",
+        "Incorrect parameter restore"
+      ],
+      "solutions": [
+        "Identify which parameter triggered the alarm (noted on screen)",
+        "Check Haas documentation for valid range of that parameter",
+        "Enter a valid value within the specified range"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "200",
+      "title": "HOME SWITCH NOT FOUND",
+      "description": "The home switch was not detected during the homing (zero return) sequence.",
+      "possible_causes": [
+        "Home switch hardware failure",
+        "Home switch wiring disconnected",
+        "Axis moved past the switch location",
+        "Parameter 1 (axis home direction) set incorrectly"
+      ],
+      "solutions": [
+        "Check home switch wiring connections at both the switch and the I/O board",
+        "Test home switch signal in Diagnostics > Inputs",
+        "Verify Parameter 1 (zero return direction) is set correctly",
+        "Manually trigger the switch with a screwdriver to test"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "204",
+      "title": "ATC ARM FAULT",
+      "description": "The automatic tool changer arm encountered a fault during tool change.",
+      "possible_causes": [
+        "Heavy or oversized tool jammed the ATC",
+        "ATC arm sensor failure",
+        "Hydraulic or pneumatic pressure loss",
+        "Tool not fully seated in pocket"
+      ],
+      "solutions": [
+        "Do NOT force the ATC manually — follow the ATC recovery procedure",
+        "Press ZERO RET to run ATC recovery sequence",
+        "Check air pressure supply (minimum 90 PSI / 6.2 bar)",
+        "Inspect ATC arm sensor signals in Diagnostics",
+        "Ensure all tools are properly seated and within weight limits"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "210",
+      "title": "LOW LUBE FAULT",
+      "description": "The automatic lubrication system is low on lubricant or has a fault.",
+      "possible_causes": [
+        "Lube reservoir is empty",
+        "Lube pump fault",
+        "Lube line blockage"
+      ],
+      "solutions": [
+        "Check the lube reservoir level and refill with recommended way oil (ISO VG 32)",
+        "Prime the lube pump manually using the purge button",
+        "Inspect lube lines for kinks or blockages",
+        "Check the lube pump output pressure",
+        "Do not run machine long without lubrication — causes guide and screw damage"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "250",
+      "title": "LOW MEMORY",
+      "description": "The program memory is nearly full. New programs cannot be loaded.",
+      "possible_causes": [
+        "Many large programs stored in memory",
+        "Unused programs accumulated over time"
+      ],
+      "solutions": [
+        "Back up programs to USB or network share",
+        "Delete programs that are no longer needed",
+        "Use the DNC (direct numerical control) mode for large programs instead of loading to memory"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "260",
+      "title": "LOW BATTERY",
+      "description": "The backup battery for memory retention is low and needs replacement.",
+      "possible_causes": [
+        "Battery at end of life (typically 3–5 years)"
+      ],
+      "solutions": [
+        "Replace the 3.6V lithium backup battery as soon as possible",
+        "Do NOT power off the machine until battery is replaced — memory could be lost",
+        "After replacement, verify parameters and offsets are still intact",
+        "Part number: Haas 32-0261 (or equivalent 3.6V 1/2AA lithium)"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "263",
+      "title": "AXIS DRIVER OVERTEMPERATURE",
+      "description": "A servo amplifier (axis driver) is overheating. The drive will derate or shut down.",
+      "possible_causes": [
+        "Cabinet cooling fans failed or blocked",
+        "High ambient temperature",
+        "Excessive cutting load for extended period",
+        "Drive heat sink fins clogged with dust"
+      ],
+      "solutions": [
+        "Allow machine to cool 30–60 minutes before restarting",
+        "Clean all cabinet cooling fans and heat sink fins",
+        "Verify all fans are running in the electrical cabinet",
+        "Check room ambient temperature — max 40°C (104°F)",
+        "Reduce aggressive cutting cycles"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "301",
+      "title": "SPINDLE DRIVE FAULT",
+      "description": "The spindle drive (VFD/inverter) has detected an internal fault.",
+      "possible_causes": [
+        "Spindle motor overload or short circuit",
+        "Drive overheating",
+        "Input power fault (voltage drop or phase loss)",
+        "Spindle brake engaged while running"
+      ],
+      "solutions": [
+        "Power cycle the machine completely (main breaker off, wait 30s)",
+        "Check spindle drive display for fault code — document and look up in Haas service manual",
+        "Verify three-phase power supply is balanced and within spec",
+        "Check spindle motor winding resistance",
+        "Ensure spindle brake is released before running"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "303",
+      "title": "SPINDLE OVERLOAD",
+      "description": "The spindle motor load exceeded the overload threshold.",
+      "possible_causes": [
+        "Dull or broken cutting tool",
+        "Feed rate or depth of cut too aggressive",
+        "Wrong material — harder than expected",
+        "Chip packing in the cut"
+      ],
+      "solutions": [
+        "Inspect and replace cutting tool",
+        "Reduce feed rate using feed override",
+        "Reduce depth of cut or step-over",
+        "Improve chip evacuation with coolant and air blast",
+        "Check spindle load limit setting (Setting 84)"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "306",
+      "title": "SPINDLE SPEED ERROR",
+      "description": "The spindle could not reach or maintain the commanded speed within the allowed time.",
+      "possible_causes": [
+        "Spindle load too high — stalled or near stall",
+        "Encoder fault — spindle speed feedback incorrect",
+        "Drive fault limiting spindle power",
+        "Belt broken or slipping (belt-driven machines)"
+      ],
+      "solutions": [
+        "Reduce programmed spindle speed and load",
+        "Check spindle encoder signal and wiring",
+        "Inspect belt condition and tension (if belt-drive model)",
+        "Check spindle drive for fault codes"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "320",
+      "title": "SPINDLE ORIENT FAILURE",
+      "description": "The spindle failed to reach the orient position for tool change within the timeout period.",
+      "possible_causes": [
+        "Orient speed or timeout parameter set incorrectly",
+        "Spindle encoder or position sensor fault",
+        "Heavy tool assembly with high inertia",
+        "Spindle brake issue"
+      ],
+      "solutions": [
+        "Check Parameters 257 and 258 (orient speed and direction)",
+        "Increase orient timeout Parameter if using heavy tooling",
+        "Verify spindle encoder signal",
+        "Test spindle brake engagement"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "401",
+      "title": "ATC FAULT",
+      "description": "The automatic tool changer has encountered a general fault condition.",
+      "possible_causes": [
+        "Tool changer arm or carousel is jammed",
+        "Sensor detecting wrong position",
+        "Low air pressure",
+        "Tool not latched in carousel pocket"
+      ],
+      "solutions": [
+        "Follow the Haas ATC Recovery Procedure (see programming manual)",
+        "Check air pressure supply (must be ≥ 90 PSI / 6.2 bar)",
+        "Inspect ATC carousel for jammed tools or debris",
+        "Check all ATC sensor inputs in Diagnostics",
+        "Do not manually force the ATC mechanism"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "406",
+      "title": "TOOL POSITION ERROR",
+      "description": "The ATC carousel is not in the expected position or a tool was not found in the expected pocket.",
+      "possible_causes": [
+        "ATC carousel lost position (power interruption during tool change)",
+        "Tool manually removed from pocket",
+        "Carousel sensor failure"
+      ],
+      "solutions": [
+        "Run ATC recovery: press ZERO RET or use the ATC FWD/REV keys carefully",
+        "Verify all tools are in their programmed T positions",
+        "Use ATC > CAROUSEL to manually position and verify pocket locations",
+        "Check carousel home sensor signal"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "413",
+      "title": "TOOL LIFE EXCEEDED",
+      "description": "Tool Life Management indicates the tool has reached its programmed usage limit.",
+      "possible_causes": [
+        "Tool has been used for the full programmed life (time or cycles)",
+        "Tool Life Management feature is active and has flagged the tool"
+      ],
+      "solutions": [
+        "Replace the tool in the ATC pocket with a fresh tool",
+        "Reset tool life counter for that tool number",
+        "Review and adjust tool life limits if they are too conservative or too aggressive"
+      ],
+      "severity": "warning"
+    }
+  ],
+  "sinumerik_alarms": [
+    {
+      "code": "1000",
+      "title": "Following error too large",
+      "description": "The position following error (difference between command and actual position) of an axis exceeded the maximum tolerance.",
+      "possible_causes": [
+        "Mechanical binding, friction, or axis obstruction",
+        "Worn ballscrew, guides, or bearings",
+        "Drive enable signal missing or drive fault",
+        "Incorrect servo gain parameters (KV factor)"
+      ],
+      "solutions": [
+        "Check for mechanical obstruction — move axis by hand (machine off)",
+        "Verify the drive enable signal is active in PLC I/O",
+        "Check the KV (servo gain) parameters using Siemens startup tools",
+        "Inspect lubrication of guides and ballscrews",
+        "Check for additional drive alarms (380xxx series)"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "2000",
+      "title": "Contour monitoring: velocity too high",
+      "description": "The actual axis velocity exceeded the contour monitoring tolerance band.",
+      "possible_causes": [
+        "Axis runaway condition",
+        "Incorrect encoder polarity",
+        "Drive fault causing uncontrolled motion"
+      ],
+      "solutions": [
+        "Emergency stop the machine",
+        "Check encoder wiring and polarity",
+        "Verify drive enable chain is correct",
+        "Check for additional drive alarms"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "4000",
+      "title": "Controller enable missing",
+      "description": "The hardware enable signal for axis control is not present. Axis movement is not possible.",
+      "possible_causes": [
+        "Emergency stop is active",
+        "Safety door is open",
+        "PLC has not released the axis enable (DB21 bit not set)",
+        "Safety relay fault"
+      ],
+      "solutions": [
+        "Check and reset the Emergency Stop",
+        "Close all safety doors and reset interlocks",
+        "Check PLC ladder for axis enable logic (DB21)",
+        "Verify safety relay output signal"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "10620",
+      "title": "Program not found",
+      "description": "The NC program or subprogram called could not be found in the part program memory.",
+      "possible_causes": [
+        "Program not transferred to the CNC memory",
+        "Wrong program name or path",
+        "Program stored in wrong directory"
+      ],
+      "solutions": [
+        "Transfer the required program to the NC memory via USB or network",
+        "Verify the program name matches exactly (case-sensitive on some versions)",
+        "Check the program search path in the machine data",
+        "Use the program manager to confirm the program exists in the correct directory"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "14010",
+      "title": "Feedrate = 0",
+      "description": "A feed-dependent motion command was executed but the active feedrate is zero.",
+      "possible_causes": [
+        "F word missing from the program block",
+        "F0 programmed (zero feedrate)",
+        "Feed override dial turned to 0%",
+        "G63 (tapping mode) active without correct feedrate"
+      ],
+      "solutions": [
+        "Add F value to the motion block: G1 X_ Y_ F100",
+        "Check feed override potentiometer is not at 0%",
+        "Verify the correct feed group is active (G93/G94/G95)"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "15110",
+      "title": "Spindle speed exceeds maximum",
+      "description": "The programmed spindle speed exceeds the machine or gear stage maximum.",
+      "possible_causes": [
+        "S value too high for current gear stage",
+        "Wrong gear range programmed",
+        "Machine data for maximum speed set too low"
+      ],
+      "solutions": [
+        "Reduce the S (spindle speed) value in the program",
+        "Select the correct gear range (M40/M41/M42/M43)",
+        "Verify maximum speed limits in machine data MD35100"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "16700",
+      "title": "Tool not found in tool management",
+      "description": "The tool number called (T word) is not defined in the tool management system.",
+      "possible_causes": [
+        "Tool not created in tool management",
+        "Wrong T number in program",
+        "Tool was deleted from tool management"
+      ],
+      "solutions": [
+        "Create the tool in the tool management with correct number and type",
+        "Verify T number in program matches the tool management database",
+        "Check if tool was accidentally deleted and re-enter geometry data"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "17500",
+      "title": "Program end not found — M30/M02 missing",
+      "description": "The NC controller reached the end of the program file without finding an M30, M02, or RET.",
+      "possible_causes": [
+        "M30 or M02 missing at end of main program",
+        "File was truncated during transfer",
+        "Wrong file loaded (a subprogram loaded as main program)"
+      ],
+      "solutions": [
+        "Add M30 at the end of the main program",
+        "Verify the correct program file was transferred completely",
+        "Check that the program is a main program and not a subroutine"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "17630",
+      "title": "Subprogram nesting depth exceeded",
+      "description": "The maximum subprogram call depth (typically 8 levels) has been exceeded.",
+      "possible_causes": [
+        "Recursive subprogram call (program calls itself directly or indirectly)",
+        "Too many levels of subroutine nesting"
+      ],
+      "solutions": [
+        "Restructure program to reduce nesting depth",
+        "Check for accidental recursive calls (subprogram calls itself)",
+        "Reduce number of nested CALL/MCALL levels"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "20003",
+      "title": "Axis move commanded while spindle stopped",
+      "description": "A feed move was commanded while the spindle was not rotating. This is blocked as a safety measure.",
+      "possible_causes": [
+        "M3 or M4 not programmed before feed moves",
+        "Spindle failed to start",
+        "Spindle interlock not satisfied"
+      ],
+      "solutions": [
+        "Ensure M03 S_ (or M04 S_) is programmed before any G01/G02/G03 moves",
+        "Check that the spindle has actually reached speed (use M3/M4 with SPOS or dwell G4)",
+        "Verify spindle enable signal in PLC diagnostics"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "21611",
+      "title": "Axis cannot be referenced (homed)",
+      "description": "The homing sequence for the axis could not be completed successfully.",
+      "possible_causes": [
+        "Reference switch not found or signal missing",
+        "Encoder zero mark not found",
+        "Axis at or past the reference switch already",
+        "Drive fault preventing movement"
+      ],
+      "solutions": [
+        "Check reference switch wiring and signal in PLC diagnostics",
+        "Jog axis away from reference position and retry",
+        "Verify encoder cable and connector",
+        "Check machine data for reference point parameters (MD34000–MD34100)"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "22010",
+      "title": "Axis must be homed (referenced) first",
+      "description": "An operation requiring a homed axis was requested but the axis has not completed its reference point approach.",
+      "possible_causes": [
+        "Machine was just powered on and axes not homed",
+        "Reference run was interrupted",
+        "An alarm cleared the homed status"
+      ],
+      "solutions": [
+        "Perform reference point approach: activate REF mode and press axis + key",
+        "Home all axes in correct sequence as specified by machine builder",
+        "Check for alarms that may have reset the homed status"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "25001",
+      "title": "Emergency stop activated",
+      "description": "The Emergency Stop button has been pressed or the E-STOP chain has been interrupted.",
+      "possible_causes": [
+        "Operator pressed the E-STOP button",
+        "Safety door opened during cycle",
+        "E-STOP relay chain fault",
+        "Drive safety monitoring triggered ESTOP"
+      ],
+      "solutions": [
+        "Identify and resolve the cause of the E-STOP before clearing",
+        "Release the E-STOP button (twist clockwise)",
+        "Press RESET on the operator panel",
+        "Check the PLC diagnostics for the E-STOP chain signal",
+        "Check all safety door and light curtain statuses"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "26000",
+      "title": "No valid tool for spindle",
+      "description": "No usable tool was found in the tool management for the requested T function.",
+      "possible_causes": [
+        "Tool life expired and no sister tool defined",
+        "Tool status set to disabled",
+        "Tool geometry data incomplete or invalid"
+      ],
+      "solutions": [
+        "Check tool management — verify tool status is active (not expired/blocked)",
+        "Enter or correct tool geometry data (length, radius, type)",
+        "Define a sister tool if tool life management is active",
+        "Reset tool life counter if tool was replaced"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "26050",
+      "title": "Tool not present in magazine",
+      "description": "The requested tool is defined in tool management but not physically present in the magazine.",
+      "possible_causes": [
+        "Tool manually removed from magazine",
+        "Magazine position sensor fault",
+        "Tool management and physical magazine are out of sync"
+      ],
+      "solutions": [
+        "Physically verify the tool is in its assigned magazine pocket",
+        "Check magazine pocket sensor for the affected position",
+        "Use tool management to update tool location or reassign pocket",
+        "Synchronize tool management data with physical magazine state"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "38000",
+      "title": "Feedrate limitation active",
+      "description": "The programmed feedrate was clamped by a machine-data limit. Actual feedrate may be lower than programmed.",
+      "possible_causes": [
+        "Programmed feedrate exceeds axis maximum velocity (MD32000)",
+        "Rapid traverse override is active at reduced rate",
+        "Feedrate override is less than 100%"
+      ],
+      "solutions": [
+        "Check feed override and rapid override percentages",
+        "Verify programmed F value is within axis capabilities",
+        "Review machine data MD32000 (maximum axis velocity)"
+      ],
+      "severity": "info"
+    },
+    {
+      "code": "65050",
+      "title": "PLC: NC not ready",
+      "description": "The PLC is indicating that the NC (numerical control) is not in a ready state.",
+      "possible_causes": [
+        "NC in alarm state",
+        "NC boot not completed",
+        "Communication fault between NCK and PLC",
+        "Hardware fault in NCK module"
+      ],
+      "solutions": [
+        "Check NC status and clear any active alarms",
+        "Power cycle the control — allow full boot sequence to complete",
+        "Check NCK hardware for fault indicators (LEDs)",
+        "Contact machine builder or Siemens service if issue persists"
+      ],
+      "severity": "error"
+    },
+    {
+      "code": "380500",
+      "title": "Drive: motor overtemperature warning",
+      "description": "The motor temperature sensor reports the motor is approaching or has exceeded its thermal limit.",
+      "possible_causes": [
+        "Excessive machining load",
+        "Motor cooling fan fault",
+        "Ambient temperature too high",
+        "Motor thermistor wiring fault"
+      ],
+      "solutions": [
+        "Allow machine to cool — reduce cycle duty or take a break",
+        "Check motor cooling fan is spinning",
+        "Verify ambient temperature is within spec (max 40°C)",
+        "Reduce cutting load (feed, depth of cut, or speed)",
+        "Check motor thermistor wiring at motor connector"
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "380600",
+      "title": "Drive: overcurrent / short circuit",
+      "description": "The drive detected an overcurrent condition in the power stage or motor winding.",
+      "possible_causes": [
+        "Motor winding short circuit or insulation breakdown",
+        "Motor phase-to-phase or phase-to-ground fault",
+        "Drive power stage failure",
+        "Cable insulation damage"
+      ],
+      "solutions": [
+        "Check motor insulation resistance with a megohmmeter (should be > 1 MΩ)",
+        "Inspect motor cable for damage, chafing, or pinching",
+        "Measure motor winding resistance — all phases should be balanced",
+        "If motor and cables are good, suspect the drive power module"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "381000",
+      "title": "Drive: encoder fault",
+      "description": "The position encoder feedback signal is missing, incorrect, or has a hardware fault.",
+      "possible_causes": [
+        "Encoder cable damaged, disconnected, or with a loose connector",
+        "Encoder hardware failure",
+        "Electrical interference on encoder cable",
+        "Wrong encoder type configured in machine data"
+      ],
+      "solutions": [
+        "Check encoder cable connections at both the motor and the drive module",
+        "Inspect cable for damage, especially at cable entry points",
+        "Measure encoder supply voltage (typically 5V or 24V depending on type)",
+        "Verify machine data for encoder type matches installed hardware (MD30200–MD30250)",
+        "Replace encoder if all wiring checks out"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "700001",
+      "title": "PLC: Emergency stop activated",
+      "description": "The PLC has activated the emergency stop condition. All drives have been disabled.",
+      "possible_causes": [
+        "E-STOP button pressed",
+        "Safety circuit open (door, guard, light curtain)",
+        "PLC program error triggering E-STOP output"
+      ],
+      "solutions": [
+        "Check and release E-STOP button (twist to release)",
+        "Verify all safety doors are closed and guards are in place",
+        "Check PLC diagnostics for the specific input that triggered the E-STOP",
+        "Press RESET after clearing the cause"
+      ],
+      "severity": "critical"
+    },
+    {
+      "code": "700002",
+      "title": "PLC: Feed hold active",
+      "description": "The PLC feed hold signal is active. Axis motion and spindle operation are inhibited.",
+      "possible_causes": [
+        "Feed hold button pressed on operator panel",
+        "PLC interlock condition active (e.g., coolant door, workpiece clamp)",
+        "External signal holding the feed hold input"
+      ],
+      "solutions": [
+        "Check if the feed hold button on the operator panel is engaged",
+        "Review PLC diagnostics for which interlock is asserting feed hold",
+        "Ensure workpiece clamping, coolant doors, and other interlocks are satisfied"
+      ],
+      "severity": "warning"
+    }
+  ]
+}
