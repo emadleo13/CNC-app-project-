@@ -115,4 +115,15 @@ class AppStringsEn implements AppStrings {
   @override String get commonClear          => 'Clear';
   @override String get commonError          => 'Error';
   @override String get commonLoading        => 'Loading...';
+
+  @override String get imgPickSource             => 'Select Image Source';
+  @override String get imgPickCamera             => 'Camera';
+  @override String get imgPickGallery            => 'Gallery';
+  @override String get imgAttached               => 'Image attached';
+  @override String get imgPickError              => 'Failed to pick image';
+
+  @override String get gcodeFromDrawing          => 'From Drawing';
+  @override String get gcodeFromDrawingHint      => 'Upload a technical drawing or part photo to generate G-code';
+  @override String get gcodeFromDrawingGenerating => 'Analyzing drawing...';
+  @override String get gcodeFromDrawingError     => 'Failed to generate G-code from drawing';
 }

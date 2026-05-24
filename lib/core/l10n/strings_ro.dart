@@ -115,4 +115,15 @@ class AppStringsRo implements AppStrings {
   @override String get commonClear          => 'Șterge';
   @override String get commonError          => 'Eroare';
   @override String get commonLoading        => 'Se încarcă...';
+
+  @override String get imgPickSource             => 'Selectează sursa imaginii';
+  @override String get imgPickCamera             => 'Cameră';
+  @override String get imgPickGallery            => 'Galerie';
+  @override String get imgAttached               => 'Imagine atașată';
+  @override String get imgPickError              => 'Eroare la selectarea imaginii';
+
+  @override String get gcodeFromDrawing          => 'Din desen';
+  @override String get gcodeFromDrawingHint      => 'Încarcă un desen tehnic sau foto piesă pentru a genera G-code';
+  @override String get gcodeFromDrawingGenerating => 'Analizez desenul...';
+  @override String get gcodeFromDrawingError     => 'Eroare la generarea G-code din desen';
 }

@@ -121,6 +121,19 @@ abstract class AppStrings {
   String get commonClear;
   String get commonError;
   String get commonLoading;
+
+  // Image picker
+  String get imgPickSource;
+  String get imgPickCamera;
+  String get imgPickGallery;
+  String get imgAttached;
+  String get imgPickError;
+
+  // G-code from drawing
+  String get gcodeFromDrawing;
+  String get gcodeFromDrawingHint;
+  String get gcodeFromDrawingGenerating;
+  String get gcodeFromDrawingError;
 }
 
 // Locale provider

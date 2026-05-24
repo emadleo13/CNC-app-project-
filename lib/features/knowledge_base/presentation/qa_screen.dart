@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
@@ -17,10 +20,11 @@ class QaScreen extends ConsumerStatefulWidget {
 }
 
 class _QaScreenState extends ConsumerState<QaScreen> {
-  final _controller = TextEditingController();
-  final _scrollCtrl = ScrollController();
-  final _messages   = <_Message>[];
-  bool  _isLoading  = false;
+  final _controller    = TextEditingController();
+  final _scrollCtrl    = ScrollController();
+  final _messages      = <_Message>[];
+  bool       _isLoading    = false;
+  Uint8List? _attachedBytes;
 
   static const _quickQuestions = [
     'What is the difference between G00 and G01?',
@@ -37,6 +41,62 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     _controller.dispose();
     _scrollCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final file   = await picker.pickImage(
+        source:       source,
+        maxWidth:     1280,
+        maxHeight:    960,
+        imageQuality: 80,
+      );
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      setState(() => _attachedBytes = bytes);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ref.read(appStringsProvider).imgPickError),
+          backgroundColor: AppColors.errorRed,
+        ));
+      }
+    }
+  }
+
+  void _showImagePicker() {
+    final s = ref.read(appStringsProvider);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(s.imgPickSource,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined, color: AppColors.primary),
+              title:   Text(s.imgPickCamera),
+              onTap:   () { Navigator.pop(context); _pickImage(ImageSource.camera); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+              title:   Text(s.imgPickGallery),
+              onTap:   () { Navigator.pop(context); _pickImage(ImageSource.gallery); },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   // Detects alarm/error codes in the user's question.
@@ -70,18 +130,30 @@ class _QaScreenState extends ConsumerState<QaScreen> {
   }
 
   Future<void> _sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+    final bytes = _attachedBytes;
+    if (text.trim().isEmpty && bytes == null) return;
+
     setState(() {
-      _messages.add(_Message(text: text, isUser: true));
+      _messages.add(_Message(
+        text:       text.trim().isEmpty ? '' : text,
+        isUser:     true,
+        imageBytes: bytes,
+      ));
       _controller.clear();
+      _attachedBytes = null;
       _isLoading = true;
     });
     _scrollToBottom();
 
     final s = ref.read(appStringsProvider);
     try {
-      final alarmCtx = await _lookupAlarmContext(text);
-      final answer   = await _askClaude(text, alarmCtx);
+      String answer;
+      if (bytes != null) {
+        answer = await _askClaudeWithImage(text.trim(), bytes);
+      } else {
+        final alarmCtx = await _lookupAlarmContext(text);
+        answer = await _askClaude(text, alarmCtx);
+      }
       setState(() {
         _messages.add(_Message(text: answer, isUser: false));
         _isLoading = false;
@@ -97,6 +169,25 @@ class _QaScreenState extends ConsumerState<QaScreen> {
       });
     }
     _scrollToBottom();
+  }
+
+  Future<String> _askClaudeWithImage(String question, Uint8List imageBytes) async {
+    final supabase = Supabase.instance.client;
+    if (supabase.auth.currentUser == null) {
+      await supabase.auth.signInAnonymously();
+    }
+    final body = <String, dynamic>{
+      'imageBase64': base64Encode(imageBytes),
+      'mediaType':   'image/jpeg',
+      'mode':        'error_diagnosis',
+      if (question.isNotEmpty) 'question': question,
+    };
+    final response = await supabase.functions.invoke('analyze-image', body: body);
+    if (response.status != 200) {
+      final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Server error ${response.status}';
+      throw Exception(msg);
+    }
+    return (response.data as Map<String, dynamic>)['answer'] as String;
   }
 
   Future<String> _askClaude(String question, String? alarmContext) async {
@@ -165,11 +256,32 @@ class _QaScreenState extends ConsumerState<QaScreen> {
             backgroundColor: AppColors.surface,
             valueColor: AlwaysStoppedAnimation(AppColors.primary),
           ),
+          if (_attachedBytes != null)
+            Container(
+              color:   AppColors.surface,
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Row(children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.memory(_attachedBytes!, width: 56, height: 56, fit: BoxFit.cover),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(s.imgAttached,
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  color: AppColors.textMuted,
+                  onPressed: () => setState(() => _attachedBytes = null),
+                ),
+              ]),
+            ),
           _InputBar(
-            controller: _controller,
-            hint:       s.kbInputHint,
-            onSend:     _sendMessage,
-            isLoading:  _isLoading,
+            controller:  _controller,
+            hint:        s.kbInputHint,
+            onSend:      _sendMessage,
+            isLoading:   _isLoading,
+            onAttach:    _showImagePicker,
+            hasAttached: _attachedBytes != null,
           ),
         ],
       ),
@@ -178,10 +290,14 @@ class _QaScreenState extends ConsumerState<QaScreen> {
 }
 
 class _Message {
-  final String text;
-  final bool isUser;
-  final bool isPending;
-  const _Message({required this.text, required this.isUser, this.isPending = false});
+  final String     text;
+  final bool       isUser;
+  final bool       isPending;
+  final Uint8List? imageBytes;
+  const _Message({
+    required this.text, required this.isUser,
+    this.isPending = false, this.imageBytes,
+  });
 }
 
 class _QuickQuestionsBar extends StatelessWidget {
@@ -287,13 +403,29 @@ class _MessageBubble extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: message.isUser ? null : Border.all(color: AppColors.border),
               ),
-              child: Text(
-                message.text,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: message.isPending ? AppColors.textSecondary : AppColors.textPrimary,
-                  fontStyle: message.isPending ? FontStyle.italic : FontStyle.normal,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (message.imageBytes != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        message.imageBytes!,
+                        width: 220, height: 160, fit: BoxFit.cover,
+                      ),
+                    ),
+                    if (message.text.isNotEmpty) const SizedBox(height: 8),
+                  ],
+                  if (message.text.isNotEmpty)
+                    Text(
+                      message.text,
+                      style: TextStyle(
+                        fontSize:  14,
+                        color:     message.isPending ? AppColors.textSecondary : AppColors.textPrimary,
+                        fontStyle: message.isPending ? FontStyle.italic : FontStyle.normal,
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -309,7 +441,13 @@ class _InputBar extends StatelessWidget {
   final String hint;
   final ValueChanged<String> onSend;
   final bool isLoading;
-  const _InputBar({required this.controller, required this.hint, required this.onSend, required this.isLoading});
+  final VoidCallback onAttach;
+  final bool hasAttached;
+  const _InputBar({
+    required this.controller, required this.hint,
+    required this.onSend, required this.isLoading,
+    required this.onAttach, required this.hasAttached,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -322,6 +460,18 @@ class _InputBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Row(children: [
+          IconButton(
+            onPressed: isLoading ? null : onAttach,
+            icon: Icon(
+              Icons.camera_alt_outlined,
+              color: hasAttached ? AppColors.primary : AppColors.textMuted,
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: hasAttached ? AppColors.primaryDim : Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(width: 4),
           Expanded(
             child: TextField(
               controller: controller,
