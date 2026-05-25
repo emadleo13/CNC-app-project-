@@ -1,109 +1,1606 @@
 {
-  "version": "1.1",
+  "version": "2.0",
   "g_codes": [
-    { "code": "G00", "dialects": ["haas", "sinumerik", "generic"], "name": "Rapid Positioning", "description": "Moves tool at maximum rapid rate to specified position. Not for cutting.", "syntax": "G00 X_ Y_ Z_", "warning": "No material removal. Confirm clearance before rapid moves." },
-    { "code": "G01", "dialects": ["haas", "sinumerik", "generic"], "name": "Linear Interpolation", "description": "Straight-line feed move at programmed feedrate.", "syntax": "G01 X_ Y_ Z_ F_", "warning": null },
-    { "code": "G02", "dialects": ["haas", "sinumerik", "generic"], "name": "Circular Interpolation CW", "description": "Clockwise circular arc motion.", "syntax": "G02 X_ Y_ I_ J_ F_  or  G02 X_ Y_ R_ F_", "warning": null },
-    { "code": "G03", "dialects": ["haas", "sinumerik", "generic"], "name": "Circular Interpolation CCW", "description": "Counter-clockwise circular arc motion.", "syntax": "G03 X_ Y_ I_ J_ F_  or  G03 X_ Y_ R_ F_", "warning": null },
-    { "code": "G04", "dialects": ["haas", "sinumerik", "generic"], "name": "Dwell", "description": "Pause program for specified time. P value is milliseconds (Haas) or seconds (Sinumerik).", "syntax": "G04 P_", "warning": "P unit differs between Haas (ms) and Sinumerik (s)." },
-    { "code": "G09", "dialects": ["haas", "generic"], "name": "Exact Stop (Non-Modal)", "description": "Single-block exact stop. Decelerates to zero before proceeding to next block.", "syntax": "G09 G01 X_ Y_ F_", "warning": null },
-    { "code": "G10", "dialects": ["haas", "generic"], "name": "Programmable Data Input", "description": "Allows work offsets and tool offsets to be set from within the program.", "syntax": "G10 L2 P1 X_ Y_ Z_ (set G54)  |  G10 L1 P_ R_ Z_ (set tool offset)", "warning": "G10 permanently modifies offset tables. Double-check values before running." },
-    { "code": "G17", "dialects": ["haas", "sinumerik", "generic"], "name": "XY Plane Select", "description": "Select XY as the active interpolation plane. Default for most milling operations.", "syntax": "G17", "warning": null },
-    { "code": "G18", "dialects": ["haas", "sinumerik", "generic"], "name": "XZ Plane Select", "description": "Select XZ as the active interpolation plane.", "syntax": "G18", "warning": null },
-    { "code": "G19", "dialects": ["haas", "sinumerik", "generic"], "name": "YZ Plane Select", "description": "Select YZ as the active interpolation plane.", "syntax": "G19", "warning": null },
-    { "code": "G20", "dialects": ["haas"], "name": "Imperial Units (Haas)", "description": "Set units to inches. All subsequent values in inches.", "syntax": "G20", "warning": "Affects all axis values, feedrates, and offsets." },
-    { "code": "G21", "dialects": ["haas", "sinumerik", "generic"], "name": "Metric Units", "description": "Set units to millimeters.", "syntax": "G21", "warning": null },
-    { "code": "G28", "dialects": ["haas", "generic"], "name": "Return to Reference Point", "description": "Return to machine home position via intermediate point.", "syntax": "G28 G91 Z0  (safe Z home)", "warning": "Always use G91 G28 Z0 to safely retract Z before XY home." },
-    { "code": "G29", "dialects": ["haas", "generic"], "name": "Return from Reference Point", "description": "Move from reference point to the intermediate point used in G28.", "syntax": "G29 X_ Y_ Z_", "warning": "Use after G28 to return to the work area." },
-    { "code": "G30", "dialects": ["haas"], "name": "Return to 2nd Reference Point", "description": "Return to the second reference point (often used for tool change position).", "syntax": "G30 G91 Z0", "warning": null },
-    { "code": "G31", "dialects": ["haas"], "name": "Skip Function (Probing)", "description": "Feed move that stops when a skip signal is received — used for probing.", "syntax": "G31 Z_ F_", "warning": "Requires a probing input signal. Do not use without a probe connected." },
-    { "code": "G40", "dialects": ["haas", "sinumerik", "generic"], "name": "Cancel Tool Radius Compensation", "description": "Turn off cutter radius compensation (G41/G42).", "syntax": "G40", "warning": null },
-    { "code": "G41", "dialects": ["haas", "sinumerik", "generic"], "name": "Tool Radius Comp Left", "description": "Compensate tool radius to the left of programmed path.", "syntax": "G41 D_", "warning": "Must be engaged during a linear move (G01)." },
-    { "code": "G42", "dialects": ["haas", "sinumerik", "generic"], "name": "Tool Radius Comp Right", "description": "Compensate tool radius to the right of programmed path.", "syntax": "G42 D_", "warning": "Must be engaged during a linear move (G01)." },
-    { "code": "G43", "dialects": ["haas"], "name": "Tool Length Compensation + (Haas)", "description": "Apply positive tool length offset from offset table.", "syntax": "G43 H_ Z_", "warning": "H value must match tool number in offset table." },
-    { "code": "G44", "dialects": ["haas"], "name": "Tool Length Compensation - (Haas)", "description": "Apply negative tool length offset (rarely used).", "syntax": "G44 H_ Z_", "warning": "Reverses direction of tool length compensation." },
-    { "code": "G49", "dialects": ["haas"], "name": "Cancel Tool Length Compensation", "description": "Cancel active tool length offset.", "syntax": "G49", "warning": null },
-    { "code": "G50", "dialects": ["haas", "generic"], "name": "Maximum Spindle Speed Clamp (CSS)", "description": "Sets maximum RPM limit when using G96 CSS (constant surface speed).", "syntax": "G50 S_max", "warning": "Always program G50 S_max before G96 to prevent runaway RPM at small diameters." },
-    { "code": "G51", "dialects": ["haas", "sinumerik"], "name": "Scaling", "description": "Scales programmed coordinates by a factor relative to a specified center.", "syntax": "G51 X_ Y_ Z_ P_ (Haas: P=scale factor × 1000)", "warning": "Cancel with G50 (Haas) or SCALE OFF (Sinumerik)." },
-    { "code": "G52", "dialects": ["haas"], "name": "Local Coordinate System Shift", "description": "Shifts the current work coordinate system by a specified amount.", "syntax": "G52 X_ Y_ Z_", "warning": "Cancel with G52 X0 Y0 Z0 at end of operation." },
-    { "code": "G54", "dialects": ["haas", "sinumerik", "generic"], "name": "Work Coordinate System 1", "description": "Select work offset G54. Most common WCS for first setup.", "syntax": "G54", "warning": null },
-    { "code": "G55", "dialects": ["haas", "sinumerik", "generic"], "name": "Work Coordinate System 2", "description": "Select work offset G55.", "syntax": "G55", "warning": null },
-    { "code": "G56", "dialects": ["haas", "sinumerik", "generic"], "name": "Work Coordinate System 3", "description": "Select work offset G56.", "syntax": "G56", "warning": null },
-    { "code": "G57", "dialects": ["haas", "sinumerik", "generic"], "name": "Work Coordinate System 4", "description": "Select work offset G57.", "syntax": "G57", "warning": null },
-    { "code": "G58", "dialects": ["haas", "sinumerik", "generic"], "name": "Work Coordinate System 5", "description": "Select work offset G58.", "syntax": "G58", "warning": null },
-    { "code": "G59", "dialects": ["haas", "sinumerik", "generic"], "name": "Work Coordinate System 6", "description": "Select work offset G59.", "syntax": "G59", "warning": null },
-    { "code": "G61", "dialects": ["haas", "sinumerik", "generic"], "name": "Exact Stop Mode", "description": "All moves decelerate to exact stop before starting next block. Reduces corner rounding.", "syntax": "G61", "warning": "Slows cycle time significantly. Use G64 for general machining." },
-    { "code": "G63", "dialects": ["haas"], "name": "Tapping Mode (Haas)", "description": "Enables rigid tapping. Synchronizes spindle and feed.", "syntax": "G63 (followed by G84 tapping cycle)", "warning": null },
-    { "code": "G64", "dialects": ["haas", "sinumerik", "generic"], "name": "Cutting Mode (Continuous Path)", "description": "Default path blending mode. Allows cornering without exact stop for faster machining.", "syntax": "G64", "warning": null },
-    { "code": "G65", "dialects": ["haas"], "name": "Macro Subprogram Call (Non-Modal)", "description": "Call a custom macro program with arguments.", "syntax": "G65 P_ A_ B_ ... (arguments)", "warning": null },
-    { "code": "G66", "dialects": ["haas"], "name": "Macro Subprogram Call (Modal)", "description": "Modal macro call — executes on every subsequent motion block.", "syntax": "G66 P_ (arguments)", "warning": "Cancel with G67 when done." },
-    { "code": "G67", "dialects": ["haas"], "name": "Cancel Modal Macro Call", "description": "Cancels a modal macro call set by G66.", "syntax": "G67", "warning": null },
-    { "code": "G68", "dialects": ["haas", "sinumerik"], "name": "Coordinate Rotation", "description": "Rotates the coordinate system by a specified angle around the selected plane.", "syntax": "G68 X_ Y_ R_ (Haas: R = rotation angle in degrees)", "warning": "Cancel with G69 at end of rotated operation." },
-    { "code": "G69", "dialects": ["haas"], "name": "Cancel Coordinate Rotation", "description": "Cancels coordinate rotation set by G68.", "syntax": "G69", "warning": null },
-    { "code": "G73", "dialects": ["haas", "generic"], "name": "High-Speed Peck Drilling", "description": "Peck drilling with partial retract (chip breaking). Tool does not fully retract between pecks.", "syntax": "G73 X_ Y_ Z_ R_ Q_ F_  (Q = peck increment)", "warning": "Chips may not fully clear hole. Use G83 for deep holes in difficult materials." },
-    { "code": "G74", "dialects": ["haas", "generic"], "name": "Left-Hand Tapping Cycle", "description": "Left-hand tapping (counter-clockwise thread). Reverses spindle at bottom.", "syntax": "G74 X_ Y_ Z_ R_ F_", "warning": "F must equal RPM × pitch (mm). Incorrect F breaks taps." },
-    { "code": "G76", "dialects": ["haas", "generic"], "name": "Fine Boring Cycle", "description": "Boring cycle that orients spindle and shifts tool before retracting to avoid scratching bore wall.", "syntax": "G76 X_ Y_ Z_ R_ Q_ P_ F_  (Q = shift distance)", "warning": "Requires oriented spindle stop capability." },
-    { "code": "G80", "dialects": ["haas", "sinumerik", "generic"], "name": "Cancel Canned Cycle", "description": "Cancels any active canned cycle (drilling, tapping, etc.).", "syntax": "G80", "warning": null },
-    { "code": "G81", "dialects": ["haas", "generic"], "name": "Drilling Canned Cycle", "description": "Simple drilling cycle: drill to depth, rapid out.", "syntax": "G81 X_ Y_ Z_ R_ F_", "warning": null },
-    { "code": "G82", "dialects": ["haas", "generic"], "name": "Spot Drilling / Drilling with Dwell", "description": "Drilling with a dwell at the bottom. Used for spotting, countersinking, or controlled depth.", "syntax": "G82 X_ Y_ Z_ R_ P_ F_  (P = dwell in ms)", "warning": null },
-    { "code": "G83", "dialects": ["haas", "generic"], "name": "Peck Drilling Cycle", "description": "Deep hole peck drilling with full retract to R plane between pecks.", "syntax": "G83 X_ Y_ Z_ R_ Q_ F_  (Q = peck depth)", "warning": null },
-    { "code": "G84", "dialects": ["haas", "generic"], "name": "Tapping Cycle", "description": "Right-hand tapping cycle. Feedrate must match: F = RPM × Pitch.", "syntax": "G84 X_ Y_ Z_ R_ F_", "warning": "Calculate F carefully: F = RPM × Pitch (mm). Wrong F breaks taps." },
-    { "code": "G85", "dialects": ["haas", "generic"], "name": "Boring — Feed In, Feed Out", "description": "Boring cycle that feeds both in and out. Leaves a good finish on both passes.", "syntax": "G85 X_ Y_ Z_ R_ F_", "warning": null },
-    { "code": "G86", "dialects": ["haas", "generic"], "name": "Boring — Stop Spindle, Rapid Out", "description": "Boring cycle: feeds to depth, stops spindle, retracts rapidly.", "syntax": "G86 X_ Y_ Z_ R_ F_", "warning": "May leave a witness mark. Use G76 for fine bores." },
-    { "code": "G89", "dialects": ["haas", "generic"], "name": "Boring — Feed In, Dwell, Feed Out", "description": "Boring cycle with dwell at depth, then feed out.", "syntax": "G89 X_ Y_ Z_ R_ P_ F_  (P = dwell in ms)", "warning": null },
-    { "code": "G90", "dialects": ["haas", "sinumerik", "generic"], "name": "Absolute Programming", "description": "All coordinates measured from program zero (WCS origin).", "syntax": "G90", "warning": null },
-    { "code": "G91", "dialects": ["haas", "sinumerik", "generic"], "name": "Incremental Programming", "description": "All coordinates measured from current position.", "syntax": "G91", "warning": "Easy source of crashes. Verify incremental values carefully." },
-    { "code": "G92", "dialects": ["haas", "generic"], "name": "Set Work Coordinate Origin", "description": "Shifts the active WCS so that current position equals the programmed coordinates.", "syntax": "G92 X_ Y_ Z_", "warning": "G92 is a local shift — cancel with G92 X0 Y0 Z0." },
-    { "code": "G93", "dialects": ["haas", "sinumerik", "generic"], "name": "Inverse Time Feed Rate Mode", "description": "Feedrate F specifies feed in inverse time (blocks per minute). Used with 5-axis moves.", "syntax": "G93", "warning": "F must be re-programmed every block." },
-    { "code": "G94", "dialects": ["haas", "sinumerik", "generic"], "name": "Feed per Minute Mode", "description": "Feedrate in mm/min or in/min. Default mode.", "syntax": "G94", "warning": null },
-    { "code": "G95", "dialects": ["haas", "sinumerik", "generic"], "name": "Feed per Revolution Mode", "description": "Feedrate in mm/rev or in/rev. Commonly used in turning.", "syntax": "G95", "warning": null },
-    { "code": "G96", "dialects": ["haas", "sinumerik", "generic"], "name": "Constant Surface Speed (CSS)", "description": "Spindle speed varies to maintain constant cutting speed as diameter changes. Used in turning.", "syntax": "G96 S_ (CSS value in m/min or SFM)", "warning": "Always program G50 S_max before G96 to limit maximum RPM." },
-    { "code": "G97", "dialects": ["haas", "sinumerik", "generic"], "name": "Constant RPM Mode", "description": "Spindle speed is constant RPM regardless of diameter.", "syntax": "G97 S_", "warning": null },
-    { "code": "G98", "dialects": ["haas", "generic"], "name": "Return to Initial Plane (Canned Cycles)", "description": "After canned cycle, retract Z to initial Z height (before cycle started).", "syntax": "G98 G81 X_ Y_ Z_ R_ F_", "warning": null },
-    { "code": "G99", "dialects": ["haas", "generic"], "name": "Return to R Plane (Canned Cycles)", "description": "After canned cycle, retract Z only to R plane. Faster for repeated holes.", "syntax": "G99 G83 X_ Y_ Z_ R_ Q_ F_", "warning": "Ensure clearance between holes when using G99 with fixtures." }
+    {
+      "code": "G00",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Rapid Positioning",
+      "description": "Moves tool at maximum rapid rate to specified position. Not for cutting.",
+      "syntax": "G00 X_ Y_ Z_",
+      "warning": "No material removal. Confirm clearance before rapid moves."
+    },
+    {
+      "code": "G01",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Linear Interpolation",
+      "description": "Straight-line feed move at programmed feedrate.",
+      "syntax": "G01 X_ Y_ Z_ F_",
+      "warning": null
+    },
+    {
+      "code": "G02",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Circular Interpolation CW",
+      "description": "Clockwise circular arc motion.",
+      "syntax": "G02 X_ Y_ I_ J_ F_  or  G02 X_ Y_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G03",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Circular Interpolation CCW",
+      "description": "Counter-clockwise circular arc motion.",
+      "syntax": "G03 X_ Y_ I_ J_ F_  or  G03 X_ Y_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G04",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Dwell",
+      "description": "Pause program for specified time. P value is milliseconds (Haas) or seconds (Sinumerik).",
+      "syntax": "G04 P_",
+      "warning": "P unit differs between Haas (ms) and Sinumerik (s)."
+    },
+    {
+      "code": "G09",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Exact Stop (Non-Modal)",
+      "description": "Single-block exact stop. Decelerates to zero before proceeding to next block.",
+      "syntax": "G09 G01 X_ Y_ F_",
+      "warning": null
+    },
+    {
+      "code": "G10",
+      "dialects": [
+        "haas",
+        "generic"
+      ],
+      "name": "Programmable Data Input",
+      "description": "Allows work offsets and tool offsets to be set from within the program.",
+      "syntax": "G10 L2 P1 X_ Y_ Z_ (set G54)  |  G10 L1 P_ R_ Z_ (set tool offset)",
+      "warning": "G10 permanently modifies offset tables. Double-check values before running."
+    },
+    {
+      "code": "G17",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "XY Plane Select",
+      "description": "Select XY as the active interpolation plane. Default for most milling operations.",
+      "syntax": "G17",
+      "warning": null
+    },
+    {
+      "code": "G18",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "XZ Plane Select",
+      "description": "Select XZ as the active interpolation plane.",
+      "syntax": "G18",
+      "warning": null
+    },
+    {
+      "code": "G19",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "YZ Plane Select",
+      "description": "Select YZ as the active interpolation plane.",
+      "syntax": "G19",
+      "warning": null
+    },
+    {
+      "code": "G20",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Imperial Units (Haas)",
+      "description": "Set units to inches. All subsequent values in inches.",
+      "syntax": "G20",
+      "warning": "Affects all axis values, feedrates, and offsets."
+    },
+    {
+      "code": "G21",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Metric Units",
+      "description": "Set units to millimeters.",
+      "syntax": "G21",
+      "warning": null
+    },
+    {
+      "code": "G28",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Return to Reference Point",
+      "description": "Return to machine home position via intermediate point.",
+      "syntax": "G28 G91 Z0  (safe Z home)",
+      "warning": "Always use G91 G28 Z0 to safely retract Z before XY home."
+    },
+    {
+      "code": "G29",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Return from Reference Point",
+      "description": "Move from reference point to the intermediate point used in G28.",
+      "syntax": "G29 X_ Y_ Z_",
+      "warning": "Use after G28 to return to the work area."
+    },
+    {
+      "code": "G30",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Return to 2nd Reference Point",
+      "description": "Return to the second reference point (often used for tool change position).",
+      "syntax": "G30 G91 Z0",
+      "warning": null
+    },
+    {
+      "code": "G31",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Skip Function (Probing)",
+      "description": "Feed move that stops when a skip signal is received — used for probing.",
+      "syntax": "G31 Z_ F_",
+      "warning": "Requires a probing input signal. Do not use without a probe connected."
+    },
+    {
+      "code": "G40",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Cancel Tool Radius Compensation",
+      "description": "Turn off cutter radius compensation (G41/G42).",
+      "syntax": "G40",
+      "warning": null
+    },
+    {
+      "code": "G41",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Tool Radius Comp Left",
+      "description": "Compensate tool radius to the left of programmed path.",
+      "syntax": "G41 D_",
+      "warning": "Must be engaged during a linear move (G01)."
+    },
+    {
+      "code": "G42",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Tool Radius Comp Right",
+      "description": "Compensate tool radius to the right of programmed path.",
+      "syntax": "G42 D_",
+      "warning": "Must be engaged during a linear move (G01)."
+    },
+    {
+      "code": "G43",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Tool Length Compensation + (Haas)",
+      "description": "Apply positive tool length offset from offset table.",
+      "syntax": "G43 H_ Z_",
+      "warning": "H value must match tool number in offset table."
+    },
+    {
+      "code": "G44",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Tool Length Compensation - (Haas)",
+      "description": "Apply negative tool length offset (rarely used).",
+      "syntax": "G44 H_ Z_",
+      "warning": "Reverses direction of tool length compensation."
+    },
+    {
+      "code": "G49",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Cancel Tool Length Compensation",
+      "description": "Cancel active tool length offset.",
+      "syntax": "G49",
+      "warning": null
+    },
+    {
+      "code": "G50",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Maximum Spindle Speed Clamp (CSS)",
+      "description": "Sets maximum RPM limit when using G96 CSS (constant surface speed).",
+      "syntax": "G50 S_max",
+      "warning": "Always program G50 S_max before G96 to prevent runaway RPM at small diameters."
+    },
+    {
+      "code": "G51",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "fanuc"
+      ],
+      "name": "Scaling",
+      "description": "Scales programmed coordinates by a factor relative to a specified center.",
+      "syntax": "G51 X_ Y_ Z_ P_ (Haas: P=scale factor × 1000)",
+      "warning": "Cancel with G50 (Haas) or SCALE OFF (Sinumerik)."
+    },
+    {
+      "code": "G52",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Local Coordinate System Shift",
+      "description": "Shifts the current work coordinate system by a specified amount.",
+      "syntax": "G52 X_ Y_ Z_",
+      "warning": "Cancel with G52 X0 Y0 Z0 at end of operation."
+    },
+    {
+      "code": "G54",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Work Coordinate System 1",
+      "description": "Select work offset G54. Most common WCS for first setup.",
+      "syntax": "G54",
+      "warning": null
+    },
+    {
+      "code": "G55",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Work Coordinate System 2",
+      "description": "Select work offset G55.",
+      "syntax": "G55",
+      "warning": null
+    },
+    {
+      "code": "G56",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Work Coordinate System 3",
+      "description": "Select work offset G56.",
+      "syntax": "G56",
+      "warning": null
+    },
+    {
+      "code": "G57",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Work Coordinate System 4",
+      "description": "Select work offset G57.",
+      "syntax": "G57",
+      "warning": null
+    },
+    {
+      "code": "G58",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Work Coordinate System 5",
+      "description": "Select work offset G58.",
+      "syntax": "G58",
+      "warning": null
+    },
+    {
+      "code": "G59",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Work Coordinate System 6",
+      "description": "Select work offset G59.",
+      "syntax": "G59",
+      "warning": null
+    },
+    {
+      "code": "G61",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Exact Stop Mode",
+      "description": "All moves decelerate to exact stop before starting next block. Reduces corner rounding.",
+      "syntax": "G61",
+      "warning": "Slows cycle time significantly. Use G64 for general machining."
+    },
+    {
+      "code": "G63",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Tapping Mode (Haas)",
+      "description": "Enables rigid tapping. Synchronizes spindle and feed.",
+      "syntax": "G63 (followed by G84 tapping cycle)",
+      "warning": null
+    },
+    {
+      "code": "G64",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Cutting Mode (Continuous Path)",
+      "description": "Default path blending mode. Allows cornering without exact stop for faster machining.",
+      "syntax": "G64",
+      "warning": null
+    },
+    {
+      "code": "G65",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Macro Subprogram Call (Non-Modal)",
+      "description": "Call a custom macro program with arguments.",
+      "syntax": "G65 P_ A_ B_ ... (arguments)",
+      "warning": null
+    },
+    {
+      "code": "G66",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Macro Subprogram Call (Modal)",
+      "description": "Modal macro call — executes on every subsequent motion block.",
+      "syntax": "G66 P_ (arguments)",
+      "warning": "Cancel with G67 when done."
+    },
+    {
+      "code": "G67",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Cancel Modal Macro Call",
+      "description": "Cancels a modal macro call set by G66.",
+      "syntax": "G67",
+      "warning": null
+    },
+    {
+      "code": "G68",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "fanuc"
+      ],
+      "name": "Coordinate Rotation",
+      "description": "Rotates the coordinate system by a specified angle around the selected plane.",
+      "syntax": "G68 X_ Y_ R_ (Haas: R = rotation angle in degrees)",
+      "warning": "Cancel with G69 at end of rotated operation."
+    },
+    {
+      "code": "G69",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Cancel Coordinate Rotation",
+      "description": "Cancels coordinate rotation set by G68.",
+      "syntax": "G69",
+      "warning": null
+    },
+    {
+      "code": "G73",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "High-Speed Peck Drilling",
+      "description": "Peck drilling with partial retract (chip breaking). Tool does not fully retract between pecks.",
+      "syntax": "G73 X_ Y_ Z_ R_ Q_ F_  (Q = peck increment)",
+      "warning": "Chips may not fully clear hole. Use G83 for deep holes in difficult materials."
+    },
+    {
+      "code": "G74",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Left-Hand Tapping Cycle",
+      "description": "Left-hand tapping (counter-clockwise thread). Reverses spindle at bottom.",
+      "syntax": "G74 X_ Y_ Z_ R_ F_",
+      "warning": "F must equal RPM × pitch (mm). Incorrect F breaks taps."
+    },
+    {
+      "code": "G76",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Fine Boring Cycle",
+      "description": "Boring cycle that orients spindle and shifts tool before retracting to avoid scratching bore wall.",
+      "syntax": "G76 X_ Y_ Z_ R_ Q_ P_ F_  (Q = shift distance)",
+      "warning": "Requires oriented spindle stop capability."
+    },
+    {
+      "code": "G80",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Cancel Canned Cycle",
+      "description": "Cancels any active canned cycle (drilling, tapping, etc.).",
+      "syntax": "G80",
+      "warning": null
+    },
+    {
+      "code": "G81",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Drilling Canned Cycle",
+      "description": "Simple drilling cycle: drill to depth, rapid out.",
+      "syntax": "G81 X_ Y_ Z_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G82",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Spot Drilling / Drilling with Dwell",
+      "description": "Drilling with a dwell at the bottom. Used for spotting, countersinking, or controlled depth.",
+      "syntax": "G82 X_ Y_ Z_ R_ P_ F_  (P = dwell in ms)",
+      "warning": null
+    },
+    {
+      "code": "G83",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Peck Drilling Cycle",
+      "description": "Deep hole peck drilling with full retract to R plane between pecks.",
+      "syntax": "G83 X_ Y_ Z_ R_ Q_ F_  (Q = peck depth)",
+      "warning": null
+    },
+    {
+      "code": "G84",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Tapping Cycle",
+      "description": "Right-hand tapping cycle. Feedrate must match: F = RPM × Pitch.",
+      "syntax": "G84 X_ Y_ Z_ R_ F_",
+      "warning": "Calculate F carefully: F = RPM × Pitch (mm). Wrong F breaks taps."
+    },
+    {
+      "code": "G85",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Boring — Feed In, Feed Out",
+      "description": "Boring cycle that feeds both in and out. Leaves a good finish on both passes.",
+      "syntax": "G85 X_ Y_ Z_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G86",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Boring — Stop Spindle, Rapid Out",
+      "description": "Boring cycle: feeds to depth, stops spindle, retracts rapidly.",
+      "syntax": "G86 X_ Y_ Z_ R_ F_",
+      "warning": "May leave a witness mark. Use G76 for fine bores."
+    },
+    {
+      "code": "G89",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Boring — Feed In, Dwell, Feed Out",
+      "description": "Boring cycle with dwell at depth, then feed out.",
+      "syntax": "G89 X_ Y_ Z_ R_ P_ F_  (P = dwell in ms)",
+      "warning": null
+    },
+    {
+      "code": "G90",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Absolute Programming",
+      "description": "All coordinates measured from program zero (WCS origin).",
+      "syntax": "G90",
+      "warning": null
+    },
+    {
+      "code": "G91",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Incremental Programming",
+      "description": "All coordinates measured from current position.",
+      "syntax": "G91",
+      "warning": "Easy source of crashes. Verify incremental values carefully."
+    },
+    {
+      "code": "G92",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Set Work Coordinate Origin",
+      "description": "Shifts the active WCS so that current position equals the programmed coordinates.",
+      "syntax": "G92 X_ Y_ Z_",
+      "warning": "G92 is a local shift — cancel with G92 X0 Y0 Z0."
+    },
+    {
+      "code": "G93",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Inverse Time Feed Rate Mode",
+      "description": "Feedrate F specifies feed in inverse time (blocks per minute). Used with 5-axis moves.",
+      "syntax": "G93",
+      "warning": "F must be re-programmed every block."
+    },
+    {
+      "code": "G94",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Feed per Minute Mode",
+      "description": "Feedrate in mm/min or in/min. Default mode.",
+      "syntax": "G94",
+      "warning": null
+    },
+    {
+      "code": "G95",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Feed per Revolution Mode",
+      "description": "Feedrate in mm/rev or in/rev. Commonly used in turning.",
+      "syntax": "G95",
+      "warning": null
+    },
+    {
+      "code": "G96",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Constant Surface Speed (CSS)",
+      "description": "Spindle speed varies to maintain constant cutting speed as diameter changes. Used in turning.",
+      "syntax": "G96 S_ (CSS value in m/min or SFM)",
+      "warning": "Always program G50 S_max before G96 to limit maximum RPM."
+    },
+    {
+      "code": "G97",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Constant RPM Mode",
+      "description": "Spindle speed is constant RPM regardless of diameter.",
+      "syntax": "G97 S_",
+      "warning": null
+    },
+    {
+      "code": "G98",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Return to Initial Plane (Canned Cycles)",
+      "description": "After canned cycle, retract Z to initial Z height (before cycle started).",
+      "syntax": "G98 G81 X_ Y_ Z_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G99",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Return to R Plane (Canned Cycles)",
+      "description": "After canned cycle, retract Z only to R plane. Faster for repeated holes.",
+      "syntax": "G99 G83 X_ Y_ Z_ R_ Q_ F_",
+      "warning": "Ensure clearance between holes when using G99 with fixtures."
+    }
   ],
   "m_codes": [
-    { "code": "M00", "dialects": ["haas", "sinumerik", "generic"], "name": "Program Stop", "description": "Unconditional program stop. Requires operator to press Cycle Start to continue.", "warning": null },
-    { "code": "M01", "dialects": ["haas", "sinumerik", "generic"], "name": "Optional Stop", "description": "Program stop only if Optional Stop switch is ON at control.", "warning": null },
-    { "code": "M02", "dialects": ["haas", "sinumerik", "generic"], "name": "End of Program", "description": "End program execution. Rewinds to beginning.", "warning": null },
-    { "code": "M03", "dialects": ["haas", "sinumerik", "generic"], "name": "Spindle CW", "description": "Start spindle clockwise (standard for milling right-hand tools).", "syntax": "M03 S_", "warning": null },
-    { "code": "M04", "dialects": ["haas", "sinumerik", "generic"], "name": "Spindle CCW", "description": "Start spindle counter-clockwise (left-hand tools or special operations).", "syntax": "M04 S_", "warning": null },
-    { "code": "M05", "dialects": ["haas", "sinumerik", "generic"], "name": "Spindle Stop", "description": "Stop spindle rotation.", "syntax": "M05", "warning": null },
-    { "code": "M06", "dialects": ["haas", "generic"], "name": "Tool Change (Haas)", "description": "Execute tool change to tool in spindle. Tool number specified by T word.", "syntax": "T_ M06", "warning": "Always ensure Z is at safe height before M06." },
-    { "code": "M07", "dialects": ["haas", "sinumerik", "generic"], "name": "Mist Coolant On", "description": "Turn on mist (air/oil) coolant.", "syntax": "M07", "warning": null },
-    { "code": "M08", "dialects": ["haas", "sinumerik", "generic"], "name": "Flood Coolant On", "description": "Turn on flood coolant.", "syntax": "M08", "warning": null },
-    { "code": "M09", "dialects": ["haas", "sinumerik", "generic"], "name": "Coolant Off", "description": "Turn off all coolant.", "syntax": "M09", "warning": null },
-    { "code": "M10", "dialects": ["haas"], "name": "4th Axis Clamp", "description": "Clamp the rotary (4th) axis.", "syntax": "M10", "warning": null },
-    { "code": "M11", "dialects": ["haas"], "name": "4th Axis Unclamp", "description": "Unclamp the rotary (4th) axis.", "syntax": "M11", "warning": "Ensure tool is clear of part before unclamping." },
-    { "code": "M19", "dialects": ["haas", "sinumerik", "generic"], "name": "Spindle Orientation", "description": "Orient spindle to a fixed angular position. Required before tool changes and boring with shift.", "syntax": "M19", "warning": null },
-    { "code": "M21", "dialects": ["haas"], "name": "Mirror X Axis", "description": "Activates X axis mirroring for part programs.", "syntax": "M21", "warning": "Cancel with M23 at end of mirrored section." },
-    { "code": "M22", "dialects": ["haas"], "name": "Mirror Y Axis", "description": "Activates Y axis mirroring for part programs.", "syntax": "M22", "warning": "Cancel with M24 at end of mirrored section." },
-    { "code": "M23", "dialects": ["haas"], "name": "Mirror X Off", "description": "Cancels X axis mirroring.", "syntax": "M23", "warning": null },
-    { "code": "M24", "dialects": ["haas"], "name": "Mirror Y Off", "description": "Cancels Y axis mirroring.", "syntax": "M24", "warning": null },
-    { "code": "M30", "dialects": ["haas", "sinumerik", "generic"], "name": "End of Program (Reset)", "description": "End program and reset to beginning. Standard end-of-program code.", "syntax": "M30", "warning": null },
-    { "code": "M41", "dialects": ["haas", "sinumerik"], "name": "Spindle Low Gear", "description": "Select low gear range on geared-head machines.", "syntax": "M41", "warning": null },
-    { "code": "M42", "dialects": ["haas", "sinumerik"], "name": "Spindle High Gear", "description": "Select high gear range on geared-head machines.", "syntax": "M42", "warning": null },
-    { "code": "M88", "dialects": ["haas"], "name": "High Pressure Coolant On", "description": "Turn on through-spindle or high-pressure coolant (if equipped).", "syntax": "M88", "warning": "Verify HPC is appropriate for current operation." },
-    { "code": "M89", "dialects": ["haas"], "name": "High Pressure Coolant Off", "description": "Turn off high pressure coolant.", "syntax": "M89", "warning": null },
-    { "code": "M98", "dialects": ["haas"], "name": "Subprogram Call (Haas)", "description": "Call a subprogram. P is program number, L is repeat count.", "syntax": "M98 P_ L_", "warning": null },
-    { "code": "M99", "dialects": ["haas"], "name": "Subprogram Return (Haas)", "description": "Return from subprogram to calling program.", "syntax": "M99", "warning": null }
+    {
+      "code": "M00",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Program Stop",
+      "description": "Unconditional program stop. Requires operator to press Cycle Start to continue.",
+      "warning": null
+    },
+    {
+      "code": "M01",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Optional Stop",
+      "description": "Program stop only if Optional Stop switch is ON at control.",
+      "warning": null
+    },
+    {
+      "code": "M02",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "End of Program",
+      "description": "End program execution. Rewinds to beginning.",
+      "warning": null
+    },
+    {
+      "code": "M03",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Spindle CW",
+      "description": "Start spindle clockwise (standard for milling right-hand tools).",
+      "syntax": "M03 S_",
+      "warning": null
+    },
+    {
+      "code": "M04",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Spindle CCW",
+      "description": "Start spindle counter-clockwise (left-hand tools or special operations).",
+      "syntax": "M04 S_",
+      "warning": null
+    },
+    {
+      "code": "M05",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Spindle Stop",
+      "description": "Stop spindle rotation.",
+      "syntax": "M05",
+      "warning": null
+    },
+    {
+      "code": "M06",
+      "dialects": [
+        "haas",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Tool Change (Haas)",
+      "description": "Execute tool change to tool in spindle. Tool number specified by T word.",
+      "syntax": "T_ M06",
+      "warning": "Always ensure Z is at safe height before M06."
+    },
+    {
+      "code": "M07",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Mist Coolant On",
+      "description": "Turn on mist (air/oil) coolant.",
+      "syntax": "M07",
+      "warning": null
+    },
+    {
+      "code": "M08",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Flood Coolant On",
+      "description": "Turn on flood coolant.",
+      "syntax": "M08",
+      "warning": null
+    },
+    {
+      "code": "M09",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Coolant Off",
+      "description": "Turn off all coolant.",
+      "syntax": "M09",
+      "warning": null
+    },
+    {
+      "code": "M10",
+      "dialects": [
+        "haas"
+      ],
+      "name": "4th Axis Clamp",
+      "description": "Clamp the rotary (4th) axis.",
+      "syntax": "M10",
+      "warning": null
+    },
+    {
+      "code": "M11",
+      "dialects": [
+        "haas"
+      ],
+      "name": "4th Axis Unclamp",
+      "description": "Unclamp the rotary (4th) axis.",
+      "syntax": "M11",
+      "warning": "Ensure tool is clear of part before unclamping."
+    },
+    {
+      "code": "M19",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "Spindle Orientation",
+      "description": "Orient spindle to a fixed angular position. Required before tool changes and boring with shift.",
+      "syntax": "M19",
+      "warning": null
+    },
+    {
+      "code": "M21",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Mirror X Axis",
+      "description": "Activates X axis mirroring for part programs.",
+      "syntax": "M21",
+      "warning": "Cancel with M23 at end of mirrored section."
+    },
+    {
+      "code": "M22",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Mirror Y Axis",
+      "description": "Activates Y axis mirroring for part programs.",
+      "syntax": "M22",
+      "warning": "Cancel with M24 at end of mirrored section."
+    },
+    {
+      "code": "M23",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Mirror X Off",
+      "description": "Cancels X axis mirroring.",
+      "syntax": "M23",
+      "warning": null
+    },
+    {
+      "code": "M24",
+      "dialects": [
+        "haas"
+      ],
+      "name": "Mirror Y Off",
+      "description": "Cancels Y axis mirroring.",
+      "syntax": "M24",
+      "warning": null
+    },
+    {
+      "code": "M30",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "generic",
+        "fanuc"
+      ],
+      "name": "End of Program (Reset)",
+      "description": "End program and reset to beginning. Standard end-of-program code.",
+      "syntax": "M30",
+      "warning": null
+    },
+    {
+      "code": "M41",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "fanuc"
+      ],
+      "name": "Spindle Low Gear",
+      "description": "Select low gear range on geared-head machines.",
+      "syntax": "M41",
+      "warning": null
+    },
+    {
+      "code": "M42",
+      "dialects": [
+        "haas",
+        "sinumerik",
+        "fanuc"
+      ],
+      "name": "Spindle High Gear",
+      "description": "Select high gear range on geared-head machines.",
+      "syntax": "M42",
+      "warning": null
+    },
+    {
+      "code": "M88",
+      "dialects": [
+        "haas"
+      ],
+      "name": "High Pressure Coolant On",
+      "description": "Turn on through-spindle or high-pressure coolant (if equipped).",
+      "syntax": "M88",
+      "warning": "Verify HPC is appropriate for current operation."
+    },
+    {
+      "code": "M89",
+      "dialects": [
+        "haas"
+      ],
+      "name": "High Pressure Coolant Off",
+      "description": "Turn off high pressure coolant.",
+      "syntax": "M89",
+      "warning": null
+    },
+    {
+      "code": "M98",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Subprogram Call (Haas)",
+      "description": "Call a subprogram. P is program number, L is repeat count.",
+      "syntax": "M98 P_ L_",
+      "warning": null
+    },
+    {
+      "code": "M99",
+      "dialects": [
+        "haas",
+        "fanuc"
+      ],
+      "name": "Subprogram Return (Haas)",
+      "description": "Return from subprogram to calling program.",
+      "syntax": "M99",
+      "warning": null
+    }
   ],
   "sinumerik_cycles": [
-    { "code": "CYCLE81", "name": "Drilling", "description": "Simple drilling without chip breaking. Drill to depth and retract.", "syntax": "CYCLE81(RTP, RFP, SDIS, DP, DPR)" },
-    { "code": "CYCLE82", "name": "Drilling with Dwell", "description": "Drilling with dwell at bottom of hole.", "syntax": "CYCLE82(RTP, RFP, SDIS, DP, DPR, DTB)" },
-    { "code": "CYCLE83", "name": "Deep Hole Drilling", "description": "Deep hole drilling with peck and chip breaking.", "syntax": "CYCLE83(RTP, RFP, SDIS, DP, DPR, FDEP, FDPR, DAM, DTB, DTS, FRF, VARI)" },
-    { "code": "CYCLE84", "name": "Rigid Tapping", "description": "Tapping with spindle synchronization.", "syntax": "CYCLE84(RTP, RFP, SDIS, DP, DPR, DTB, SDAC, MPIT, PIT, POSS, SST, SST1)" },
-    { "code": "CYCLE85", "name": "Boring 1 (Reaming)", "description": "Boring/reaming cycle with feed in and programmable feed out.", "syntax": "CYCLE85(RTP, RFP, SDIS, DP, DPR, DTB, FFR, RFF)" },
-    { "code": "CYCLE840", "name": "Thread Cutting (Flexible Tapping)", "description": "Thread cutting without synchronization (floating tap holder required).", "syntax": "CYCLE840(RTP, RFP, SDIS, DP, DPR, DTB, SDR, SDAC, ENC, MPIT, PIT)" },
-    { "code": "CYCLE86", "name": "Boring 2 (With Shift)", "description": "Boring with oriented spindle stop and shift before retract — prevents scratch on bore wall.", "syntax": "CYCLE86(RTP, RFP, SDIS, DP, DPR, DTB, SDIR, RPA, RPO, RPAP, POSS)" },
-    { "code": "POCKET3", "name": "Rectangular Pocket Milling", "description": "Milling of rectangular pockets with roughing and finishing passes.", "syntax": "POCKET3(RTP, RFP, SDIS, DP, DPR, LENG, WID, CRAD, PA, PO, STA, MID, FAL, FALD, FFP1, FFD, CDIR, VARI, ...)" },
-    { "code": "POCKET4", "name": "Circular Pocket Milling", "description": "Milling of circular (round) pockets.", "syntax": "POCKET4(RTP, RFP, SDIS, DP, DPR, PRAD, PA, PO, MID, FAL, FALD, FFP1, FFD, CDIR, VARI, ...)" },
-    { "code": "CYCLE90", "name": "Thread Milling", "description": "Helical thread milling cycle using a thread milling cutter.", "syntax": "CYCLE90(RTP, RFP, SDIS, DP, DPR, DIATH, KDIAM, PIT, FFR, CDIR, TYPTH, CPA, CPO)" },
-    { "code": "MCALL", "name": "Modal Cycle Call", "description": "Activates a cycle modally so it executes at every subsequent position block.", "syntax": "MCALL CYCLE81(...)  ; then list positions\nMCALL  ; to deactivate", "warning": "Always deactivate with MCALL (no arguments) when done." },
-    { "code": "SPOS", "name": "Spindle Position", "description": "Position the spindle to an exact angle. Used before oriented operations.", "syntax": "SPOS=_ (angle in degrees)", "warning": null },
-    { "code": "TRANS", "name": "Programmable Zero Offset (Absolute)", "description": "Shifts the current workpiece coordinate system by an absolute value.", "syntax": "TRANS X_ Y_ Z_", "warning": "Cancel with TRANS (no arguments) at end of shifted section." },
-    { "code": "ATRANS", "name": "Programmable Zero Offset (Additive)", "description": "Shifts the WCS additively on top of an existing TRANS or frame.", "syntax": "ATRANS X_ Y_ Z_", "warning": "Cancel with TRANS." },
-    { "code": "ROT", "name": "Coordinate Rotation", "description": "Rotates the active coordinate frame around the selected plane axis.", "syntax": "ROT RPL=_ (angle in degrees)", "warning": "Cancel with ROT RPL=0." },
-    { "code": "SCALE", "name": "Scaling", "description": "Scales the coordinate system by a specified factor per axis.", "syntax": "SCALE X_ Y_ Z_", "warning": "Cancel with SCALE X1 Y1 Z1." }
+    {
+      "code": "CYCLE81",
+      "name": "Drilling",
+      "description": "Simple drilling without chip breaking. Drill to depth and retract.",
+      "syntax": "CYCLE81(RTP, RFP, SDIS, DP, DPR)"
+    },
+    {
+      "code": "CYCLE82",
+      "name": "Drilling with Dwell",
+      "description": "Drilling with dwell at bottom of hole.",
+      "syntax": "CYCLE82(RTP, RFP, SDIS, DP, DPR, DTB)"
+    },
+    {
+      "code": "CYCLE83",
+      "name": "Deep Hole Drilling",
+      "description": "Deep hole drilling with peck and chip breaking.",
+      "syntax": "CYCLE83(RTP, RFP, SDIS, DP, DPR, FDEP, FDPR, DAM, DTB, DTS, FRF, VARI)"
+    },
+    {
+      "code": "CYCLE84",
+      "name": "Rigid Tapping",
+      "description": "Tapping with spindle synchronization.",
+      "syntax": "CYCLE84(RTP, RFP, SDIS, DP, DPR, DTB, SDAC, MPIT, PIT, POSS, SST, SST1)"
+    },
+    {
+      "code": "CYCLE85",
+      "name": "Boring 1 (Reaming)",
+      "description": "Boring/reaming cycle with feed in and programmable feed out.",
+      "syntax": "CYCLE85(RTP, RFP, SDIS, DP, DPR, DTB, FFR, RFF)"
+    },
+    {
+      "code": "CYCLE840",
+      "name": "Thread Cutting (Flexible Tapping)",
+      "description": "Thread cutting without synchronization (floating tap holder required).",
+      "syntax": "CYCLE840(RTP, RFP, SDIS, DP, DPR, DTB, SDR, SDAC, ENC, MPIT, PIT)"
+    },
+    {
+      "code": "CYCLE86",
+      "name": "Boring 2 (With Shift)",
+      "description": "Boring with oriented spindle stop and shift before retract — prevents scratch on bore wall.",
+      "syntax": "CYCLE86(RTP, RFP, SDIS, DP, DPR, DTB, SDIR, RPA, RPO, RPAP, POSS)"
+    },
+    {
+      "code": "POCKET3",
+      "name": "Rectangular Pocket Milling",
+      "description": "Milling of rectangular pockets with roughing and finishing passes.",
+      "syntax": "POCKET3(RTP, RFP, SDIS, DP, DPR, LENG, WID, CRAD, PA, PO, STA, MID, FAL, FALD, FFP1, FFD, CDIR, VARI, ...)"
+    },
+    {
+      "code": "POCKET4",
+      "name": "Circular Pocket Milling",
+      "description": "Milling of circular (round) pockets.",
+      "syntax": "POCKET4(RTP, RFP, SDIS, DP, DPR, PRAD, PA, PO, MID, FAL, FALD, FFP1, FFD, CDIR, VARI, ...)"
+    },
+    {
+      "code": "CYCLE90",
+      "name": "Thread Milling",
+      "description": "Helical thread milling cycle using a thread milling cutter.",
+      "syntax": "CYCLE90(RTP, RFP, SDIS, DP, DPR, DIATH, KDIAM, PIT, FFR, CDIR, TYPTH, CPA, CPO)"
+    },
+    {
+      "code": "MCALL",
+      "name": "Modal Cycle Call",
+      "description": "Activates a cycle modally so it executes at every subsequent position block.",
+      "syntax": "MCALL CYCLE81(...)  ; then list positions\nMCALL  ; to deactivate",
+      "warning": "Always deactivate with MCALL (no arguments) when done."
+    },
+    {
+      "code": "SPOS",
+      "name": "Spindle Position",
+      "description": "Position the spindle to an exact angle. Used before oriented operations.",
+      "syntax": "SPOS=_ (angle in degrees)",
+      "warning": null
+    },
+    {
+      "code": "TRANS",
+      "name": "Programmable Zero Offset (Absolute)",
+      "description": "Shifts the current workpiece coordinate system by an absolute value.",
+      "syntax": "TRANS X_ Y_ Z_",
+      "warning": "Cancel with TRANS (no arguments) at end of shifted section."
+    },
+    {
+      "code": "ATRANS",
+      "name": "Programmable Zero Offset (Additive)",
+      "description": "Shifts the WCS additively on top of an existing TRANS or frame.",
+      "syntax": "ATRANS X_ Y_ Z_",
+      "warning": "Cancel with TRANS."
+    },
+    {
+      "code": "ROT",
+      "name": "Coordinate Rotation",
+      "description": "Rotates the active coordinate frame around the selected plane axis.",
+      "syntax": "ROT RPL=_ (angle in degrees)",
+      "warning": "Cancel with ROT RPL=0."
+    },
+    {
+      "code": "SCALE",
+      "name": "Scaling",
+      "description": "Scales the coordinate system by a specified factor per axis.",
+      "syntax": "SCALE X_ Y_ Z_",
+      "warning": "Cancel with SCALE X1 Y1 Z1."
+    },
+    {
+      "code": "CYCLE61",
+      "name": "Face Milling",
+      "description": "Facing cycle. Mills a flat surface over a defined area with specified step-over and depth.",
+      "syntax": "CYCLE61(RTP,RFP,SDIS,DP,DPR,LENG,WID,STA1,MID,MIDA,FP,AL,VARI,OMD)"
+    },
+    {
+      "code": "CYCLE63",
+      "name": "Contour Pocket Milling",
+      "description": "Mills a pocket defined by an external contour subroutine. Supports roughing and finishing strategies.",
+      "syntax": "CYCLE63(RTP,RFP,SDIS,DP,MID,FAL,FALD,FFP1,FFD,CDIR,TYPSD,...)"
+    },
+    {
+      "code": "CYCLE77",
+      "name": "Circular Pocket Milling",
+      "description": "Mills a circular (round) pocket with roughing and finishing passes.",
+      "syntax": "CYCLE77(RTP,RFP,SDIS,DP,DPR,PRAD,PA,PO,MID,FAL,FALD,FFP1,FFD,CDIR,VARI)"
+    },
+    {
+      "code": "MIRROR",
+      "name": "Axis Mirroring (Sinumerik)",
+      "description": "Mirror the workpiece coordinate system about specified axes. Cancel with MIRROR (no args).",
+      "syntax": "MIRROR X0  (mirror X axis)\nMIRROR X0 Y0  (mirror both)\nMIRROR  (cancel)",
+      "warning": "Cancel after mirrored section to restore normal orientation."
+    },
+    {
+      "code": "AROT",
+      "name": "Additive Rotation",
+      "description": "Adds a rotation on top of an existing frame transformation without cancelling it.",
+      "syntax": "AROT RPL=_  (angle in degrees)"
+    },
+    {
+      "code": "CTRANS",
+      "name": "Chained Translation",
+      "description": "Adds a translation offset on top of existing TRANS, preserving the previous frame shift.",
+      "syntax": "CTRANS X_ Y_ Z_"
+    },
+    {
+      "code": "G70_snk",
+      "name": "Inch Programming (Sinumerik)",
+      "description": "Switch Sinumerik control to inch units. Use G71 to return to metric.",
+      "syntax": "G70",
+      "warning": "Switches all subsequent dimensional values to inches."
+    },
+    {
+      "code": "G110",
+      "name": "Polar Coordinate (Intermediate Point)",
+      "description": "Polar coordinate move with pole at last programmed intermediate position.",
+      "syntax": "G110 AP=_ RP=_  (AP=angle, RP=radius)"
+    },
+    {
+      "code": "G111",
+      "name": "Polar Coordinate (From WCS Zero)",
+      "description": "Polar coordinate move with pole at workpiece zero point.",
+      "syntax": "G111 AP=_ RP=_"
+    },
+    {
+      "code": "G112",
+      "name": "Polar Coordinate (From Last Point)",
+      "description": "Polar coordinate move with pole at the last programmed point.",
+      "syntax": "G112 AP=_ RP=_"
+    },
+    {
+      "code": "REPEAT",
+      "name": "Repeat Program Section",
+      "description": "Repeat a labeled program section a specified number of times.",
+      "syntax": "LABEL1:\n... (program section) ...\nGOTO LABEL1  P_  (P = repeat count)"
+    },
+    {
+      "code": "STOPRE",
+      "name": "Stop Pre-processing",
+      "description": "Forces the control to execute all pending blocks before continuing. Used before measurements or tool changes.",
+      "syntax": "STOPRE",
+      "warning": "Reduces look-ahead. Use only when synchronization is needed."
+    }
+  ],
+  "fanuc_codes": [
+    {
+      "code": "G10",
+      "brand": "fanuc",
+      "name": "Programmable Offset Input",
+      "description": "Set work offsets (L2) or tool offsets (L11/L10) from within the program.",
+      "syntax": "G10 L2 P1 X_ Y_ Z_  (set G54)\nG10 L11 P_ R_  (tool wear)",
+      "warning": "Permanently changes offset tables. Verify before running."
+    },
+    {
+      "code": "G12",
+      "brand": "fanuc",
+      "name": "Circular Pocket Milling CW",
+      "description": "Machines a circular pocket in a clockwise direction.",
+      "syntax": "G12 I_ F_  (I = pocket radius)",
+      "warning": null
+    },
+    {
+      "code": "G13",
+      "brand": "fanuc",
+      "name": "Circular Pocket Milling CCW",
+      "description": "Machines a circular pocket in a counter-clockwise direction.",
+      "syntax": "G13 I_ F_  (I = pocket radius)",
+      "warning": null
+    },
+    {
+      "code": "G15",
+      "brand": "fanuc",
+      "name": "Cancel Polar Coordinates",
+      "description": "Cancels polar coordinate programming mode set by G16.",
+      "syntax": "G15",
+      "warning": null
+    },
+    {
+      "code": "G16",
+      "brand": "fanuc",
+      "name": "Polar Coordinate Mode",
+      "description": "Enables polar coordinate programming. X = radius, Y = angle.",
+      "syntax": "G16\nG01 X_ Y_  (X=radius, Y=angle deg)",
+      "warning": "Cancel with G15 when done."
+    },
+    {
+      "code": "G27",
+      "brand": "fanuc",
+      "name": "Reference Return Check",
+      "description": "Checks that the axis is at the reference point position after a G28 return.",
+      "syntax": "G27 X0 Y0 Z0",
+      "warning": "Generates alarm if axes are not at reference position."
+    },
+    {
+      "code": "G30",
+      "brand": "fanuc",
+      "name": "2nd / 3rd / 4th Reference Return",
+      "description": "Returns axis to alternate reference positions (P2, P3, or P4). P2 is often the tool change position.",
+      "syntax": "G30 P2 Z0  (2nd ref)",
+      "warning": null
+    },
+    {
+      "code": "G36",
+      "brand": "fanuc",
+      "name": "Auto Tool Offset X (Lathe)",
+      "description": "Automatic tool length measurement in X axis on turning centers.",
+      "syntax": "G36",
+      "warning": "Requires tool measurement probe."
+    },
+    {
+      "code": "G37",
+      "brand": "fanuc",
+      "name": "Auto Tool Offset Z (Lathe)",
+      "description": "Automatic tool length measurement in Z axis on turning centers.",
+      "syntax": "G37",
+      "warning": "Requires tool measurement probe."
+    },
+    {
+      "code": "G53",
+      "brand": "fanuc",
+      "name": "Machine Coordinate System",
+      "description": "Temporarily select machine coordinate system (absolute from machine home). Non-modal.",
+      "syntax": "G53 X_ Y_ Z_",
+      "warning": "Machine coordinates, not part coordinates. Confirm safe position."
+    },
+    {
+      "code": "G60",
+      "brand": "fanuc",
+      "name": "Unidirectional Positioning",
+      "description": "All positioning approaches the final point from the same direction to eliminate backlash error.",
+      "syntax": "G60",
+      "warning": "Slower than normal positioning. Use only where backlash is critical."
+    },
+    {
+      "code": "G70",
+      "brand": "fanuc",
+      "name": "Finishing Cycle (Lathe)",
+      "description": "Lathe finishing pass cycle. Used after G71 or G72 roughing to cut to final dimensions.",
+      "syntax": "G70 P_ Q_  (P=first block, Q=last block of profile)",
+      "warning": "Must follow G71 or G72 roughing."
+    },
+    {
+      "code": "G71",
+      "brand": "fanuc",
+      "name": "Stock Removal in Turning (Lathe)",
+      "description": "Multiple-pass roughing cycle for external or internal turning. Follows a programmed profile.",
+      "syntax": "G71 U_ R_  (U=depth/pass, R=retract)\nG71 P_ Q_ U_ W_ F_",
+      "warning": "U and W are finish allowances. Remove with G70."
+    },
+    {
+      "code": "G72",
+      "brand": "fanuc",
+      "name": "Stock Removal in Facing (Lathe)",
+      "description": "Multiple-pass facing roughing cycle.",
+      "syntax": "G72 W_ R_\nG72 P_ Q_ U_ W_ F_",
+      "warning": "Similar to G71 but for facing direction."
+    },
+    {
+      "code": "G73_lathe",
+      "brand": "fanuc",
+      "name": "Pattern Repeat Cycle (Lathe)",
+      "description": "Repeats a programmed profile shape, shifting each time. Used for cast or forged blanks.",
+      "syntax": "G73 U_ W_ R_\nG73 P_ Q_ U_ W_ F_",
+      "warning": "Profile must already be near net shape (forging/casting)."
+    },
+    {
+      "code": "G74",
+      "brand": "fanuc",
+      "name": "End Face Grooving Cycle (Lathe)",
+      "description": "Peck drilling/grooving in the Z direction on end face of turning center.",
+      "syntax": "G74 R_\nG74 X_ Z_ P_ Q_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G75",
+      "brand": "fanuc",
+      "name": "OD/ID Grooving Cycle (Lathe)",
+      "description": "Peck grooving in the X (radial) direction.",
+      "syntax": "G75 R_\nG75 X_ Z_ P_ Q_ R_ F_",
+      "warning": null
+    },
+    {
+      "code": "G76_thread",
+      "brand": "fanuc",
+      "name": "Thread Cutting Cycle (Lathe)",
+      "description": "Multi-pass threading cycle for external or internal threads.",
+      "syntax": "G76 P_ Q_ R_\nG76 X_ Z_ R_ P_ Q_ F_",
+      "warning": "Calculate X (minor dia) and F (pitch) carefully."
+    },
+    {
+      "code": "G92_thread",
+      "brand": "fanuc",
+      "name": "Thread Cutting — Single Pass (Lathe)",
+      "description": "Single-pass thread cutting move on lathe. Repeat with decreasing X for multi-pass threading.",
+      "syntax": "G92 X_ Z_ F_  (F = thread pitch in mm)",
+      "warning": "Each G92 repetition removes material. Control depth with X value."
+    },
+    {
+      "code": "G94_facing",
+      "brand": "fanuc",
+      "name": "End Face Cutting Cycle (Lathe)",
+      "description": "Single-pass facing cycle on lathe.",
+      "syntax": "G94 X_ Z_ F_",
+      "warning": null
+    },
+    {
+      "code": "G25",
+      "brand": "fanuc",
+      "name": "Spindle Speed Fluctuation Detection Off",
+      "description": "Disables spindle speed fluctuation detection. Used during threading to prevent false alarms.",
+      "syntax": "G25",
+      "warning": null
+    },
+    {
+      "code": "G26",
+      "brand": "fanuc",
+      "name": "Spindle Speed Fluctuation Detection On",
+      "description": "Enables spindle speed fluctuation detection.",
+      "syntax": "G26",
+      "warning": null
+    },
+    {
+      "code": "G5",
+      "brand": "fanuc",
+      "name": "High Speed Machining Mode",
+      "description": "FANUC High Speed Machining mode. Optimises look-ahead and acceleration for complex contours.",
+      "syntax": "G5 P10000  (ON)\nG5 P0      (OFF)",
+      "warning": "Check machine parameter settings for max look-ahead blocks."
+    },
+    {
+      "code": "G5.1",
+      "brand": "fanuc",
+      "name": "AI Contour Control",
+      "description": "FANUC AI Contour Control — smooths programmed paths at high feedrates to reduce cycle time.",
+      "syntax": "G5.1 Q1  (ON)\nG5.1 Q0  (OFF)",
+      "warning": "Only available with FANUC AI-CC option."
+    },
+    {
+      "code": "G68.2",
+      "brand": "fanuc",
+      "name": "Tilted Work Plane (5-Axis)",
+      "description": "5-axis tilted work plane command. Sets a machining plane in 3D space using Euler or tilt/azimuth angles.",
+      "syntax": "G68.2 X_ Y_ Z_ I_ J_ K_",
+      "warning": "Requires 5-axis machine with FANUC 5-axis option."
+    },
+    {
+      "code": "G43.4",
+      "brand": "fanuc",
+      "name": "Tool Centre Point Control",
+      "description": "Tool Centre Point (TCP) control mode. Maintains tool tip position during tilted-plane moves.",
+      "syntax": "G43.4 H_",
+      "warning": "Requires 5-axis option. Cancel with G49."
+    },
+    {
+      "code": "M32",
+      "brand": "fanuc",
+      "name": "Lubricant On",
+      "description": "Activate way lube or lubricant system (machine-dependent).",
+      "syntax": "M32",
+      "warning": "Availability depends on machine builder option."
+    },
+    {
+      "code": "M33",
+      "brand": "fanuc",
+      "name": "Lubricant Off",
+      "description": "Deactivate way lube or lubricant system.",
+      "syntax": "M33",
+      "warning": null
+    },
+    {
+      "code": "G10.6",
+      "brand": "fanuc",
+      "name": "Tool Retract and Recover",
+      "description": "Temporarily retract tool from machining position for inspection or chip clearing, then recover.",
+      "syntax": "G10.6 X_ Y_ Z_",
+      "warning": "Program recovery move precisely to avoid re-entry crash."
+    },
+    {
+      "code": "G12.1",
+      "brand": "fanuc",
+      "name": "Polar Coordinate Interpolation",
+      "description": "Enables polar coordinate interpolation for contour milling in polar coordinates (radius and angle).",
+      "syntax": "G12.1\nG01 C_ Z_ F_  (C=angle, Z=axial)",
+      "warning": "Cancel with G13.1."
+    },
+    {
+      "code": "G13.1",
+      "brand": "fanuc",
+      "name": "Cancel Polar Coordinate Interpolation",
+      "description": "Cancels polar coordinate interpolation mode set by G12.1.",
+      "syntax": "G13.1",
+      "warning": null
+    },
+    {
+      "code": "G150",
+      "brand": "fanuc",
+      "name": "General Pocket Milling (30i/31i)",
+      "description": "Arbitrary-shape pocket milling cycle available on FANUC 30i/31i/32i Series controls.",
+      "syntax": "G150 ... (refer to FANUC operator manual)",
+      "warning": "Only available on FANUC 30i/31i/32i Series."
+    }
+  ],
+  "heidenhain_codes": [
+    {
+      "code": "L",
+      "brand": "heidenhain",
+      "name": "Linear Traverse",
+      "description": "Move tool in a straight line to the programmed position. Equivalent to G01 in ISO.",
+      "syntax": "L X+_ Y+_ Z+_ F_  RR/RL/R0  (RR=radius right, RL=radius left, R0=no compensation)",
+      "warning": null
+    },
+    {
+      "code": "C",
+      "brand": "heidenhain",
+      "name": "Circular Traverse (Center)",
+      "description": "Arc move using a previously defined circle center (CC). Direction set by DR+ (CCW) or DR- (CW).",
+      "syntax": "C X+_ Y+_ DR+  F_  (CCW arc to X,Y)",
+      "warning": "Must define CC before using C."
+    },
+    {
+      "code": "CC",
+      "brand": "heidenhain",
+      "name": "Circle Center / Pole",
+      "description": "Define circle center for arc moves (C) or pole point for polar coordinate moves.",
+      "syntax": "CC X+_ Y+_  or  CC  (use current position as center)",
+      "warning": null
+    },
+    {
+      "code": "CR",
+      "brand": "heidenhain",
+      "name": "Circular Traverse (Radius)",
+      "description": "Arc move defined by radius R. No prior CC needed. DR+ = CCW, DR- = CW.",
+      "syntax": "CR X+_ Y+_ R+_ DR+  F_",
+      "warning": "Two arcs possible with a given radius — R sign selects the minor (R+) or major (R-) arc."
+    },
+    {
+      "code": "CT",
+      "brand": "heidenhain",
+      "name": "Circular Traverse (Tangential)",
+      "description": "Arc that starts tangentially from the previous path. Ensures smooth contour transitions.",
+      "syntax": "CT X+_ Y+_  F_",
+      "warning": null
+    },
+    {
+      "code": "LBL",
+      "brand": "heidenhain",
+      "name": "Label (Subprogram Start/End)",
+      "description": "Marks start of a subprogram or repeat section. LBL 0 marks the end.",
+      "syntax": "LBL _  (start)\nLBL 0  (end)",
+      "warning": "LBL 0 terminates the subprogram and returns control."
+    },
+    {
+      "code": "CALL LBL",
+      "brand": "heidenhain",
+      "name": "Call Label / Subprogram",
+      "description": "Call a labeled subprogram. REP sets the number of repetitions.",
+      "syntax": "CALL LBL _  REP _",
+      "warning": null
+    },
+    {
+      "code": "TOOL CALL",
+      "brand": "heidenhain",
+      "name": "Tool Call",
+      "description": "Call a tool by number or name. S sets spindle speed. Always specify the tool axis.",
+      "syntax": "TOOL CALL _ Z S_  (Z = tool axis)\nTOOL CALL \"NAME\" Z S_",
+      "warning": "Always define tool in TOOL DEF or tool table before calling."
+    },
+    {
+      "code": "TOOL DEF",
+      "brand": "heidenhain",
+      "name": "Tool Definition",
+      "description": "Define tool geometry (length and radius) in-program. Overrides tool table for this call.",
+      "syntax": "TOOL DEF _ L+_ R+_  (L=length, R=radius)",
+      "warning": "Use tool table for production. In-program TOOL DEF for quick test cuts only."
+    },
+    {
+      "code": "CYCL DEF 1",
+      "brand": "heidenhain",
+      "name": "Pecking (Cycle 1)",
+      "description": "Deep hole drilling with full retract between pecks for chip evacuation.",
+      "syntax": "CYCL DEF 1.0 PECKING\n  1.1 DIST _  (safety clearance)\n  1.2 DEPTH _\n  1.3 PECKG _  (peck increment)\n  1.4 DWELL _\n  1.5 F_",
+      "warning": null
+    },
+    {
+      "code": "CYCL DEF 2",
+      "brand": "heidenhain",
+      "name": "Tapping (Cycle 2)",
+      "description": "Tapping with floating chuck. Spindle reverses at bottom of hole.",
+      "syntax": "CYCL DEF 2.0 TAPPING\n  2.1 DIST _\n  2.2 DEPTH _\n  2.3 DWELL _\n  2.4 F_",
+      "warning": "F must equal spindle speed x pitch exactly."
+    },
+    {
+      "code": "CYCL DEF 7",
+      "brand": "heidenhain",
+      "name": "Datum Shift (Cycle 7)",
+      "description": "Shift the active datum (workpiece zero) to a new position. Used to machine multiple identical features.",
+      "syntax": "CYCL DEF 7.0 DATUM SHIFT\n  7.1 X+_\n  7.2 Y+_\n  7.3 Z+_",
+      "warning": "Cancel with Cycle 7 at X+0 Y+0 Z+0."
+    },
+    {
+      "code": "CYCL DEF 8",
+      "brand": "heidenhain",
+      "name": "Mirror Image (Cycle 8)",
+      "description": "Mirror the programmed geometry across a specified axis or axes.",
+      "syntax": "CYCL DEF 8.0 MIRROR IMAGE\n  8.1 X (to mirror about X)",
+      "warning": "Cancel by calling Cycle 8 without axis specification."
+    },
+    {
+      "code": "CYCL DEF 10",
+      "brand": "heidenhain",
+      "name": "Rotation (Cycle 10)",
+      "description": "Rotate the active coordinate system by a specified angle. Useful for angled features.",
+      "syntax": "CYCL DEF 10.0 ROTATION\n  10.1 ROT +_  (angle in degrees)",
+      "warning": "Cancel with ROT 0."
+    },
+    {
+      "code": "CYCL DEF 200",
+      "brand": "heidenhain",
+      "name": "Drilling (Cycle 200)",
+      "description": "Universal drilling cycle with configurable safety clearance, depth, feed, and dwell.",
+      "syntax": "CYCL DEF 200 DRILLING\n  Q200=_  Q201=_  Q206=_  Q202=_  Q210=_  Q203=_  Q204=_  Q211=_",
+      "warning": null
+    },
+    {
+      "code": "CYCL DEF 202",
+      "brand": "heidenhain",
+      "name": "Boring (Cycle 202)",
+      "description": "Boring cycle with oriented spindle stop and spindle shift before retract — prevents bore wall scratch.",
+      "syntax": "CYCL DEF 202 BORING\n  Q200=_  Q201=_  Q206=_  Q211=_  Q208=_  Q203=_  Q204=_  Q214=_  Q336=_",
+      "warning": "Requires spindle orientation capability."
+    },
+    {
+      "code": "CYCL DEF 251",
+      "brand": "heidenhain",
+      "name": "Rectangular Pocket (Cycle 251)",
+      "description": "Rectangular pocket milling with configurable depth, finish allowance, approach strategy, and corner radius.",
+      "syntax": "CYCL DEF 251 RECTANGULAR POCKET\n  Q215=_  Q218=_  Q219=_  Q220=_  Q221=_  Q222=_  ... (many Q params)",
+      "warning": null
+    },
+    {
+      "code": "CYCL CALL",
+      "brand": "heidenhain",
+      "name": "Cycle Call",
+      "description": "Execute the last defined cycle at the current tool position. Positioning move must precede.",
+      "syntax": "CYCL CALL  or  CYCL CALL PAT  (on a point pattern)",
+      "warning": "Cycle must be defined before CYCL CALL."
+    },
+    {
+      "code": "FN0",
+      "brand": "heidenhain",
+      "name": "Variable Assignment (FN 0)",
+      "description": "Assign a numeric value to a Q parameter (variable). Q parameters enable parametric programming.",
+      "syntax": "FN 0: Q_ = _  (e.g. FN 0: Q1 = 25.0)",
+      "warning": null
+    }
   ]
 }

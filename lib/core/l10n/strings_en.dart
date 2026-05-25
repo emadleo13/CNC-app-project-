@@ -188,4 +188,12 @@ class AppStringsEn implements AppStrings {
   // Language names
   @override String get settingsLanguageFa  => 'فارسی';
   @override String get settingsLanguageAr  => 'العربية';
+
+  // G-code reference
+  @override String get gcodeRefTitle       => 'G-Code Reference';
+  @override String get gcodeRefSearchHint  => 'Search code or keyword…';
+  @override String get gcodeRefFilterAll   => 'All';
+  @override String get gcodeRefNoResults   => 'No codes found';
+  @override String get gcodeRefSyntax      => 'Syntax';
+  @override String get gcodeRefCount       => 'codes';
 }

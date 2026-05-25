@@ -186,4 +186,12 @@ class AppStringsFa implements AppStrings {
   @override String get settingsFreePlan     => 'پلن رایگان · ۱۰ سوال AI در ماه';
   @override String get settingsProPlan      => 'پلن Pro · دسترسی نامحدود';
   @override String get settingsUpgradePro   => 'ارتقا به Pro';
+
+  // G-code reference
+  @override String get gcodeRefTitle       => 'مرجع G-Code';
+  @override String get gcodeRefSearchHint  => 'جستجوی کد یا کلمه کلیدی…';
+  @override String get gcodeRefFilterAll   => 'همه';
+  @override String get gcodeRefNoResults   => 'کدی یافت نشد';
+  @override String get gcodeRefSyntax      => 'نحو';
+  @override String get gcodeRefCount       => 'کد';
 }

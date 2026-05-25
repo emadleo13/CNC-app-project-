@@ -5,6 +5,7 @@ import '../../features/gcode_analyzer/presentation/gcode_input_screen.dart';
 import '../../features/gcode_analyzer/presentation/analysis_result_screen.dart';
 import '../../features/knowledge_base/presentation/qa_screen.dart';
 import '../../features/knowledge_base/presentation/error_reference_screen.dart';
+import '../../features/knowledge_base/presentation/gcode_reference_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/subscription/presentation/subscription_screen.dart';
@@ -40,6 +41,10 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'errors',
               builder: (context, state) => const ErrorReferenceScreen(),
+            ),
+            GoRoute(
+              path: 'gcodes',
+              builder: (context, state) => const GcodeReferenceScreen(),
             ),
           ],
         ),

@@ -7,7 +7,8 @@ class RouteNames {
   static const String gcodeResult    = '/gcode/result';
   static const String gcodeHistory   = '/gcode/history';
   static const String knowledgeBase  = '/knowledge';
-  static const String errorReference = '/knowledge/errors';
+  static const String errorReference  = '/knowledge/errors';
+  static const String gcodeReference  = '/knowledge/gcodes';
   static const String login          = '/login';
   static const String register       = '/register';
   static const String profile        = '/profile';

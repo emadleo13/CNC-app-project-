@@ -186,4 +186,12 @@ class AppStringsAr implements AppStrings {
   @override String get settingsFreePlan     => 'الخطة المجانية · 10 أسئلة AI/شهر';
   @override String get settingsProPlan      => 'خطة Pro · وصول غير محدود';
   @override String get settingsUpgradePro   => 'الترقية إلى Pro';
+
+  // G-code reference
+  @override String get gcodeRefTitle       => 'مرجع أكواد G';
+  @override String get gcodeRefSearchHint  => 'ابحث عن كود أو كلمة مفتاحية…';
+  @override String get gcodeRefFilterAll   => 'الكل';
+  @override String get gcodeRefNoResults   => 'لم يتم العثور على أكواد';
+  @override String get gcodeRefSyntax      => 'الصياغة';
+  @override String get gcodeRefCount       => 'كود';
 }

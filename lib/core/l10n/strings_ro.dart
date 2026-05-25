@@ -188,4 +188,12 @@ class AppStringsRo implements AppStrings {
   // Language names
   @override String get settingsLanguageFa  => 'فارسی';
   @override String get settingsLanguageAr  => 'العربية';
+
+  // G-code reference
+  @override String get gcodeRefTitle       => 'Referință G-Code';
+  @override String get gcodeRefSearchHint  => 'Caută cod sau cuvânt cheie…';
+  @override String get gcodeRefFilterAll   => 'Toate';
+  @override String get gcodeRefNoResults   => 'Niciun cod găsit';
+  @override String get gcodeRefSyntax      => 'Sintaxă';
+  @override String get gcodeRefCount       => 'coduri';
 }

@@ -73,6 +73,14 @@ abstract class AppStrings {
   String get kbInputHint;
   String get kbPlaceholderReply;
 
+  // Knowledge base — G-code reference
+  String get gcodeRefTitle;
+  String get gcodeRefSearchHint;
+  String get gcodeRefFilterAll;
+  String get gcodeRefNoResults;
+  String get gcodeRefSyntax;
+  String get gcodeRefCount;
+
   // Knowledge base — Error reference
   String get errRefTitle;
   String get errRefSearchHint;

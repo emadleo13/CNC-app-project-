@@ -353,6 +353,11 @@ class _QaScreenState extends ConsumerState<QaScreen> {
         title: Text(s.kbTitle),
         actions: [
           IconButton(
+            icon:    const Icon(Icons.code, size: 20),
+            tooltip: s.gcodeRefTitle,
+            onPressed: () => context.push(RouteNames.gcodeReference),
+          ),
+          IconButton(
             icon:    const Icon(Icons.warning_amber_outlined, size: 20),
             tooltip: s.errRefTitle,
             onPressed: () => context.push(RouteNames.errorReference),
@@ -381,7 +386,10 @@ class _QaScreenState extends ConsumerState<QaScreen> {
           ),
           Expanded(
             child: _messages.isEmpty
-                ? _EmptyState(s: s, onErrorRef: () => context.push(RouteNames.errorReference))
+                ? _EmptyState(s: s,
+                    onErrorRef:   () => context.push(RouteNames.errorReference),
+                    onGcodeRef:   () => context.push(RouteNames.gcodeReference),
+                  )
                 : ListView.builder(
                     controller:  _scrollCtrl,
                     padding:     const EdgeInsets.all(16),
@@ -553,7 +561,8 @@ class _QuickQuestionsBar extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   final AppStrings   s;
   final VoidCallback onErrorRef;
-  const _EmptyState({required this.s, required this.onErrorRef});
+  final VoidCallback onGcodeRef;
+  const _EmptyState({required this.s, required this.onErrorRef, required this.onGcodeRef});
 
   @override
   Widget build(BuildContext context) {
@@ -572,10 +581,21 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 20),
-            OutlinedButton.icon(
-              onPressed: onErrorRef,
-              icon:  const Icon(Icons.warning_amber_outlined, size: 16),
-              label: Text(s.errRefTitle),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: onGcodeRef,
+                  icon:  const Icon(Icons.code, size: 16),
+                  label: Text(s.gcodeRefTitle),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  onPressed: onErrorRef,
+                  icon:  const Icon(Icons.warning_amber_outlined, size: 16),
+                  label: Text(s.errRefTitle),
+                ),
+              ],
             ),
           ],
         ),
