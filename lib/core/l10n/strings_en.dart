@@ -128,4 +128,64 @@ class AppStringsEn implements AppStrings {
   @override String get gcodeFromDrawingHint      => 'Upload a technical drawing or part photo to generate G-code';
   @override String get gcodeFromDrawingGenerating => 'Analyzing drawing...';
   @override String get gcodeFromDrawingError     => 'Failed to generate G-code from drawing';
+
+  // Phase 1 — Usage / Quota
+  @override String get proFreeLabel        => 'Free';
+  @override String get proProLabel         => 'Pro';
+  @override String get proQuestionsLeft    => 'questions left this month';
+  @override String get proUnlimited        => 'Unlimited';
+  @override String get proLimitTitle       => 'Monthly Limit Reached';
+  @override String get proLimitMsg         => 'You\'ve used all 10 free AI questions this month.\nUpgrade to Pro for unlimited access.';
+  @override String get proUpgradeBtn       => 'Upgrade to Pro';
+  @override String get proLaterBtn         => 'Not Now';
+  @override String get proUsageOf          => 'of';
+
+  // Phase 2 — Subscription
+  @override String get subTitle            => 'CNC Assist Pro';
+  @override String get subSubtitle         => 'Unlock unlimited access';
+  @override String get subMonthly          => '\$19 / month';
+  @override String get subFeatureUnlimited => 'Unlimited AI questions';
+  @override String get subFeatureSetup     => 'Setup Sheet Generator';
+  @override String get subFeatureTooling   => 'Tooling Recommendations';
+  @override String get subFeaturePdf       => 'PDF Drawing Analyzer';
+  @override String get subSubscribeBtn     => 'Subscribe Now';
+  @override String get subRestoreBtn       => 'Restore Purchase';
+  @override String get subCurrentPlan      => 'Current Plan';
+  @override String get subManageBtn        => 'Manage Subscription';
+  @override String get subLoading          => 'Processing...';
+  @override String get subError            => 'Purchase failed. Please try again.';
+  @override String get subSuccess          => 'Welcome to CNC Assist Pro!';
+  @override String get subNotAvailable     => 'Purchases not available on this device.';
+
+  // Phase 3 — Setup Sheet
+  @override String get setupSheetTitle     => 'Setup Sheet';
+  @override String get setupSheetBtn       => 'Generate Setup Sheet';
+  @override String get setupSheetShare     => 'Share / Print';
+  @override String get setupSheetDate      => 'Date';
+  @override String get setupSheetProOnly   => 'Pro feature — upgrade to generate setup sheets';
+
+  // Phase 4 — Tooling Recs
+  @override String get toolingTitle        => 'Tooling Recommendations';
+  @override String get toolingBtn          => 'Get Tooling Recommendations';
+  @override String get toolingLoading      => 'Analyzing parameters...';
+  @override String get toolingProOnly      => 'Pro feature — upgrade to get tooling recommendations';
+
+  // Phase 5 — PDF Analyzer
+  @override String get pdfTitle            => 'PDF Drawing Analyzer';
+  @override String get pdfBtn              => 'Analyze PDF Drawing';
+  @override String get pdfLoading          => 'Analyzing PDF...';
+  @override String get pdfPickBtn          => 'Select PDF File';
+  @override String get pdfProOnly          => 'Pro feature — upgrade to analyze PDF drawings';
+  @override String get pdfError            => 'Failed to analyze PDF';
+  @override String get pdfTooLarge         => 'PDF is too large (max 10MB)';
+
+  // Settings — Subscription
+  @override String get settingsSubscription => 'Subscription';
+  @override String get settingsFreePlan     => 'Free Plan · 10 AI questions/month';
+  @override String get settingsProPlan      => 'Pro Plan · Unlimited access';
+  @override String get settingsUpgradePro   => 'Upgrade to Pro';
+
+  // Language names
+  @override String get settingsLanguageFa  => 'فارسی';
+  @override String get settingsLanguageAr  => 'العربية';
 }

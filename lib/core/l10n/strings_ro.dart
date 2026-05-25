@@ -128,4 +128,64 @@ class AppStringsRo implements AppStrings {
   @override String get gcodeFromDrawingHint      => 'Încarcă un desen tehnic sau foto piesă pentru a genera G-code';
   @override String get gcodeFromDrawingGenerating => 'Analizez desenul...';
   @override String get gcodeFromDrawingError     => 'Eroare la generarea G-code din desen';
+
+  // Phase 1 — Usage / Quota
+  @override String get proFreeLabel        => 'Gratuit';
+  @override String get proProLabel         => 'Pro';
+  @override String get proQuestionsLeft    => 'întrebări rămase luna aceasta';
+  @override String get proUnlimited        => 'Nelimitat';
+  @override String get proLimitTitle       => 'Limită lunară atinsă';
+  @override String get proLimitMsg         => 'Ai folosit toate cele 10 întrebări AI gratuite.\nUpgrade la Pro pentru acces nelimitat.';
+  @override String get proUpgradeBtn       => 'Upgrade la Pro';
+  @override String get proLaterBtn         => 'Nu acum';
+  @override String get proUsageOf          => 'din';
+
+  // Phase 2 — Subscription
+  @override String get subTitle            => 'CNC Assist Pro';
+  @override String get subSubtitle         => 'Deblochează accesul nelimitat';
+  @override String get subMonthly          => '19\$ / lună';
+  @override String get subFeatureUnlimited => 'Întrebări AI nelimitate';
+  @override String get subFeatureSetup     => 'Generator fișă de lucru';
+  @override String get subFeatureTooling   => 'Recomandări scule';
+  @override String get subFeaturePdf       => 'Analizor desene PDF';
+  @override String get subSubscribeBtn     => 'Abonează-te acum';
+  @override String get subRestoreBtn       => 'Restaurează achiziția';
+  @override String get subCurrentPlan      => 'Plan curent';
+  @override String get subManageBtn        => 'Gestionează abonamentul';
+  @override String get subLoading          => 'Se procesează...';
+  @override String get subError            => 'Achiziție eșuată. Încearcă din nou.';
+  @override String get subSuccess          => 'Bine ai venit la CNC Assist Pro!';
+  @override String get subNotAvailable     => 'Achizițiile nu sunt disponibile pe acest dispozitiv.';
+
+  // Phase 3 — Setup Sheet
+  @override String get setupSheetTitle     => 'Fișă de lucru';
+  @override String get setupSheetBtn       => 'Generează fișă de lucru';
+  @override String get setupSheetShare     => 'Distribuie / Printează';
+  @override String get setupSheetDate      => 'Data';
+  @override String get setupSheetProOnly   => 'Funcție Pro — upgrade pentru fișe de lucru';
+
+  // Phase 4 — Tooling Recs
+  @override String get toolingTitle        => 'Recomandări scule';
+  @override String get toolingBtn          => 'Obține recomandări scule';
+  @override String get toolingLoading      => 'Analizez parametrii...';
+  @override String get toolingProOnly      => 'Funcție Pro — upgrade pentru recomandări scule';
+
+  // Phase 5 — PDF Analyzer
+  @override String get pdfTitle            => 'Analizor desene PDF';
+  @override String get pdfBtn              => 'Analizează desen PDF';
+  @override String get pdfLoading          => 'Analizez PDF...';
+  @override String get pdfPickBtn          => 'Selectează fișier PDF';
+  @override String get pdfProOnly          => 'Funcție Pro — upgrade pentru a analiza desene PDF';
+  @override String get pdfError            => 'Eroare la analizarea PDF';
+  @override String get pdfTooLarge         => 'PDF prea mare (max 10MB)';
+
+  // Settings — Subscription
+  @override String get settingsSubscription => 'Abonament';
+  @override String get settingsFreePlan     => 'Plan Gratuit · 10 întrebări AI/lună';
+  @override String get settingsProPlan      => 'Plan Pro · Acces nelimitat';
+  @override String get settingsUpgradePro   => 'Upgrade la Pro';
+
+  // Language names
+  @override String get settingsLanguageFa  => 'فارسی';
+  @override String get settingsLanguageAr  => 'العربية';
 }

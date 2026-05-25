@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'strings_en.dart';
 import 'strings_ro.dart';
+import 'strings_fa.dart';
+import 'strings_ar.dart';
 
 abstract class AppStrings {
   // Navigation
@@ -136,6 +138,66 @@ abstract class AppStrings {
   String get gcodeFromDrawingHint;
   String get gcodeFromDrawingGenerating;
   String get gcodeFromDrawingError;
+
+  // Phase 1 — Usage / Quota
+  String get proFreeLabel;
+  String get proProLabel;
+  String get proQuestionsLeft;
+  String get proUnlimited;
+  String get proLimitTitle;
+  String get proLimitMsg;
+  String get proUpgradeBtn;
+  String get proLaterBtn;
+  String get proUsageOf;
+
+  // Phase 2 — Subscription screen
+  String get subTitle;
+  String get subSubtitle;
+  String get subMonthly;
+  String get subFeatureUnlimited;
+  String get subFeatureSetup;
+  String get subFeatureTooling;
+  String get subFeaturePdf;
+  String get subSubscribeBtn;
+  String get subRestoreBtn;
+  String get subCurrentPlan;
+  String get subManageBtn;
+  String get subLoading;
+  String get subError;
+  String get subSuccess;
+  String get subNotAvailable;
+
+  // Phase 3 — Setup Sheet
+  String get setupSheetTitle;
+  String get setupSheetBtn;
+  String get setupSheetShare;
+  String get setupSheetDate;
+  String get setupSheetProOnly;
+
+  // Phase 4 — Tooling Recommendations
+  String get toolingTitle;
+  String get toolingBtn;
+  String get toolingLoading;
+  String get toolingProOnly;
+
+  // Phase 5 — PDF Analyzer
+  String get pdfTitle;
+  String get pdfBtn;
+  String get pdfLoading;
+  String get pdfPickBtn;
+  String get pdfProOnly;
+  String get pdfError;
+  String get pdfTooLarge;
+
+  // Settings — Subscription tier
+  String get settingsSubscription;
+  String get settingsFreePlan;
+  String get settingsProPlan;
+  String get settingsUpgradePro;
+
+  // Language names for new locales
+  String get settingsLanguageFa;
+  String get settingsLanguageAr;
 }
 
 // Locale provider
@@ -149,7 +211,12 @@ final defaultDialectProvider = StateProvider<String>((ref) => 'haas');
 
 final appStringsProvider = Provider<AppStrings>((ref) {
   final locale = ref.watch(localeProvider);
-  return locale == 'ro' ? AppStringsRo() : AppStringsEn();
+  return switch (locale) {
+    'ro' => AppStringsRo(),
+    'fa' => AppStringsFa(),
+    'ar' => AppStringsAr(),
+    _    => AppStringsEn(),
+  };
 });
 
 // BuildContext extension for convenience

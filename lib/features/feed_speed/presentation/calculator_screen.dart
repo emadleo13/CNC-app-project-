@@ -10,6 +10,9 @@ import '../domain/cut_parameters.dart';
 import '../domain/material_spec.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/domain/saved_calculation.dart';
+import '../../subscription/data/subscription_repository.dart';
+import 'setup_sheet_screen.dart';
+import 'tooling_recs_screen.dart';
 
 final _materialsProvider = FutureProvider<List<MaterialSpec>>((ref) {
   return MaterialsRepository().getAll();
@@ -234,8 +237,18 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: () => _saveToHistory(materials),
-              icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+              icon:  const Icon(Icons.bookmark_add_outlined, size: 18),
               label: Text(s.historySave),
+            ),
+            const SizedBox(height: 8),
+            _ProActionButtons(
+              result:       _result!,
+              material:     materials.firstWhere((m) => m.code == _selectedMaterialCode!),
+              toolTypeCode: _toolTypeCode,
+              diameter:     _diameter,
+              flutes:       _flutes,
+              units:        _units,
+              operation:    _opType,
             ),
           ],
         ],
@@ -477,6 +490,146 @@ class _ResultCard extends ConsumerWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Pro Action Buttons ───────────────────────────────────────────────────────
+
+class _ProActionButtons extends ConsumerWidget {
+  final CutParameters result;
+  final MaterialSpec  material;
+  final String        toolTypeCode;
+  final double        diameter;
+  final int           flutes;
+  final UnitSystem    units;
+  final OperationType operation;
+  const _ProActionButtons({
+    required this.result,    required this.material,
+    required this.toolTypeCode, required this.diameter,
+    required this.flutes,    required this.units,
+    required this.operation,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s    = ref.watch(appStringsProvider);
+    final tier = ref.watch(currentTierProvider);
+    final isPro = tier.valueOrNull == 'pro' || tier.valueOrNull == 'team';
+
+    return Column(children: [
+      // Setup Sheet
+      _ProButton(
+        label:  s.setupSheetBtn,
+        icon:   Icons.description_outlined,
+        isPro:  isPro,
+        proMsg: s.setupSheetProOnly,
+        onTap:  () => Navigator.push(context, MaterialPageRoute(
+          builder: (_) => SetupSheetScreen(
+            result:      result,
+            material:    material,
+            toolTypeCode: toolTypeCode,
+            diameter:    diameter,
+            flutes:      flutes,
+            units:       units,
+            operation:   operation,
+          ),
+        )),
+        onUpgrade: () => context.push(RouteNames.subscription),
+      ),
+      const SizedBox(height: 8),
+      // Tooling Recommendations
+      _ProButton(
+        label:  s.toolingBtn,
+        icon:   Icons.build_circle_outlined,
+        isPro:  isPro,
+        proMsg: s.toolingProOnly,
+        onTap:  () => Navigator.push(context, MaterialPageRoute(
+          builder: (_) => ToolingRecsScreen(
+            material:  material,
+            operation: operation,
+            diameter:  diameter,
+            flutes:    flutes,
+            units:     units,
+          ),
+        )),
+        onUpgrade: () => context.push(RouteNames.subscription),
+      ),
+    ]);
+  }
+}
+
+class _ProButton extends StatelessWidget {
+  final String       label;
+  final IconData     icon;
+  final bool         isPro;
+  final String       proMsg;
+  final VoidCallback onTap;
+  final VoidCallback onUpgrade;
+  const _ProButton({
+    required this.label,    required this.icon,
+    required this.isPro,    required this.proMsg,
+    required this.onTap,    required this.onUpgrade,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isPro) {
+      return OutlinedButton.icon(
+        onPressed: onTap,
+        icon:  Icon(icon, size: 16),
+        label: Text(label),
+      );
+    }
+    return GestureDetector(
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: Row(children: [
+            Icon(icon, color: AppColors.primary, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 15))),
+          ]),
+          content: Text(proMsg,
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: () { Navigator.pop(context); onUpgrade(); },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              child: const Text('Upgrade'),
+            ),
+          ],
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+        decoration: BoxDecoration(
+          color:        AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border:       Border.all(color: AppColors.border),
+        ),
+        child: Row(children: [
+          Icon(icon, size: 16, color: AppColors.textMuted),
+          const SizedBox(width: 8),
+          Expanded(child: Text(label,
+            style: const TextStyle(fontSize: 13, color: AppColors.textMuted))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color:        AppColors.warningYellow.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text('PRO',
+              style: TextStyle(fontSize: 9, color: AppColors.warningYellow, fontWeight: FontWeight.bold)),
+          ),
+        ]),
       ),
     );
   }

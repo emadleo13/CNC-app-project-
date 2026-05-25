@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/errors_repository.dart';
+import '../data/usage_repository.dart';
 
 final _errorsRepoQaProvider = Provider((_) => ErrorsRepository());
 
@@ -20,9 +22,9 @@ class QaScreen extends ConsumerStatefulWidget {
 }
 
 class _QaScreenState extends ConsumerState<QaScreen> {
-  final _controller    = TextEditingController();
-  final _scrollCtrl    = ScrollController();
-  final _messages      = <_Message>[];
+  final _controller  = TextEditingController();
+  final _scrollCtrl  = ScrollController();
+  final _messages    = <_Message>[];
   bool       _isLoading    = false;
   Uint8List? _attachedBytes;
 
@@ -42,6 +44,8 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     _scrollCtrl.dispose();
     super.dispose();
   }
+
+  // ─── image picker ──────────────────────────────────────────────────────────
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -99,11 +103,84 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     );
   }
 
-  // Detects alarm/error codes in the user's question.
-  // Matches patterns like: "alarm 101", "error 101", "Alarm: 101",
-  // "10620", "380500", or plain 3-6 digit numbers typical of alarm codes.
+  // ─── PDF picker (Phase 5) ──────────────────────────────────────────────────
+
+  Future<void> _pickAndSendPdf() async {
+    final s = ref.read(appStringsProvider);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type:          FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData:      true,
+      );
+      if (result == null || result.files.single.bytes == null) return;
+
+      final bytes = result.files.single.bytes!;
+      if (bytes.length > 10 * 1024 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(s.pdfTooLarge),
+            backgroundColor: AppColors.errorRed,
+          ));
+        }
+        return;
+      }
+
+      setState(() {
+        _messages.add(_Message(text: '📄 ${result.files.single.name}', isUser: true));
+        _isLoading = true;
+      });
+      _scrollToBottom();
+
+      final answer = await _sendPdfToClaude(base64Encode(bytes));
+      setState(() {
+        _messages.add(_Message(text: answer, isUser: false));
+        _isLoading = false;
+      });
+      ref.invalidate(usageProvider);
+    } catch (e) {
+      final errS = ref.read(appStringsProvider);
+      setState(() {
+        _messages.add(_Message(
+          text: '${errS.pdfError}: $e',
+          isUser: false, isPending: true,
+        ));
+        _isLoading = false;
+      });
+    }
+    _scrollToBottom();
+  }
+
+  Future<String> _sendPdfToClaude(String pdfBase64) async {
+    final supabase = Supabase.instance.client;
+    if (supabase.auth.currentUser == null) {
+      await supabase.auth.signInAnonymously();
+    }
+    final response = await supabase.functions.invoke('analyze-pdf', body: {
+      'pdfBase64': pdfBase64,
+    });
+
+    if (response.status == 403) {
+      final data = response.data as Map<String, dynamic>?;
+      if (data?['pro_required'] == true && mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.push(RouteNames.subscription);
+        });
+        return ref.read(appStringsProvider).pdfProOnly;
+      }
+    }
+
+    if (response.status != 200) {
+      final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Error ${response.status}';
+      throw Exception(msg);
+    }
+    return (response.data as Map<String, dynamic>)['answer'] as String;
+  }
+
+  // ─── alarm lookup ──────────────────────────────────────────────────────────
+
   static final _alarmCodePattern = RegExp(
-    r'(?:alarm|alarmă|error|eroare|fault|code)[:\s#]*(\d{3,6})'
+    r'(?:alarm|alarmă|error|eroare|fault|code|آلارم|خطا)[:\s#]*(\d{3,6})'
     r'|(?<!\d)(\d{3,6})(?!\d)',
     caseSensitive: false,
   );
@@ -112,7 +189,6 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     final matches = _alarmCodePattern.allMatches(question);
     final repo    = ref.read(_errorsRepoQaProvider);
     final buffer  = StringBuffer();
-
     for (final m in matches) {
       final code  = (m.group(1) ?? m.group(2))!;
       final alarm = await repo.findByCode(code);
@@ -125,9 +201,10 @@ class _QaScreenState extends ConsumerState<QaScreen> {
         buffer.writeln();
       }
     }
-
     return buffer.isEmpty ? null : buffer.toString();
   }
+
+  // ─── send message ──────────────────────────────────────────────────────────
 
   Future<void> _sendMessage(String text) async {
     final bytes = _attachedBytes;
@@ -158,17 +235,58 @@ class _QaScreenState extends ConsumerState<QaScreen> {
         _messages.add(_Message(text: answer, isUser: false));
         _isLoading = false;
       });
+      // Refresh quota counter after successful call
+      ref.invalidate(usageProvider);
     } catch (e) {
+      final errText = e.toString();
+      // 429 = quota exceeded
+      if (errText.contains('quota_exceeded') || errText.contains('429')) {
+        setState(() { _isLoading = false; });
+        _showQuotaDialog();
+        return;
+      }
       setState(() {
         _messages.add(_Message(
-          text: '${s.commonError}: $e',
-          isUser: false,
-          isPending: true,
+          text: '${s.commonError}: $errText',
+          isUser: false, isPending: true,
         ));
         _isLoading = false;
       });
     }
     _scrollToBottom();
+  }
+
+  void _showQuotaDialog() {
+    final s = ref.read(appStringsProvider);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.lock_outline, color: AppColors.warningYellow, size: 22),
+          const SizedBox(width: 8),
+          Text(s.proLimitTitle),
+        ]),
+        content: Text(s.proLimitMsg,
+          style: const TextStyle(color: AppColors.textSecondary, height: 1.5)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(s.proLaterBtn,
+              style: const TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.push(RouteNames.subscription);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: Text(s.proUpgradeBtn),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<String> _askClaudeWithImage(String question, Uint8List imageBytes) async {
@@ -183,6 +301,9 @@ class _QaScreenState extends ConsumerState<QaScreen> {
       if (question.isNotEmpty) 'question': question,
     };
     final response = await supabase.functions.invoke('analyze-image', body: body);
+    if (response.status == 429) {
+      throw Exception('quota_exceeded');
+    }
     if (response.status != 200) {
       final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Server error ${response.status}';
       throw Exception(msg);
@@ -198,6 +319,9 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     final body = <String, dynamic>{'question': question};
     if (alarmContext != null) body['alarmContext'] = alarmContext;
     final response = await supabase.functions.invoke('ask-claude', body: body);
+    if (response.status == 429) {
+      throw Exception('quota_exceeded');
+    }
     if (response.status != 200) {
       final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Server error ${response.status}';
       throw Exception(msg);
@@ -217,20 +341,24 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     });
   }
 
+  // ─── build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final s = ref.watch(appStringsProvider);
+    final s     = ref.watch(appStringsProvider);
+    final usage = ref.watch(usageProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(s.kbTitle),
         actions: [
           IconButton(
-            icon: const Icon(Icons.warning_amber_outlined, size: 20),
+            icon:    const Icon(Icons.warning_amber_outlined, size: 20),
             tooltip: s.errRefTitle,
             onPressed: () => context.push(RouteNames.errorReference),
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, size: 20),
+            icon:    const Icon(Icons.settings_outlined, size: 20),
             onPressed: () => context.push(RouteNames.settings),
             tooltip: s.navSettings,
           ),
@@ -238,9 +366,18 @@ class _QaScreenState extends ConsumerState<QaScreen> {
       ),
       body: Column(
         children: [
+          // Usage quota bar
+          usage.when(
+            loading: () => const SizedBox.shrink(),
+            error:   (e, st) => const SizedBox.shrink(),
+            data: (u) => u.isPro
+                ? const SizedBox.shrink()
+                : _QuotaBar(status: u, s: s, onUpgrade: () => context.push(RouteNames.subscription)),
+          ),
+
           if (_messages.isEmpty) _QuickQuestionsBar(
             questions: _quickQuestions,
-            onTap: _sendMessage,
+            onTap:     _sendMessage,
           ),
           Expanded(
             child: _messages.isEmpty
@@ -254,7 +391,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
           ),
           if (_isLoading) const LinearProgressIndicator(
             backgroundColor: AppColors.surface,
-            valueColor: AlwaysStoppedAnimation(AppColors.primary),
+            valueColor:      AlwaysStoppedAnimation(AppColors.primary),
           ),
           if (_attachedBytes != null)
             Container(
@@ -269,7 +406,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
                 Expanded(child: Text(s.imgAttached,
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
                 IconButton(
-                  icon: const Icon(Icons.close, size: 18),
+                  icon:  const Icon(Icons.close, size: 18),
                   color: AppColors.textMuted,
                   onPressed: () => setState(() => _attachedBytes = null),
                 ),
@@ -281,6 +418,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
             onSend:      _sendMessage,
             isLoading:   _isLoading,
             onAttach:    _showImagePicker,
+            onPdf:       _pickAndSendPdf,
             hasAttached: _attachedBytes != null,
           ),
         ],
@@ -288,6 +426,80 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     );
   }
 }
+
+// ─── Usage Quota Bar ──────────────────────────────────────────────────────────
+
+class _QuotaBar extends StatelessWidget {
+  final UsageStatus   status;
+  final AppStrings    s;
+  final VoidCallback  onUpgrade;
+  const _QuotaBar({required this.status, required this.s, required this.onUpgrade});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = status.isLimitReached
+        ? AppColors.errorRed
+        : status.fraction > 0.7
+            ? AppColors.warningYellow
+            : AppColors.primary;
+
+    return GestureDetector(
+      onTap: status.isLimitReached ? onUpgrade : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        color: AppColors.surface,
+        child: Row(children: [
+          Icon(
+            status.isLimitReached ? Icons.lock_outline : Icons.bolt_outlined,
+            size:  14,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            status.isLimitReached
+                ? s.proLimitTitle
+                : '${status.remaining} ${s.proQuestionsLeft}',
+            style: TextStyle(fontSize: 12, color: color),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value:           status.fraction,
+                backgroundColor: AppColors.border,
+                valueColor:      AlwaysStoppedAnimation(color),
+                minHeight:       4,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${status.used} ${s.proUsageOf} ${status.limit}',
+            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+          ),
+          if (status.isLimitReached) ...[
+            const SizedBox(width: 6),
+            GestureDetector(
+              onTap: onUpgrade,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color:        AppColors.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(s.proUpgradeBtn,
+                  style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ]),
+      ),
+    );
+  }
+}
+
+// ─── Data Models ─────────────────────────────────────────────────────────────
 
 class _Message {
   final String     text;
@@ -300,8 +512,10 @@ class _Message {
   });
 }
 
+// ─── Widgets ─────────────────────────────────────────────────────────────────
+
 class _QuickQuestionsBar extends StatelessWidget {
-  final List<String> questions;
+  final List<String>      questions;
   final ValueChanged<String> onTap;
   const _QuickQuestionsBar({required this.questions, required this.onTap});
 
@@ -309,12 +523,12 @@ class _QuickQuestionsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 48,
-      color: AppColors.surface,
+      color:  AppColors.surface,
       child: ListView.separated(
         scrollDirection:  Axis.horizontal,
         padding:          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         itemCount:        questions.length,
-        separatorBuilder: (ctx, idx) => const SizedBox(width: 8),
+        separatorBuilder: (c, i) => const SizedBox(width: 8),
         itemBuilder: (_, i) => GestureDetector(
           onTap: () => onTap(questions[i]),
           child: Container(
@@ -337,7 +551,7 @@ class _QuickQuestionsBar extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final AppStrings s;
+  final AppStrings   s;
   final VoidCallback onErrorRef;
   const _EmptyState({required this.s, required this.onErrorRef});
 
@@ -352,17 +566,15 @@ class _EmptyState extends StatelessWidget {
             const Icon(Icons.school_outlined, size: 64, color: AppColors.textMuted),
             const SizedBox(height: 16),
             Text(s.kbEmptyTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(s.kbEmptySubtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
+              style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: onErrorRef,
-              icon: const Icon(Icons.warning_amber_outlined, size: 16),
+              icon:  const Icon(Icons.warning_amber_outlined, size: 16),
               label: Text(s.errRefTitle),
             ),
           ],
@@ -381,12 +593,12 @@ class _MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:  message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!message.isUser) ...[
             Container(
-              width: 32, height: 32,
+              width:  32, height: 32,
               decoration: BoxDecoration(
                 color:        AppColors.primaryDim,
                 borderRadius: BorderRadius.circular(8),
@@ -399,7 +611,7 @@ class _MessageBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: message.isUser ? AppColors.primaryDim : AppColors.surface,
+                color:  message.isUser ? AppColors.primaryDim : AppColors.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: message.isUser ? null : Border.all(color: AppColors.border),
               ),
@@ -438,23 +650,25 @@ class _MessageBubble extends StatelessWidget {
 
 class _InputBar extends StatelessWidget {
   final TextEditingController controller;
-  final String hint;
+  final String         hint;
   final ValueChanged<String> onSend;
-  final bool isLoading;
-  final VoidCallback onAttach;
-  final bool hasAttached;
+  final bool           isLoading;
+  final VoidCallback   onAttach;
+  final VoidCallback   onPdf;
+  final bool           hasAttached;
   const _InputBar({
     required this.controller, required this.hint,
-    required this.onSend, required this.isLoading,
-    required this.onAttach, required this.hasAttached,
+    required this.onSend,     required this.isLoading,
+    required this.onAttach,   required this.onPdf,
+    required this.hasAttached,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+      padding: const EdgeInsets.fromLTRB(4, 8, 12, 16),
       decoration: const BoxDecoration(
-        color: AppColors.surface,
+        color:  AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(
@@ -471,14 +685,21 @@ class _InputBar extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-          const SizedBox(width: 4),
+          IconButton(
+            onPressed: isLoading ? null : onPdf,
+            icon: const Icon(Icons.picture_as_pdf_outlined, color: AppColors.textMuted),
+            style: IconButton.styleFrom(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            tooltip: 'PDF',
+          ),
           Expanded(
             child: TextField(
-              controller: controller,
-              maxLines:   4,
-              minLines:   1,
+              controller:      controller,
+              maxLines:        4,
+              minLines:        1,
               textInputAction: TextInputAction.send,
-              onSubmitted: isLoading ? null : onSend,
+              onSubmitted:     isLoading ? null : onSend,
               decoration: InputDecoration(
                 hintText: hint,
                 border: const OutlineInputBorder(
@@ -492,7 +713,7 @@ class _InputBar extends StatelessWidget {
           const SizedBox(width: 8),
           IconButton(
             onPressed: isLoading ? null : () => onSend(controller.text),
-            icon: const Icon(Icons.send),
+            icon:  const Icon(Icons.send),
             color: AppColors.primary,
             style: IconButton.styleFrom(
               backgroundColor: AppColors.primaryDim,

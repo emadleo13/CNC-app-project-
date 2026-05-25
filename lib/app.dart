@@ -10,13 +10,23 @@ class CncAssistApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = ref.watch(appStringsProvider);
+    final locale  = ref.watch(localeProvider);
     updateStrings(strings);
-    return MaterialApp.router(
-      title: 'CNC Assist',
-      theme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
-      routerConfig: appRouter,
-      debugShowCheckedModeBanner: false,
+
+    // RTL for Persian and Arabic
+    final textDir = (locale == 'fa' || locale == 'ar')
+        ? TextDirection.rtl
+        : TextDirection.ltr;
+
+    return Directionality(
+      textDirection: textDir,
+      child: MaterialApp.router(
+        title:       'CNC Assist',
+        theme:       AppTheme.dark,
+        themeMode:   ThemeMode.dark,
+        routerConfig: appRouter,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

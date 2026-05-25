@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const FREE_LIMIT = 10;
+
 interface AnalyzeImageRequest {
   imageBase64: string;
   mediaType:   "image/jpeg" | "image/png" | "image/webp";
@@ -73,6 +75,36 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Check subscription + quota (image calls count toward free limit)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", user.id)
+      .single();
+
+    const isPro = profile?.subscription_tier === "pro" || profile?.subscription_tier === "team";
+
+    if (!isPro) {
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { count }  = await supabase
+        .from("qa_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", monthStart);
+
+      if ((count ?? 0) >= FREE_LIMIT) {
+        return new Response(JSON.stringify({
+          error:          "Monthly quota exceeded",
+          quota_exceeded: true,
+          used:           count ?? FREE_LIMIT,
+          limit:          FREE_LIMIT,
+          remaining:      0,
+        }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const body: AnalyzeImageRequest = await req.json();
     const { imageBase64, mediaType = "image/jpeg", mode, question, dialect = "haas" } = body;
 
@@ -82,7 +114,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Sanity-check base64 size (~5MB limit)
     if (imageBase64.length > 7_000_000) {
       return new Response(JSON.stringify({ error: "Image too large. Please use a smaller photo." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -117,11 +148,12 @@ Deno.serve(async (req) => {
 
     const answer = message.content[0].type === "text" ? message.content[0].text : "";
 
-    // Log usage (async)
+    // Log usage
     supabase.from("qa_logs").insert({
       user_id:           user.id,
       question_excerpt:  `[image:${mode}] ${userText.substring(0, 100)}`,
       had_alarm_context: false,
+      is_image:          true,
       token_count:       message.usage.input_tokens + message.usage.output_tokens,
     }).then(() => {}).catch(console.error);
 

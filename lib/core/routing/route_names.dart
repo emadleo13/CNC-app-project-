@@ -13,4 +13,5 @@ class RouteNames {
   static const String profile        = '/profile';
   static const String history        = '/history';
   static const String settings       = '/settings';
+  static const String subscription   = '/subscription';
 }

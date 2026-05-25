@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const FREE_LIMIT = 10;
+
 interface AskRequest {
   question:      string;
   alarmContext?: string;
@@ -37,6 +39,36 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Check subscription tier and enforce quota
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", user.id)
+      .single();
+
+    const isPro = profile?.subscription_tier === "pro" || profile?.subscription_tier === "team";
+
+    if (!isPro) {
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { count }  = await supabase
+        .from("qa_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", monthStart);
+
+      if ((count ?? 0) >= FREE_LIMIT) {
+        return new Response(JSON.stringify({
+          error:          "Monthly quota exceeded",
+          quota_exceeded: true,
+          used:           count ?? FREE_LIMIT,
+          limit:          FREE_LIMIT,
+          remaining:      0,
+        }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const body: AskRequest = await req.json();
     const { question, alarmContext } = body;
 
@@ -61,21 +93,21 @@ Deno.serve(async (req) => {
       "You specialize in:\n" +
       "- Haas CNC controllers (VF series, ST series, DC series) — alarms, programming, operation\n" +
       "- Siemens Sinumerik 840D sl / 828D — alarms, cycles (CYCLE81–CYCLE840), machine data\n" +
+      "- FANUC Series 0i/16i/18i/21i/31i — alarms, parameters, PMC\n" +
+      "- Heidenhain TNC 640/530/426 — alarms, cycles, conversational programming\n" +
       "- G-code programming (ISO 6983, Haas dialect, Sinumerik dialect)\n" +
       "- Feed and speed calculations (Vc, RPM, chip load, MRR)\n" +
       "- CNC troubleshooting — servo faults, spindle issues, ATC faults, parameter errors\n" +
       "- Tooling — carbide/HSS endmills, drills, inserts, taps\n\n" +
       "Guidelines:\n" +
       "- Be concise and practical — operators need quick, actionable answers\n" +
-      "- When answering about alarm codes, always include: what it means, top 2–3 likely causes, first steps to resolve\n" +
-      "- Format code with triple backticks and specify the dialect (haas/sinumerik)\n" +
+      "- When answering about alarm codes: what it means, top 2–3 likely causes, first steps to resolve\n" +
+      "- Format code with triple backticks and specify the dialect\n" +
       "- If a question involves safety risks, mention them clearly\n" +
       "- When uncertain, say so — do not guess critical safety or machine-specific information\n" +
       contextBlock;
 
-    const client = new Anthropic({
-      apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "",
-    });
+    const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "" });
 
     const message = await client.messages.create({
       model:      "claude-haiku-4-5-20251001",
@@ -86,12 +118,13 @@ Deno.serve(async (req) => {
 
     const answer = message.content[0].type === "text" ? message.content[0].text : "";
 
-    // Log usage for future quota tracking (async, don't await)
+    // Log usage (async — non-blocking)
     supabase.from("qa_logs").insert({
       user_id:            user.id,
       question_excerpt:   question.substring(0, 300),
       had_alarm_context:  !!alarmContext,
       token_count:        message.usage.input_tokens + message.usage.output_tokens,
+      is_image:           false,
     }).then(() => {}).catch(console.error);
 
     return new Response(JSON.stringify({ answer }), {
