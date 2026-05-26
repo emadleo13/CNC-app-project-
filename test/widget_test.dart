@@ -30,7 +30,7 @@ void main() {
         depthOfCut:    2.0,
         widthOfCut:    5.0,
       );
-      final result = MillingCalculator.calculate(input: input, material: testMaterial);
+      final result = MillingCalculator.calculate(input: input, material: testMaterial)!;
       // RPM = (91 * 1000) / (π * 10) ≈ 2897
       expect(result.rpm, closeTo(2897, 10));
     });
@@ -47,9 +47,24 @@ void main() {
         depthOfCut:    0.05,
         widthOfCut:    0.25,
       );
-      final result = MillingCalculator.calculate(input: input, material: testMaterial);
+      final result = MillingCalculator.calculate(input: input, material: testMaterial)!;
       // RPM = (120 * 3.82) / 0.5 ≈ 916
       expect(result.rpm, closeTo(916, 10));
+    });
+
+    test('returns null for zero diameter', () {
+      final input = CalculatorInput(
+        materialCode:  'test_steel',
+        toolTypeCode:  'end_mill_4fl',
+        toolDiameter:  0.0,
+        flutes:        4,
+        toolMaterial:  ToolMaterial.carbide,
+        operationType: OperationType.roughing,
+        units:         UnitSystem.metric,
+        depthOfCut:    2.0,
+        widthOfCut:    5.0,
+      );
+      expect(MillingCalculator.calculate(input: input, material: testMaterial), isNull);
     });
 
     test('feed rate = rpm * flutes * chipload', () {
@@ -64,7 +79,7 @@ void main() {
         depthOfCut:    2.0,
         widthOfCut:    5.0,
       );
-      final result = MillingCalculator.calculate(input: input, material: testMaterial);
+      final result = MillingCalculator.calculate(input: input, material: testMaterial)!;
       // chipload_metric = 0.0015 * 25.4 = 0.0381 mm
       // feed = rpm * 4 * 0.0381
       final expectedFeed = result.rpm * 4 * (0.0015 * 25.4);

@@ -37,7 +37,7 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
 
   List<GcodeEntry> _applyFilter(List<GcodeEntry> all) {
     final q    = _query.toLowerCase().trim();
-    final list = _filter == 'all' ? all : all.where((e) => e.brand == _filter).toList();
+    final list = _filter == 'all' ? all : all.where((e) => e.brands.contains(_filter)).toList();
     if (q.isEmpty) return list;
     return list.where((e) =>
       e.code.toLowerCase().contains(q) ||

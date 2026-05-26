@@ -88,7 +88,14 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       depthOfCut:    _doc,
       widthOfCut:    _woc,
     );
-    setState(() => _result = MillingCalculator.calculate(input: input, material: material));
+    final result = MillingCalculator.calculate(input: input, material: material);
+    if (result == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Diameter must be greater than 0')),
+      );
+      return;
+    }
+    setState(() => _result = result);
   }
 
   @override

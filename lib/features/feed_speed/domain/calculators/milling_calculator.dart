@@ -3,10 +3,11 @@ import '../material_spec.dart';
 import '../cut_parameters.dart';
 
 class MillingCalculator {
-  static CutParameters calculate({
+  static CutParameters? calculate({
     required CalculatorInput input,
     required MaterialSpec material,
   }) {
+    if (input.toolDiameter <= 0) return null;
     final isMetric = input.units == UnitSystem.metric;
     final speeds = isMetric ? material.cuttingSpeedsMetric : material.cuttingSpeedsImperial;
 

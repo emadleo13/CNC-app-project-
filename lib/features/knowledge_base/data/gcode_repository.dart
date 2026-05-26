@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class GcodeEntry {
-  final String   code;
-  final String   brand;
-  final String   name;
-  final String   description;
-  final String?  syntax;
-  final String?  warning;
+  final String        code;
+  final String        brand;   // primary brand — used for badge colour
+  final List<String>  brands;  // all applicable brands — used for filtering
+  final String        name;
+  final String        description;
+  final String?       syntax;
+  final String?       warning;
 
   const GcodeEntry({
     required this.code,
     required this.brand,
+    required this.brands,
     required this.name,
     required this.description,
     this.syntax,
@@ -29,14 +31,17 @@ class GcodeRepository {
 
     final entries = <GcodeEntry>[];
 
-    // g_codes and m_codes — each has a 'dialects' list; one entry per dialect brand
+    // g_codes and m_codes — each has a 'dialects' list; brands derived from dialects
     for (final section in ['g_codes', 'm_codes']) {
       for (final item in (json[section] as List)) {
         final dialects = (item['dialects'] as List).cast<String>();
         final primaryBrand = _primaryBrand(dialects);
+        // Normalise: 'generic' → 'haas' so the entry is findable under haas filter
+        final brands = dialects.map((d) => d == 'generic' ? 'haas' : d).toSet().toList();
         entries.add(GcodeEntry(
           code:        item['code'] as String,
           brand:       primaryBrand,
+          brands:      brands,
           name:        item['name'] as String,
           description: item['description'] as String,
           syntax:      item['syntax'] as String?,
@@ -50,6 +55,7 @@ class GcodeRepository {
       entries.add(GcodeEntry(
         code:        item['code'] as String,
         brand:       'sinumerik',
+        brands:      const ['sinumerik'],
         name:        item['name'] as String,
         description: item['description'] as String,
         syntax:      item['syntax'] as String?,
@@ -62,6 +68,7 @@ class GcodeRepository {
       entries.add(GcodeEntry(
         code:        item['code'] as String,
         brand:       'fanuc',
+        brands:      const ['fanuc'],
         name:        item['name'] as String,
         description: item['description'] as String,
         syntax:      item['syntax'] as String?,
@@ -74,6 +81,7 @@ class GcodeRepository {
       entries.add(GcodeEntry(
         code:        item['code'] as String,
         brand:       'heidenhain',
+        brands:      const ['heidenhain'],
         name:        item['name'] as String,
         description: item['description'] as String,
         syntax:      item['syntax'] as String?,
