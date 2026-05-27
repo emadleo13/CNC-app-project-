@@ -587,15 +587,16 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
               children: [
                 OutlinedButton.icon(
                   onPressed: onGcodeRef,
                   icon:  const Icon(Icons.code, size: 16),
                   label: Text(s.gcodeRefTitle),
                 ),
-                const SizedBox(width: 10),
                 OutlinedButton.icon(
                   onPressed: onErrorRef,
                   icon:  const Icon(Icons.warning_amber_outlined, size: 16),
