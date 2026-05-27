@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/help_card.dart';
 import '../data/history_repository.dart';
 import '../domain/saved_analysis.dart';
 import '../domain/saved_calculation.dart';
@@ -94,11 +95,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabs,
+      body: Column(
         children: [
-          _CalculationsList(items: calculations),
-          _AnalysesList(items: analyses),
+          HelpCard(title: s.helpHistoryTitle, btnLabel: s.helpBtnLabel, steps: s.helpHistorySteps),
+          Expanded(
+            child: TabBarView(
+              controller: _tabs,
+              children: [
+                _CalculationsList(items: calculations),
+                _AnalysesList(items: analyses),
+              ],
+            ),
+          ),
         ],
       ),
     );

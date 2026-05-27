@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/help_card.dart';
 import '../data/errors_repository.dart';
 import '../data/usage_repository.dart';
 
@@ -380,6 +381,11 @@ class _QaScreenState extends ConsumerState<QaScreen> {
                 : _QuotaBar(status: u, s: s, onUpgrade: () => context.push(RouteNames.subscription)),
           ),
 
+          if (_messages.isEmpty) HelpCard(
+            title:    s.helpKbTitle,
+            btnLabel: s.helpBtnLabel,
+            steps:    s.helpKbSteps,
+          ),
           if (_messages.isEmpty) _QuickQuestionsBar(
             questions: _quickQuestions,
             onTap:     _sendMessage,

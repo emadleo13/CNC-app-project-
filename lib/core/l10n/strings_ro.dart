@@ -196,4 +196,54 @@ class AppStringsRo implements AppStrings {
   @override String get gcodeRefNoResults   => 'Niciun cod găsit';
   @override String get gcodeRefSyntax      => 'Sintaxă';
   @override String get gcodeRefCount       => 'coduri';
+
+  // Help
+  @override String get helpBtnLabel => 'Cum se utilizează?';
+
+  @override String get helpCalcTitle => 'Calculator Avans & Viteză';
+  @override List<String> get helpCalcSteps => [
+    'Selectați un material din listă (oțel, aluminiu, titan, etc.).',
+    'Introduceți diametrul sculei și numărul de tăișuri, apoi setați adâncimea și lățimea de tăiere.',
+    'Alegeți materialul sculei (Carbură sau HSS) și tipul operației (Degroșare sau Finisare).',
+    'Apăsați Calculează — RPM, Avans, Sarcina pe tăiș și MRR sunt afișate instant.\nApăsați Salvează pentru a stoca rezultatul în Istoric.',
+  ];
+
+  @override String get helpGcodeTitle => 'Analizor G-Code';
+  @override List<String> get helpGcodeSteps => [
+    'Lipiți G-code în câmpul text sau apăsați Încărcare pentru a deschide un fișier .nc / .txt / .mpf.',
+    'Selectați tipul de controler (Haas sau Sinumerik) sau lăsați pe Auto — aplicația detectează automat.',
+    'Apăsați Analizează G-Code pentru a rula verificarea.',
+    'Liniile roșii conțin erori; liniile galbene conțin avertismente. Apăsați orice linie pentru detalii.',
+  ];
+
+  @override String get helpKbTitle => 'Baza de cunoștințe CNC';
+  @override List<String> get helpKbSteps => [
+    'Tastați orice întrebare CNC (G-code, viteze, depanare) și trimiteți.',
+    'AI-ul (Claude) răspunde pe baza cunoștințelor de prelucrare CNC.',
+    'Plan Gratuit: 10 întrebări pe lună. Faceți upgrade la Pro pentru acces nelimitat.',
+    'Apăsați iconița carte pentru Referința G-Code sau iconița alarmă pentru Referința Erorilor.',
+  ];
+
+  @override String get helpGcodeRefTitle => 'Referință G-Code';
+  @override List<String> get helpGcodeRefSteps => [
+    'Răsfoiți peste 270 de coduri G și M pentru Haas, Siemens, FANUC și Heidenhain.',
+    'Folosiți filtrele de marcă pentru a afișa codurile fiecărui controler.',
+    'Tastați în câmpul de căutare pentru a găsi instant un cod sau cuvânt cheie.',
+    'Apăsați orice cod pentru descriere completă, exemplu de sintaxă și avertismente.',
+  ];
+
+  @override String get helpErrRefTitle => 'Referință Alarme & Erori';
+  @override List<String> get helpErrRefSteps => [
+    'Căutați după numărul alarmei sau cuvânt cheie (ex: "arbore" sau "450").',
+    'Folosiți filtrul de marcă pentru a restrânge rezultatele la controlerul dvs.',
+    'Apăsați orice alarmă pentru cauzele posibile și soluții pas cu pas.',
+  ];
+
+  @override String get helpHistoryTitle => 'Istoric';
+  @override List<String> get helpHistorySteps => [
+    'Calculele și analizele G-code salvate sunt stocate aici.',
+    'După calcul, apăsați Salvează în panoul de rezultate pentru a adăuga o înregistrare.',
+    'După analiza G-code, apăsați Salvează în fila Rezumat.',
+    'Apăsați orice înregistrare pentru detalii complete; glisați la stânga pentru a șterge.',
+  ];
 }

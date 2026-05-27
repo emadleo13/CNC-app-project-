@@ -196,4 +196,54 @@ class AppStringsEn implements AppStrings {
   @override String get gcodeRefNoResults   => 'No codes found';
   @override String get gcodeRefSyntax      => 'Syntax';
   @override String get gcodeRefCount       => 'codes';
+
+  // Help
+  @override String get helpBtnLabel => 'How to use?';
+
+  @override String get helpCalcTitle => 'Feed & Speed Calculator';
+  @override List<String> get helpCalcSteps => [
+    'Select a material from the list (steel, aluminum, titanium, etc.).',
+    'Enter tool diameter and number of flutes, then set depth of cut and width of cut.',
+    'Choose tool material (Carbide or HSS) and operation type (Roughing or Finishing).',
+    'Tap Calculate — RPM, Feed Rate, Chip Load, and MRR are shown instantly.\nTap Save to store the result in History.',
+  ];
+
+  @override String get helpGcodeTitle => 'G-Code Analyzer';
+  @override List<String> get helpGcodeSteps => [
+    'Paste G-code into the text box, or tap Upload to load a .nc / .txt / .mpf file.',
+    'Select controller type (Haas or Sinumerik) or leave on Auto — the app detects it automatically.',
+    'Tap Analyze G-Code to run the check.',
+    'Lines highlighted in red have errors; yellow lines have warnings. Tap any line for details.',
+  ];
+
+  @override String get helpKbTitle => 'CNC Knowledge Base';
+  @override List<String> get helpKbSteps => [
+    'Type any CNC question (G-code, speeds, machining troubleshooting) and send.',
+    'The AI (Claude) answers using CNC machining knowledge.',
+    'Free plan: 10 questions per month. Upgrade to Pro for unlimited access.',
+    'Tap the book icon for the G-Code Reference, or the alarm icon for the Error Reference.',
+  ];
+
+  @override String get helpGcodeRefTitle => 'G-Code Reference';
+  @override List<String> get helpGcodeRefSteps => [
+    'Browse 270+ G and M codes for Haas, Siemens, FANUC, and Heidenhain controllers.',
+    'Use the brand chips (Haas / Siemens / FANUC / Heidenhain) to filter by controller.',
+    'Type in the search box to find a code or keyword instantly.',
+    'Tap any code to see the full description, syntax example, and safety warnings.',
+  ];
+
+  @override String get helpErrRefTitle => 'Alarm & Error Reference';
+  @override List<String> get helpErrRefSteps => [
+    'Search by alarm number or keyword (e.g. "spindle" or "450").',
+    'Use the brand filter to narrow results to your machine controller.',
+    'Tap any alarm to see possible causes and step-by-step solutions.',
+  ];
+
+  @override String get helpHistoryTitle => 'History';
+  @override List<String> get helpHistorySteps => [
+    'Your saved calculations and G-code analyses are stored here.',
+    'After calculating, tap Save in the results panel to add an entry.',
+    'After analyzing G-code, tap Save in the summary tab.',
+    'Tap any entry to view full details; swipe left to delete.',
+  ];
 }

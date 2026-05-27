@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/help_card.dart';
 import '../data/errors_repository.dart';
 import '../domain/error_alarm.dart';
 
@@ -51,9 +52,10 @@ class _ErrorReferenceScreenState extends ConsumerState<ErrorReferenceScreen> {
       appBar: AppBar(title: Text(s.errRefTitle)),
       body: Column(
         children: [
+          HelpCard(title: s.helpErrRefTitle, btnLabel: s.helpBtnLabel, steps: s.helpErrRefSteps),
           // Search bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: TextField(
               controller: _searchCtrl,
               onChanged:  (v) => setState(() => _query = v),

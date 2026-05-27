@@ -8,6 +8,7 @@ import '../data/materials_repository.dart';
 import '../domain/calculators/milling_calculator.dart';
 import '../domain/cut_parameters.dart';
 import '../domain/material_spec.dart';
+import '../../../core/widgets/help_card.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/domain/saved_calculation.dart';
 import '../../subscription/data/subscription_repository.dart';
@@ -151,10 +152,12 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
   Widget _buildBody(BuildContext context, List<MaterialSpec> materials, AppStrings s) {
     final unitLabel = _units == UnitSystem.metric ? 'mm' : 'in';
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          HelpCard(title: s.helpCalcTitle, btnLabel: s.helpBtnLabel, steps: s.helpCalcSteps),
+          const SizedBox(height: 8),
           _SectionCard(
             title: s.sectionMaterial,
             child: _MaterialSelector(

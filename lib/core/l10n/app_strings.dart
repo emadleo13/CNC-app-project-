@@ -206,6 +206,21 @@ abstract class AppStrings {
   // Language names for new locales
   String get settingsLanguageFa;
   String get settingsLanguageAr;
+
+  // Help / guide cards
+  String get helpBtnLabel;
+  String get helpCalcTitle;
+  List<String> get helpCalcSteps;
+  String get helpGcodeTitle;
+  List<String> get helpGcodeSteps;
+  String get helpKbTitle;
+  List<String> get helpKbSteps;
+  String get helpGcodeRefTitle;
+  List<String> get helpGcodeRefSteps;
+  String get helpErrRefTitle;
+  List<String> get helpErrRefSteps;
+  String get helpHistoryTitle;
+  List<String> get helpHistorySteps;
 }
 
 // Locale provider

@@ -194,4 +194,54 @@ class AppStringsFa implements AppStrings {
   @override String get gcodeRefNoResults   => 'کدی یافت نشد';
   @override String get gcodeRefSyntax      => 'نحو';
   @override String get gcodeRefCount       => 'کد';
+
+  // Help
+  @override String get helpBtnLabel => 'راهنما';
+
+  @override String get helpCalcTitle => 'ماشین‌حساب تغذیه و سرعت';
+  @override List<String> get helpCalcSteps => [
+    'یک ماده از لیست انتخاب کنید (فولاد، آلومینیوم، تیتانیوم و غیره).',
+    'قطر ابزار و تعداد لبه‌ها را وارد کنید، سپس عمق و عرض برش را تنظیم کنید.',
+    'جنس ابزار (کاربید یا HSS) و نوع عملیات (خشن‌کاری یا پرداخت) را انتخاب کنید.',
+    'محاسبه را بزنید — دور در دقیقه، پیشروی، بار تراشه و MRR فوری نمایش داده می‌شوند.\nبرای ذخیره در تاریخچه «ذخیره» را بزنید.',
+  ];
+
+  @override String get helpGcodeTitle => 'آنالیزور G-Code';
+  @override List<String> get helpGcodeSteps => [
+    'G-code را در کادر متنی وارد کنید یا Upload را بزنید تا فایل .nc / .txt / .mpf بارگذاری شود.',
+    'نوع کنترلر (Haas یا Sinumerik) را انتخاب کنید یا Auto را بگذارید — اپ خودکار تشخیص می‌دهد.',
+    'آنالیز G-Code را بزنید تا بررسی انجام شود.',
+    'سطرهای قرمز خطا دارند؛ سطرهای زرد هشدار دارند. روی هر سطر بزنید برای جزئیات.',
+  ];
+
+  @override String get helpKbTitle => 'پایگاه دانش CNC';
+  @override List<String> get helpKbSteps => [
+    'هر سوال CNC (G-code، سرعت، عیب‌یابی) را تایپ کرده و ارسال کنید.',
+    'هوش مصنوعی (Claude) با دانش ماشین‌کاری CNC پاسخ می‌دهد.',
+    'پلن رایگان: ۱۰ سوال در ماه. برای دسترسی نامحدود به Pro ارتقا دهید.',
+    'آیکون کتاب را برای مرجع G-Code، یا آیکون زنگ خطر را برای مرجع خطاها بزنید.',
+  ];
+
+  @override String get helpGcodeRefTitle => 'مرجع G-Code';
+  @override List<String> get helpGcodeRefSteps => [
+    'بیش از ۲۷۰ کد G و M برای کنترلرهای Haas، زیمنس، FANUC و Heidenhain را مرور کنید.',
+    'از فیلترهای برند برای نمایش کدهای هر کنترلر استفاده کنید.',
+    'در کادر جستجو، کد یا کلمه کلیدی را تایپ کنید تا فوری پیدا شود.',
+    'روی هر کد بزنید تا توضیح کامل، مثال نحو و هشدارهای ایمنی نمایش داده شود.',
+  ];
+
+  @override String get helpErrRefTitle => 'مرجع خطاها و آلارم‌ها';
+  @override List<String> get helpErrRefSteps => [
+    'با شماره آلارم یا کلمه کلیدی جستجو کنید (مثلاً "اسپیندل" یا "450").',
+    'از فیلتر برند برای محدود کردن نتایج به کنترلر دستگاه خود استفاده کنید.',
+    'روی هر آلارم بزنید تا دلایل احتمالی و راه‌حل‌های گام‌به‌گام ببینید.',
+  ];
+
+  @override String get helpHistoryTitle => 'تاریخچه';
+  @override List<String> get helpHistorySteps => [
+    'محاسبات و تحلیل‌های G-code ذخیره‌شده اینجا نگهداری می‌شوند.',
+    'بعد از محاسبه، «ذخیره» را در پنل نتایج بزنید تا یک آیتم اضافه شود.',
+    'بعد از آنالیز G-code، در تب خلاصه «ذخیره» را بزنید.',
+    'روی هر آیتم بزنید برای مشاهده جزئیات؛ به چپ بکشید برای حذف.',
+  ];
 }

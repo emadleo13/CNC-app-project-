@@ -194,4 +194,54 @@ class AppStringsAr implements AppStrings {
   @override String get gcodeRefNoResults   => 'لم يتم العثور على أكواد';
   @override String get gcodeRefSyntax      => 'الصياغة';
   @override String get gcodeRefCount       => 'كود';
+
+  // Help
+  @override String get helpBtnLabel => 'دليل الاستخدام';
+
+  @override String get helpCalcTitle => 'حاسبة التغذية والسرعة';
+  @override List<String> get helpCalcSteps => [
+    'اختر مادة من القائمة (فولاذ، ألومنيوم، تيتانيوم، إلخ).',
+    'أدخل قطر الأداة وعدد الأسنان، ثم حدد عمق القطع وعرض القطع.',
+    'اختر مادة الأداة (كربيد أو HSS) ونوع العملية (خشنة أو تشطيب).',
+    'اضغط احسب — تظهر RPM ومعدل التغذية وحمل الرقائق و MRR فوراً.\nاضغط حفظ لتخزين النتيجة في السجل.',
+  ];
+
+  @override String get helpGcodeTitle => 'محلل G-Code';
+  @override List<String> get helpGcodeSteps => [
+    'الصق الجي-كود في مربع النص، أو اضغط رفع لتحميل ملف .nc / .txt / .mpf.',
+    'اختر نوع وحدة التحكم (Haas أو Sinumerik) أو اتركه على تلقائي — التطبيق يكتشفه تلقائياً.',
+    'اضغط تحليل الجي-كود لإجراء الفحص.',
+    'الأسطر الحمراء تحتوي على أخطاء؛ الأسطر الصفراء تحتوي على تحذيرات. اضغط أي سطر للتفاصيل.',
+  ];
+
+  @override String get helpKbTitle => 'قاعدة معرفة CNC';
+  @override List<String> get helpKbSteps => [
+    'اكتب أي سؤال CNC (جي-كود، سرعات، استكشاف أخطاء) وأرسله.',
+    'يجيب الذكاء الاصطناعي (Claude) بناءً على معرفة التشغيل الآلي CNC.',
+    'الخطة المجانية: 10 أسئلة شهرياً. رقّ إلى Pro للوصول غير المحدود.',
+    'اضغط أيقونة الكتاب لمرجع أكواد G، أو أيقونة الإنذار لمرجع الأخطاء.',
+  ];
+
+  @override String get helpGcodeRefTitle => 'مرجع أكواد G';
+  @override List<String> get helpGcodeRefSteps => [
+    'تصفح أكثر من 270 كود G و M لوحدات تحكم Haas وSiemens وFANUC وHeidenhain.',
+    'استخدم فلاتر الشركات المصنعة لعرض أكواد كل وحدة تحكم.',
+    'اكتب في مربع البحث للعثور على كود أو كلمة مفتاحية فوراً.',
+    'اضغط أي كود لرؤية الوصف الكامل ومثال الصياغة والتحذيرات.',
+  ];
+
+  @override String get helpErrRefTitle => 'مرجع الإنذارات والأخطاء';
+  @override List<String> get helpErrRefSteps => [
+    'ابحث برقم الإنذار أو كلمة مفتاحية (مثل "مغزل" أو "450").',
+    'استخدم فلتر الشركة المصنعة لتضييق النتائج حسب وحدة التحكم.',
+    'اضغط أي إنذار لرؤية الأسباب المحتملة والحلول خطوة بخطوة.',
+  ];
+
+  @override String get helpHistoryTitle => 'السجل';
+  @override List<String> get helpHistorySteps => [
+    'الحسابات وتحليلات الجي-كود المحفوظة تُخزن هنا.',
+    'بعد الحساب، اضغط حفظ في لوحة النتائج لإضافة إدخال.',
+    'بعد تحليل الجي-كود، اضغط حفظ في تبويب الملخص.',
+    'اضغط أي إدخال لعرض التفاصيل الكاملة؛ اسحب يساراً للحذف.',
+  ];
 }

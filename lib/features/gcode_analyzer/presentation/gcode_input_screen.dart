@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/help_card.dart';
 import '../domain/cnc_dialect.dart';
 import '../parsers/gcode_parser.dart';
 
@@ -215,10 +216,12 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            HelpCard(title: s.helpGcodeTitle, btnLabel: s.helpBtnLabel, steps: s.helpGcodeSteps),
+            const SizedBox(height: 8),
             // Dialect selector
             Card(
               child: Padding(

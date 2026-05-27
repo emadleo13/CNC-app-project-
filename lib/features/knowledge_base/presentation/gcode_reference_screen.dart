@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/help_card.dart';
 import '../data/gcode_repository.dart';
 
 final _gcodeRepoProvider  = Provider((_) => GcodeRepository());
@@ -55,9 +56,10 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
       appBar: AppBar(title: Text(s.gcodeRefTitle)),
       body: Column(
         children: [
+          HelpCard(title: s.helpGcodeRefTitle, btnLabel: s.helpBtnLabel, steps: s.helpGcodeRefSteps),
           // Search bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: TextField(
               controller: _searchCtrl,
               onChanged:  (v) => setState(() => _query = v),
