@@ -90,8 +90,170 @@
       "category": "turning",
       "typical_use": "External and internal turning",
       "chip_load_range": { "min_mm": 0.10, "max_mm": 0.60 }
+    },
+    {
+      "code": "chamfer_mill",
+      "name": "Chamfer Mill",
+      "name_fa": "شامفرمیل",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "Chamfering edges and deburring",
+      "chip_load_range": { "min_mm": 0.02, "max_mm": 0.15 }
+    },
+    {
+      "code": "thread_mill",
+      "name": "Thread Mill",
+      "name_fa": "فرز رزوه",
+      "flutes": 3,
+      "category": "threading",
+      "typical_use": "Internal and external thread milling",
+      "chip_load_range": { "min_mm": 0.01, "max_mm": 0.08 }
+    },
+    {
+      "code": "reamer_hss",
+      "name": "HSS Reamer",
+      "name_fa": "ریمر HSS",
+      "flutes": 6,
+      "category": "drilling",
+      "typical_use": "Precision hole finishing to tight tolerances",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.25 }
+    },
+    {
+      "code": "reamer_carbide",
+      "name": "Carbide Reamer",
+      "name_fa": "ریمر کارباید",
+      "flutes": 6,
+      "category": "drilling",
+      "typical_use": "High precision hole finishing in hardened materials",
+      "chip_load_range": { "min_mm": 0.03, "max_mm": 0.20 }
+    },
+    {
+      "code": "boring_bar",
+      "name": "Boring Bar",
+      "name_fa": "بورینگ بار",
+      "flutes": 1,
+      "category": "turning",
+      "typical_use": "Internal boring and finishing of holes",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.30 }
+    },
+    {
+      "code": "center_drill",
+      "name": "Center Drill",
+      "name_fa": "مته مرکز",
+      "flutes": 2,
+      "category": "drilling",
+      "typical_use": "Creating center holes for turning and drilling alignment",
+      "chip_load_range": { "min_mm": 0.02, "max_mm": 0.10 }
+    },
+    {
+      "code": "spot_drill",
+      "name": "Spot Drill",
+      "name_fa": "اسپات دریل",
+      "flutes": 2,
+      "category": "drilling",
+      "typical_use": "Spot drilling for accurate hole positioning before twist drill",
+      "chip_load_range": { "min_mm": 0.03, "max_mm": 0.15 }
+    },
+    {
+      "code": "tap_hss",
+      "name": "HSS Tap",
+      "name_fa": "قلاویز HSS",
+      "flutes": 3,
+      "category": "threading",
+      "typical_use": "Tapping internal threads in soft to medium materials",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.20 }
+    },
+    {
+      "code": "tap_carbide",
+      "name": "Carbide Tap",
+      "name_fa": "قلاویز کارباید",
+      "flutes": 3,
+      "category": "threading",
+      "typical_use": "High speed tapping in hardened materials",
+      "chip_load_range": { "min_mm": 0.03, "max_mm": 0.15 }
+    },
+    {
+      "code": "roughing_mill",
+      "name": "Roughing End Mill (Corncob)",
+      "name_fa": "فرز خشن‌کاری",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "Heavy material removal with reduced cutting forces",
+      "chip_load_range": { "min_mm": 0.03, "max_mm": 0.25 }
+    },
+    {
+      "code": "dovetail_cutter",
+      "name": "Dovetail Cutter",
+      "name_fa": "فرز دم‌چلچله",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "Cutting dovetail slots and T-slots",
+      "chip_load_range": { "min_mm": 0.015, "max_mm": 0.10 }
+    },
+    {
+      "code": "woodruff_cutter",
+      "name": "Woodruff Key Cutter",
+      "name_fa": "فرز خار وودراف",
+      "flutes": 2,
+      "category": "milling",
+      "typical_use": "Cutting keyway slots for Woodruff keys",
+      "chip_load_range": { "min_mm": 0.02, "max_mm": 0.12 }
+    },
+    {
+      "code": "insert_drill",
+      "name": "Indexable Insert Drill",
+      "name_fa": "مته اینسرتی",
+      "flutes": 2,
+      "category": "drilling",
+      "typical_use": "High performance drilling with replaceable inserts",
+      "chip_load_range": { "min_mm": 0.06, "max_mm": 0.35 }
+    },
+    {
+      "code": "grooving_insert",
+      "name": "Grooving/Parting Insert",
+      "name_fa": "اینسرت شیارزنی",
+      "flutes": 1,
+      "category": "turning",
+      "typical_use": "External grooving and parting off on lathe",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.25 }
+    },
+    {
+      "code": "threading_insert",
+      "name": "Threading Insert",
+      "name_fa": "اینسرت رزوه‌زنی",
+      "flutes": 1,
+      "category": "turning",
+      "typical_use": "External and internal threading on lathe",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.20 }
+    },
+    {
+      "code": "corner_radius_mill",
+      "name": "Corner Radius End Mill (Bull Nose)",
+      "name_fa": "فرز گوشه‌گرد",
+      "flutes": 4,
+      "category": "milling",
+      "typical_use": "Profiling with corner radius for strength and finish",
+      "chip_load_range": { "min_mm": 0.015, "max_mm": 0.12 }
+    },
+    {
+      "code": "fly_cutter",
+      "name": "Fly Cutter",
+      "name_fa": "فلای‌کاتر",
+      "flutes": 1,
+      "category": "milling",
+      "typical_use": "Large surface facing with fine finish",
+      "chip_load_range": { "min_mm": 0.05, "max_mm": 0.30 }
+    },
+    {
+      "code": "engraving_tool",
+      "name": "Engraving Tool",
+      "name_fa": "ابزار حکاکی",
+      "flutes": 1,
+      "category": "milling",
+      "typical_use": "Fine engraving and marking on metal surfaces",
+      "chip_load_range": { "min_mm": 0.005, "max_mm": 0.05 }
     }
   ],
-  "standard_diameters_mm": [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 20, 25, 32],
-  "standard_diameters_inch": [0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.5, 0.625, 0.75, 1.0, 1.25, 1.5]
+  "standard_diameters_mm": [0.5, 0.8, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 32, 40, 50, 63],
+  "standard_diameters_inch": [0.03125, 0.046875, 0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.5, 0.625, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
 }

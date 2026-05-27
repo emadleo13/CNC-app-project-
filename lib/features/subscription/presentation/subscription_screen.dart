@@ -171,6 +171,27 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ),
 
           if (!isPro) ...[
+            // Free trial badge
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.card_giftcard, color: AppColors.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Text(s.subFreeTrial,
+                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 15)),
+                ],
+              ),
+            ),
+
             ElevatedButton(
               onPressed: (_purchasing || _loading) ? null : _subscribe,
               style: ElevatedButton.styleFrom(
@@ -184,11 +205,55 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   : Text(s.subSubscribeBtn,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
+
+            // Cancel anytime text
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(s.subCancelAnytime,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            ),
+
             const SizedBox(height: 12),
             TextButton(
               onPressed: (_purchasing || _loading) ? null : _restore,
               child: Text(s.subRestoreBtn,
                 style: const TextStyle(color: AppColors.textSecondary)),
+            ),
+
+            // Satisfaction guarantee
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.successGreen.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.successGreen.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.successGreen.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.verified_user, color: AppColors.successGreen, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.subGuaranteeTitle,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.successGreen)),
+                      const SizedBox(height: 4),
+                      Text(s.subGuaranteeMsg,
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    ],
+                  )),
+                ],
+              ),
             ),
           ] else
             OutlinedButton.icon(

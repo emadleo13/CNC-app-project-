@@ -145,7 +145,7 @@ class AppStringsFa implements AppStrings {
   // Phase 2 — Subscription
   @override String get subTitle            => 'CNC Assist Pro';
   @override String get subSubtitle         => 'دسترسی نامحدود را باز کنید';
-  @override String get subMonthly          => '۱۹ دلار / ماه';
+  @override String get subMonthly          => '۴٫۹۹ دلار / ماه';
   @override String get subFeatureUnlimited => 'سوالات AI نامحدود';
   @override String get subFeatureSetup     => 'تولید فرم تنظیم دستگاه';
   @override String get subFeatureTooling   => 'پیشنهاد ابزار';
@@ -186,6 +186,21 @@ class AppStringsFa implements AppStrings {
   @override String get settingsFreePlan     => 'پلن رایگان · ۱۰ سوال AI در ماه';
   @override String get settingsProPlan      => 'پلن Pro · دسترسی نامحدود';
   @override String get settingsUpgradePro   => 'ارتقا به Pro';
+
+  // Support & Contact
+  @override String get supportTitle       => 'پشتیبانی و تماس';
+  @override String get supportSubtitle    => 'ما اینجاییم تا به شما کمک کنیم';
+  @override String get supportEmail       => 'ایمیل';
+  @override String get supportTelegram    => 'تلگرام';
+  @override String get supportLinkedIn    => 'لینکدین';
+  @override String get support247         => 'پشتیبانی ۲۴ ساعته · ۷ روز هفته';
+  @override String get supportDeveloper   => 'توسعه‌دهنده و مدیر';
+
+  // Trust — Subscription
+  @override String get subFreeTrial       => '۷ روز دوره آزمایشی رایگان';
+  @override String get subGuaranteeTitle  => 'ضمانت رضایت';
+  @override String get subGuaranteeMsg    => 'هر زمان لغو کنید. بازگشت وجه ظرف ۴۸ ساعت در صورت عدم رضایت.';
+  @override String get subCancelAnytime   => 'لغو در هر زمان · بدون تعهد';
 
   // G-code reference
   @override String get gcodeRefTitle       => 'مرجع G-Code';

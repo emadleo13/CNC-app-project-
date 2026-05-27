@@ -294,6 +294,300 @@
       },
       "coolant_required": false,
       "notes": "Gummy material. Use sharp tools and high rake angles."
+    },
+    {
+      "code": "d2_tool_steel",
+      "name": "D2 Tool Steel",
+      "name_fa": "فولاد ابزار D2",
+      "category": "tool_steel",
+      "hardness_bhn": 217,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 40,   "m_per_min": 12  },
+        "hss_finish":    { "sfm": 55,   "m_per_min": 17  },
+        "carbide_rough": { "sfm": 150,  "m_per_min": 46  },
+        "carbide_finish":{ "sfm": 230,  "m_per_min": 70  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.001,
+        "end_mill_4fl": 0.0008,
+        "drill":        0.002,
+        "face_mill":    0.004
+      },
+      "coolant_required": true,
+      "notes": "Air hardening cold work steel. Very abrasive. Use TiAlN coated carbide tools."
+    },
+    {
+      "code": "a2_tool_steel",
+      "name": "A2 Tool Steel",
+      "name_fa": "فولاد ابزار A2",
+      "category": "tool_steel",
+      "hardness_bhn": 200,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 50,   "m_per_min": 15  },
+        "hss_finish":    { "sfm": 65,   "m_per_min": 20  },
+        "carbide_rough": { "sfm": 180,  "m_per_min": 55  },
+        "carbide_finish":{ "sfm": 270,  "m_per_min": 82  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0012,
+        "end_mill_4fl": 0.0009,
+        "drill":        0.0025,
+        "face_mill":    0.004
+      },
+      "coolant_required": true,
+      "notes": "Air hardening, good toughness. Used for dies, punches, and tooling."
+    },
+    {
+      "code": "s7_tool_steel",
+      "name": "S7 Tool Steel",
+      "name_fa": "فولاد ابزار S7",
+      "category": "tool_steel",
+      "hardness_bhn": 187,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 55,   "m_per_min": 17  },
+        "hss_finish":    { "sfm": 70,   "m_per_min": 21  },
+        "carbide_rough": { "sfm": 200,  "m_per_min": 61  },
+        "carbide_finish":{ "sfm": 300,  "m_per_min": 91  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0013,
+        "end_mill_4fl": 0.001,
+        "drill":        0.003,
+        "face_mill":    0.005
+      },
+      "coolant_required": true,
+      "notes": "Shock resistant tool steel. Good for impact applications."
+    },
+    {
+      "code": "2024_aluminum",
+      "name": "2024 Aluminum",
+      "name_fa": "آلومینیوم ۲۰۲۴",
+      "category": "aluminum",
+      "hardness_bhn": 120,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 200,  "m_per_min": 61  },
+        "hss_finish":    { "sfm": 300,  "m_per_min": 91  },
+        "carbide_rough": { "sfm": 600,  "m_per_min": 183 },
+        "carbide_finish":{ "sfm": 900,  "m_per_min": 274 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.003,
+        "end_mill_4fl": 0.002,
+        "drill":        0.005,
+        "face_mill":    0.008
+      },
+      "coolant_required": false,
+      "notes": "Aerospace aluminum. Higher strength than 6061. Good machinability."
+    },
+    {
+      "code": "5052_aluminum",
+      "name": "5052 Aluminum",
+      "name_fa": "آلومینیوم ۵۰۵۲",
+      "category": "aluminum",
+      "hardness_bhn": 60,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 250,  "m_per_min": 76  },
+        "hss_finish":    { "sfm": 350,  "m_per_min": 107 },
+        "carbide_rough": { "sfm": 700,  "m_per_min": 213 },
+        "carbide_finish":{ "sfm": 1000, "m_per_min": 305 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.003,
+        "end_mill_4fl": 0.002,
+        "drill":        0.006,
+        "face_mill":    0.009
+      },
+      "coolant_required": false,
+      "notes": "Marine grade, corrosion resistant. Gummy — use sharp tools and high RPM."
+    },
+    {
+      "code": "bronze_c932",
+      "name": "C932 Bearing Bronze",
+      "name_fa": "برنز یاتاقانی C932",
+      "category": "bronze",
+      "hardness_bhn": 65,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 100,  "m_per_min": 30  },
+        "hss_finish":    { "sfm": 150,  "m_per_min": 46  },
+        "carbide_rough": { "sfm": 350,  "m_per_min": 107 },
+        "carbide_finish":{ "sfm": 500,  "m_per_min": 152 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.002,
+        "end_mill_4fl": 0.0015,
+        "drill":        0.004,
+        "face_mill":    0.006
+      },
+      "coolant_required": false,
+      "notes": "Self-lubricating bearing bronze. Avoid dull tools — material can grab."
+    },
+    {
+      "code": "delrin_pom",
+      "name": "Delrin (POM)",
+      "name_fa": "دلرین (POM)",
+      "category": "plastic",
+      "hardness_bhn": 20,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 200,  "m_per_min": 61  },
+        "hss_finish":    { "sfm": 350,  "m_per_min": 107 },
+        "carbide_rough": { "sfm": 500,  "m_per_min": 152 },
+        "carbide_finish":{ "sfm": 800,  "m_per_min": 244 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.004,
+        "end_mill_4fl": 0.003,
+        "drill":        0.006,
+        "face_mill":    0.01
+      },
+      "coolant_required": false,
+      "notes": "Engineering plastic. Use sharp uncoated tools. Air blast cooling only."
+    },
+    {
+      "code": "polycarbonate",
+      "name": "Polycarbonate",
+      "name_fa": "پلی‌کربنات",
+      "category": "plastic",
+      "hardness_bhn": 15,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 200,  "m_per_min": 61  },
+        "hss_finish":    { "sfm": 300,  "m_per_min": 91  },
+        "carbide_rough": { "sfm": 500,  "m_per_min": 152 },
+        "carbide_finish":{ "sfm": 700,  "m_per_min": 213 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.004,
+        "end_mill_4fl": 0.003,
+        "drill":        0.005,
+        "face_mill":    0.008
+      },
+      "coolant_required": false,
+      "notes": "Transparent engineering plastic. Avoid melting with low feed. Use 2-flute tools."
+    },
+    {
+      "code": "1045_steel",
+      "name": "1045 Medium Carbon Steel",
+      "name_fa": "فولاد کربنی ۱۰۴۵",
+      "category": "steel",
+      "hardness_bhn": 163,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 80,   "m_per_min": 24  },
+        "hss_finish":    { "sfm": 110,  "m_per_min": 34  },
+        "carbide_rough": { "sfm": 280,  "m_per_min": 85  },
+        "carbide_finish":{ "sfm": 400,  "m_per_min": 122 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0018,
+        "end_mill_4fl": 0.0013,
+        "drill":        0.0035,
+        "face_mill":    0.005
+      },
+      "coolant_required": true,
+      "notes": "Medium carbon steel. Harder than 1018. Common for shafts and gears."
+    },
+    {
+      "code": "4340_steel",
+      "name": "4340 Alloy Steel",
+      "name_fa": "فولاد آلیاژی ۴۳۴۰",
+      "category": "steel",
+      "hardness_bhn": 217,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 60,   "m_per_min": 18  },
+        "hss_finish":    { "sfm": 80,   "m_per_min": 24  },
+        "carbide_rough": { "sfm": 220,  "m_per_min": 67  },
+        "carbide_finish":{ "sfm": 320,  "m_per_min": 98  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0015,
+        "end_mill_4fl": 0.0011,
+        "drill":        0.003,
+        "face_mill":    0.004
+      },
+      "coolant_required": true,
+      "notes": "High strength alloy steel. Reduce speed 30% if hardened above 35 HRC."
+    },
+    {
+      "code": "17_4ph_stainless",
+      "name": "17-4 PH Stainless Steel",
+      "name_fa": "استیل ضدزنگ 17-4PH",
+      "category": "stainless",
+      "hardness_bhn": 300,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 45,   "m_per_min": 14  },
+        "hss_finish":    { "sfm": 65,   "m_per_min": 20  },
+        "carbide_rough": { "sfm": 170,  "m_per_min": 52  },
+        "carbide_finish":{ "sfm": 260,  "m_per_min": 79  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0012,
+        "end_mill_4fl": 0.0008,
+        "drill":        0.002,
+        "face_mill":    0.004
+      },
+      "coolant_required": true,
+      "notes": "Precipitation hardened stainless. Very hard. Use rigid setup and TiAlN coating."
+    },
+    {
+      "code": "hastelloy_c276",
+      "name": "Hastelloy C276",
+      "name_fa": "هستالوی C276",
+      "category": "superalloy",
+      "hardness_bhn": 210,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 15,   "m_per_min": 5   },
+        "hss_finish":    { "sfm": 25,   "m_per_min": 8   },
+        "carbide_rough": { "sfm": 80,   "m_per_min": 24  },
+        "carbide_finish":{ "sfm": 130,  "m_per_min": 40  }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.0008,
+        "end_mill_4fl": 0.0006,
+        "drill":        0.0015,
+        "face_mill":    0.003
+      },
+      "coolant_required": true,
+      "notes": "Nickel superalloy. Extreme work hardening. Use constant engagement and flood coolant."
+    },
+    {
+      "code": "ductile_iron",
+      "name": "Ductile Cast Iron (Grade 65-45-12)",
+      "name_fa": "چدن داکتیل",
+      "category": "cast_iron",
+      "hardness_bhn": 160,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 80,   "m_per_min": 24  },
+        "hss_finish":    { "sfm": 110,  "m_per_min": 34  },
+        "carbide_rough": { "sfm": 300,  "m_per_min": 91  },
+        "carbide_finish":{ "sfm": 450,  "m_per_min": 137 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.002,
+        "end_mill_4fl": 0.0015,
+        "drill":        0.004,
+        "face_mill":    0.006
+      },
+      "coolant_required": false,
+      "notes": "Nodular cast iron. Better machinability than grey. Air blow recommended."
+    },
+    {
+      "code": "abs_plastic",
+      "name": "ABS Plastic",
+      "name_fa": "پلاستیک ABS",
+      "category": "plastic",
+      "hardness_bhn": 12,
+      "cutting_speeds": {
+        "hss_rough":     { "sfm": 250,  "m_per_min": 76  },
+        "hss_finish":    { "sfm": 400,  "m_per_min": 122 },
+        "carbide_rough": { "sfm": 600,  "m_per_min": 183 },
+        "carbide_finish":{ "sfm": 900,  "m_per_min": 274 }
+      },
+      "chip_load_factors": {
+        "end_mill_2fl": 0.005,
+        "end_mill_4fl": 0.004,
+        "drill":        0.007,
+        "face_mill":    0.01
+      },
+      "coolant_required": false,
+      "notes": "Common 3D printing material. Use sharp 2-flute O-flute tools. Air blast only."
     }
   ]
 }

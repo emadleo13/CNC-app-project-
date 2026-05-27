@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
@@ -135,6 +136,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title:   Text(s.settingsThemeDark),
               trailing: const Icon(Icons.check, color: AppColors.primary, size: 18),
             ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Support & Contact ──────────────────────────────────────────────
+          _SectionHeader(s.supportTitle),
+          Card(
+            child: Column(children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.successGreen.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12), topRight: Radius.circular(12),
+                  ),
+                ),
+                child: Row(children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.successGreen.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.verified_user, color: AppColors.successGreen, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.support247,
+                        style: const TextStyle(color: AppColors.successGreen, fontWeight: FontWeight.bold, fontSize: 14)),
+                      const SizedBox(height: 2),
+                      Text(s.supportSubtitle,
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                    ],
+                  )),
+                ]),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              ListTile(
+                leading: const Icon(Icons.person_outline, color: AppColors.primary),
+                title:   Text(s.supportDeveloper),
+                subtitle: const Text('Emad Leo', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              ListTile(
+                leading: const Icon(Icons.email_outlined, color: AppColors.primary),
+                title:   Text(s.supportEmail),
+                subtitle: const Text('hamidleo1984@gmail.com', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                trailing: const Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
+                onTap: () => launchUrl(Uri.parse('mailto:hamidleo1984@gmail.com')),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              ListTile(
+                leading: const Icon(Icons.send_outlined, color: AppColors.primary),
+                title:   Text(s.supportTelegram),
+                subtitle: const Text('@EMADLEO1984', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                trailing: const Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
+                onTap: () => launchUrl(Uri.parse('https://t.me/EMADLEO1984'), mode: LaunchMode.externalApplication),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              ListTile(
+                leading: const Icon(Icons.work_outline, color: AppColors.primary),
+                title:   Text(s.supportLinkedIn),
+                subtitle: const Text('Emad Leo', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                trailing: const Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
+                onTap: () => launchUrl(Uri.parse('https://www.linkedin.com/in/emadleo13-b42882236'), mode: LaunchMode.externalApplication),
+              ),
+            ]),
           ),
           const SizedBox(height: 20),
 

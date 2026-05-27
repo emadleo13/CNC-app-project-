@@ -143,7 +143,7 @@ class AppStringsRo implements AppStrings {
   // Phase 2 — Subscription
   @override String get subTitle            => 'CNC Assist Pro';
   @override String get subSubtitle         => 'Deblochează accesul nelimitat';
-  @override String get subMonthly          => '19\$ / lună';
+  @override String get subMonthly          => '4.99\$ / lună';
   @override String get subFeatureUnlimited => 'Întrebări AI nelimitate';
   @override String get subFeatureSetup     => 'Generator fișă de lucru';
   @override String get subFeatureTooling   => 'Recomandări scule';
@@ -184,6 +184,21 @@ class AppStringsRo implements AppStrings {
   @override String get settingsFreePlan     => 'Plan Gratuit · 10 întrebări AI/lună';
   @override String get settingsProPlan      => 'Plan Pro · Acces nelimitat';
   @override String get settingsUpgradePro   => 'Upgrade la Pro';
+
+  // Support & Contact
+  @override String get supportTitle       => 'Suport & Contact';
+  @override String get supportSubtitle    => 'Suntem aici să vă ajutăm';
+  @override String get supportEmail       => 'Email';
+  @override String get supportTelegram    => 'Telegram';
+  @override String get supportLinkedIn    => 'LinkedIn';
+  @override String get support247         => 'Suport disponibil 24/7';
+  @override String get supportDeveloper   => 'Dezvoltator & Admin';
+
+  // Trust — Subscription
+  @override String get subFreeTrial       => '7 zile gratuit';
+  @override String get subGuaranteeTitle  => 'Satisfacție Garantată';
+  @override String get subGuaranteeMsg    => 'Anulează oricând. Rambursare în 48 ore dacă nu ești mulțumit.';
+  @override String get subCancelAnytime   => 'Anulează oricând · Fără angajament';
 
   // Language names
   @override String get settingsLanguageFa  => 'فارسی';

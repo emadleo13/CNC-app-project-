@@ -145,7 +145,7 @@ class AppStringsAr implements AppStrings {
   // Phase 2 — Subscription
   @override String get subTitle            => 'CNC Assist Pro';
   @override String get subSubtitle         => 'افتح الوصول غير المحدود';
-  @override String get subMonthly          => '19\$ / شهر';
+  @override String get subMonthly          => '4.99\$ / شهر';
   @override String get subFeatureUnlimited => 'أسئلة AI غير محدودة';
   @override String get subFeatureSetup     => 'مولد ورقة الإعداد';
   @override String get subFeatureTooling   => 'توصيات الأدوات';
@@ -186,6 +186,21 @@ class AppStringsAr implements AppStrings {
   @override String get settingsFreePlan     => 'الخطة المجانية · 10 أسئلة AI/شهر';
   @override String get settingsProPlan      => 'خطة Pro · وصول غير محدود';
   @override String get settingsUpgradePro   => 'الترقية إلى Pro';
+
+  // Support & Contact
+  @override String get supportTitle       => 'الدعم والتواصل';
+  @override String get supportSubtitle    => 'نحن هنا لمساعدتك';
+  @override String get supportEmail       => 'البريد الإلكتروني';
+  @override String get supportTelegram    => 'تيليجرام';
+  @override String get supportLinkedIn    => 'لينكد إن';
+  @override String get support247         => 'دعم متاح ٢٤/٧';
+  @override String get supportDeveloper   => 'المطوّر والمسؤول';
+
+  // Trust — Subscription
+  @override String get subFreeTrial       => '٧ أيام تجربة مجانية';
+  @override String get subGuaranteeTitle  => 'ضمان الرضا';
+  @override String get subGuaranteeMsg    => 'إلغاء في أي وقت. استرداد خلال ٤٨ ساعة إذا لم تكن راضياً.';
+  @override String get subCancelAnytime   => 'إلغاء في أي وقت · بدون التزام';
 
   // G-code reference
   @override String get gcodeRefTitle       => 'مرجع أكواد G';

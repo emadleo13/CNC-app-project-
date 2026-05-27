@@ -143,7 +143,7 @@ class AppStringsEn implements AppStrings {
   // Phase 2 — Subscription
   @override String get subTitle            => 'CNC Assist Pro';
   @override String get subSubtitle         => 'Unlock unlimited access';
-  @override String get subMonthly          => '\$19 / month';
+  @override String get subMonthly          => '\$4.99 / month';
   @override String get subFeatureUnlimited => 'Unlimited AI questions';
   @override String get subFeatureSetup     => 'Setup Sheet Generator';
   @override String get subFeatureTooling   => 'Tooling Recommendations';
@@ -184,6 +184,21 @@ class AppStringsEn implements AppStrings {
   @override String get settingsFreePlan     => 'Free Plan · 10 AI questions/month';
   @override String get settingsProPlan      => 'Pro Plan · Unlimited access';
   @override String get settingsUpgradePro   => 'Upgrade to Pro';
+
+  // Support & Contact
+  @override String get supportTitle       => 'Support & Contact';
+  @override String get supportSubtitle    => 'We are here to help you';
+  @override String get supportEmail       => 'Email';
+  @override String get supportTelegram    => 'Telegram';
+  @override String get supportLinkedIn    => 'LinkedIn';
+  @override String get support247         => '24/7 Support Available';
+  @override String get supportDeveloper   => 'Developer & Admin';
+
+  // Trust — Subscription
+  @override String get subFreeTrial       => '7-Day Free Trial';
+  @override String get subGuaranteeTitle  => 'Satisfaction Guaranteed';
+  @override String get subGuaranteeMsg    => 'Cancel anytime. Refund within 48 hours if not satisfied.';
+  @override String get subCancelAnytime   => 'Cancel anytime · No commitment';
 
   // Language names
   @override String get settingsLanguageFa  => 'فارسی';

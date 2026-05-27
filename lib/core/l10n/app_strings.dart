@@ -207,6 +207,21 @@ abstract class AppStrings {
   String get settingsLanguageFa;
   String get settingsLanguageAr;
 
+  // Support & Contact
+  String get supportTitle;
+  String get supportSubtitle;
+  String get supportEmail;
+  String get supportTelegram;
+  String get supportLinkedIn;
+  String get support247;
+  String get supportDeveloper;
+
+  // Trust — Subscription screen
+  String get subFreeTrial;
+  String get subGuaranteeTitle;
+  String get subGuaranteeMsg;
+  String get subCancelAnytime;
+
   // Help / guide cards
   String get helpBtnLabel;
   String get helpCalcTitle;
