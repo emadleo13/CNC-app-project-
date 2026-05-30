@@ -1,7 +1,7 @@
 name: cnc_assist
 description: "CNC Operator Assistant - AI-powered G-code analyzer and machining calculator"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.12.0
@@ -74,6 +74,8 @@ flutter:
     - assets/data/tools.json
     - assets/data/gcode_reference.json
     - assets/data/errors.json
+    - assets/data/quiz.json
+    - assets/data/tool_wear.json
 
   fonts:
     - family: JetBrainsMono

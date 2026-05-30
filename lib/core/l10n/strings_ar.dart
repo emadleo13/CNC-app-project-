@@ -259,4 +259,67 @@ class AppStringsAr implements AppStrings {
     'بعد تحليل الجي-كود، اضغط حفظ في تبويب الملخص.',
     'اضغط أي إدخال لعرض التفاصيل الكاملة؛ اسحب يساراً للحذف.',
   ];
+
+  // ── أدوات التصنيع ──
+  @override String get toolsHubTitle    => 'أدوات التصنيع';
+  @override String get toolComingSoon   => 'قريباً';
+  @override String get catMilling       => 'التفريز';
+  @override String get catTurning       => 'الخراطة';
+  @override String get catDrilling      => 'الثقب واللولبة';
+  @override String get catCoordinates   => 'الإحداثيات والبرامج';
+  @override String get catConverters    => 'المحوّلات';
+  @override String get catReference     => 'الدقة والمراجع';
+  @override String get toolMilling          => 'تغذية وسرعة التفريز';
+  @override String get toolMillingSub       => 'دوران، تغذية، حمل، MRR';
+  @override String get toolTurning          => 'تغذية وسرعة الخراطة';
+  @override String get toolTurningSub       => 'دوران، تغذية، زمن القطع';
+  @override String get toolDrilling         => 'الثقب واللولبة';
+  @override String get toolDrillingSub      => 'سرعات، زمن، ثقب اللولب';
+  @override String get toolTaper            => 'إحداثيات المخروط';
+  @override String get toolTaperSub         => 'X/Z مع تعويض نصف القطر';
+  @override String get toolArc              => 'القوس / نصف القطر';
+  @override String get toolArcSub           => 'إحداثيات المماس والنهاية';
+  @override String get toolGcodeGen         => 'مولّدات الجي-كود';
+  @override String get toolGcodeGenSub      => 'لولب G76، دورات الثقب';
+  @override String get toolConverters       => 'محوّلات السرعة/التغذية';
+  @override String get toolConvertersSub    => 'SFM↔RPM، تغذية/دورة↔دقيقة';
+  @override String get toolHardness         => 'تحويل الصلادة';
+  @override String get toolHardnessSub      => 'HRC ↔ HB ↔ HV';
+  @override String get toolTruePosition     => 'الموضع الحقيقي';
+  @override String get toolTruePositionSub  => 'GD&T مع تفاوت إضافي';
+  @override String get toolWeight           => 'وزن القطعة';
+  @override String get toolWeightSub        => 'مواد وأشكال متعددة';
+  @override String get catLearn             => 'تعلّم ومراجع';
+  @override String get toolQuiz             => 'اختبار المشغّل';
+  @override String get toolQuizSub          => 'أسئلة في 7 مواضيع';
+  @override String get toolWear             => 'دليل تآكل الأداة';
+  @override String get toolWearSub          => 'الأسباب والحلول';
+  @override String get quizScore            => 'النتيجة';
+  @override String get quizRestart          => 'إعادة';
+  @override String get quizNext             => 'التالي';
+  @override String get quizFinish           => 'إنهاء';
+  @override String get wearCause            => 'الأسباب';
+  @override String get wearSolution         => 'الحلول';
+  @override String get secAdvanced          => 'متقدّم (رأس كروي)';
+  @override String get resCusp              => 'ارتفاع القمة';
+  @override String get resChipThin          => 'معامل ترقيق الرايش';
+  @override String get labelStepover        => 'الخطوة الجانبية';
+
+  // ── سلاسل الحاسبة المشتركة ──
+  @override String get secInputs        => 'المدخلات';
+  @override String get sectionTapDrill  => 'ثقب اللولب';
+  @override String get resCutTime       => 'زمن القطع';
+  @override String get resFeedPerMin    => 'معدل التغذية';
+  @override String get resTapDrill      => 'قطر ثقب اللولب';
+  @override String get resPointLength   => 'طول رأس المثقاب';
+  @override String get resCoordinates   => 'الإحداثيات';
+  @override String get resDeviation     => 'الانحراف';
+  @override String get resProgram       => 'البرنامج';
+  @override String get btnCopy          => 'نسخ';
+  @override String get btnGenerate      => 'توليد';
+  @override String get convTabSpeed     => 'السرعة';
+  @override String get convTabFeed      => 'التغذية';
+  @override String get hardEnterValue   => 'أدخل قيمة بأي مقياس';
+  @override String get taperWarnNoseR   => 'نصف قطر الرأس كبير جداً لهذا المقطع — تداخل.';
+  @override String get taperWarnLength  => 'نصف القطر يتجاوز طول المقطع.';
 }

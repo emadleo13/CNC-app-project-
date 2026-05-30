@@ -261,4 +261,67 @@ class AppStringsEn implements AppStrings {
     'After analyzing G-code, tap Save in the summary tab.',
     'Tap any entry to view full details; swipe left to delete.',
   ];
+
+  // ── Tools Hub ──
+  @override String get toolsHubTitle    => 'Machining Tools';
+  @override String get toolComingSoon   => 'SOON';
+  @override String get catMilling       => 'Milling';
+  @override String get catTurning       => 'Turning';
+  @override String get catDrilling      => 'Drilling & Tapping';
+  @override String get catCoordinates   => 'Coordinates & Programs';
+  @override String get catConverters    => 'Converters';
+  @override String get catReference     => 'Precision & Reference';
+  @override String get toolMilling          => 'Milling Feeds & Speeds';
+  @override String get toolMillingSub       => 'RPM, feed, chip load, MRR';
+  @override String get toolTurning          => 'Turning Feeds & Speeds';
+  @override String get toolTurningSub       => 'RPM, feed, cut time';
+  @override String get toolDrilling         => 'Drill & Tap';
+  @override String get toolDrillingSub      => 'Speeds, cut time, tap drill';
+  @override String get toolTaper            => 'Taper Coordinates';
+  @override String get toolTaperSub         => 'X/Z with nose-R comp.';
+  @override String get toolArc              => 'Arc / Radius';
+  @override String get toolArcSub           => 'Tangent & endpoint coords';
+  @override String get toolGcodeGen         => 'G-code Generators';
+  @override String get toolGcodeGenSub      => 'G76 thread, drill cycles';
+  @override String get toolConverters       => 'Speed / Feed Converters';
+  @override String get toolConvertersSub    => 'SFM↔RPM, feed/rev↔min';
+  @override String get toolHardness         => 'Hardness Conversion';
+  @override String get toolHardnessSub      => 'HRC ↔ HB ↔ HV';
+  @override String get toolTruePosition     => 'True Position';
+  @override String get toolTruePositionSub  => 'GD&T with bonus tol.';
+  @override String get toolWeight           => 'Material Weight';
+  @override String get toolWeightSub        => '170 materials, 7 shapes';
+  @override String get catLearn             => 'Learn & Reference';
+  @override String get toolQuiz             => 'Machinist Test';
+  @override String get toolQuizSub          => 'Quiz across 7 topics';
+  @override String get toolWear             => 'Tool Wear Guide';
+  @override String get toolWearSub          => 'Causes & solutions';
+  @override String get quizScore            => 'Score';
+  @override String get quizRestart          => 'Restart';
+  @override String get quizNext             => 'Next';
+  @override String get quizFinish           => 'Finish';
+  @override String get wearCause            => 'Causes';
+  @override String get wearSolution         => 'Solutions';
+  @override String get secAdvanced          => 'Advanced (ball-nose)';
+  @override String get resCusp              => 'Cusp Height';
+  @override String get resChipThin          => 'Chip Thinning ×';
+  @override String get labelStepover        => 'Stepover';
+
+  // ── Shared calculator strings ──
+  @override String get secInputs        => 'Inputs';
+  @override String get sectionTapDrill  => 'Tap Drill';
+  @override String get resCutTime       => 'Cut Time';
+  @override String get resFeedPerMin    => 'Feed Rate';
+  @override String get resTapDrill      => 'Tap Drill Ø';
+  @override String get resPointLength   => 'Point Length';
+  @override String get resCoordinates   => 'Coordinates';
+  @override String get resDeviation     => 'Deviation';
+  @override String get resProgram       => 'Program';
+  @override String get btnCopy          => 'Copy';
+  @override String get btnGenerate      => 'Generate';
+  @override String get convTabSpeed     => 'Speed';
+  @override String get convTabFeed      => 'Feed';
+  @override String get hardEnterValue   => 'Enter a value in any scale';
+  @override String get taperWarnNoseR   => 'Nose radius too large for this section — interference.';
+  @override String get taperWarnLength  => 'Radius exceeds section length.';
 }

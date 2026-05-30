@@ -6,6 +6,7 @@ import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/materials_repository.dart';
 import '../domain/calculators/milling_calculator.dart';
+import '../domain/calculators/milling_helpers.dart';
 import '../domain/cut_parameters.dart';
 import '../domain/material_spec.dart';
 import '../../../core/widgets/help_card.dart';
@@ -36,12 +37,14 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
   double _diameter      = 10.0;
   double _doc           = 2.0;
   double _woc           = 5.0;
+  double _stepover      = 1.0;
 
   CutParameters? _result;
 
   final _diameterCtrl = TextEditingController(text: '10');
   final _docCtrl      = TextEditingController(text: '2');
   final _wocCtrl      = TextEditingController(text: '5');
+  final _stepoverCtrl = TextEditingController(text: '1');
 
   @override
   void initState() {
@@ -104,6 +107,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
     _diameterCtrl.dispose();
     _docCtrl.dispose();
     _wocCtrl.dispose();
+    _stepoverCtrl.dispose();
     super.dispose();
   }
 
@@ -259,6 +263,15 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
               flutes:       _flutes,
               units:        _units,
               operation:    _opType,
+            ),
+            const SizedBox(height: 12),
+            _AdvancedHelpersCard(
+              diameter:     _diameter,
+              woc:          _woc,
+              stepover:     _stepover,
+              stepoverCtrl: _stepoverCtrl,
+              units:        _units,
+              onStepover:   (v) => setState(() => _stepover = v),
             ),
           ],
         ],
@@ -641,6 +654,59 @@ class _ProButton extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+}
+
+// ─── Advanced milling helpers (cusp height + radial chip thinning) ───────────
+
+class _AdvancedHelpersCard extends ConsumerWidget {
+  final double diameter;
+  final double woc;
+  final double stepover;
+  final TextEditingController stepoverCtrl;
+  final UnitSystem units;
+  final ValueChanged<double> onStepover;
+  const _AdvancedHelpersCard({
+    required this.diameter,
+    required this.woc,
+    required this.stepover,
+    required this.stepoverCtrl,
+    required this.units,
+    required this.onStepover,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(appStringsProvider);
+    final unit = units == UnitSystem.metric ? 'mm' : 'in';
+    final cusp = MillingHelpers.cuspHeight(
+        ballDiameter: diameter, stepover: stepover);
+    final rctf = MillingHelpers.chipThinningFactor(
+        toolDiameter: diameter, widthOfCut: woc);
+
+    return _SectionCard(
+      title: s.secAdvanced,
+      child: Column(children: [
+        _NumericField(
+          label: '${s.labelStepover} ($unit)',
+          controller: stepoverCtrl,
+          onChanged: (v) => onStepover(double.tryParse(v) ?? stepover),
+        ),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: _ResultItem(
+            label: s.resCusp,
+            value: '${cusp.toStringAsFixed(4)} $unit',
+            icon: Icons.waves,
+          )),
+          Expanded(child: _ResultItem(
+            label: s.resChipThin,
+            value: rctf.toStringAsFixed(3),
+            icon: Icons.compress,
+          )),
+        ]),
+      ]),
     );
   }
 }

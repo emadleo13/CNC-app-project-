@@ -1,8 +1,11 @@
+// `UnitSystem` now lives in core/calc/units.dart and is re-exported here so the
+// many existing imports of this file keep compiling unchanged.
+import '../../../core/calc/units.dart';
+export '../../../core/calc/units.dart' show UnitSystem, UnitSystemX, SpeedFormulas;
+
 enum ToolMaterial { hss, carbide }
 
 enum OperationType { roughing, finishing }
-
-enum UnitSystem { metric, imperial }
 
 class CalculatorInput {
   final String materialCode;

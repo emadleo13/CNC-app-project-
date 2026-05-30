@@ -1,6 +1,18 @@
 import 'package:go_router/go_router.dart';
 import 'route_names.dart';
+import '../../features/tools/presentation/tools_hub_screen.dart';
 import '../../features/feed_speed/presentation/calculator_screen.dart';
+import '../../features/turning/presentation/turning_screen.dart';
+import '../../features/drilling/presentation/drilling_screen.dart';
+import '../../features/converters/presentation/converters_screen.dart';
+import '../../features/converters/presentation/hardness_screen.dart';
+import '../../features/coordinates/presentation/taper_screen.dart';
+import '../../features/coordinates/presentation/arc_screen.dart';
+import '../../features/coordinates/presentation/gcode_gen_screen.dart';
+import '../../features/precision/presentation/true_position_screen.dart';
+import '../../features/precision/presentation/part_weight_screen.dart';
+import '../../features/learn/presentation/quiz_screen.dart';
+import '../../features/learn/presentation/tool_wear_screen.dart';
 import '../../features/gcode_analyzer/presentation/gcode_input_screen.dart';
 import '../../features/gcode_analyzer/presentation/analysis_result_screen.dart';
 import '../../features/knowledge_base/presentation/qa_screen.dart';
@@ -19,7 +31,57 @@ final appRouter = GoRouter(
       routes: [
         GoRoute(
           path: RouteNames.calculator,
-          builder: (context, state) => const CalculatorScreen(),
+          builder: (context, state) => const ToolsHubScreen(),
+          routes: [
+            GoRoute(
+              path: 'milling',
+              builder: (context, state) => const CalculatorScreen(),
+            ),
+            GoRoute(
+              path: 'turning',
+              builder: (context, state) => const TurningScreen(),
+            ),
+            GoRoute(
+              path: 'drilling',
+              builder: (context, state) => const DrillingScreen(),
+            ),
+            GoRoute(
+              path: 'converters',
+              builder: (context, state) => const ConvertersScreen(),
+            ),
+            GoRoute(
+              path: 'hardness',
+              builder: (context, state) => const HardnessScreen(),
+            ),
+            GoRoute(
+              path: 'taper',
+              builder: (context, state) => const TaperScreen(),
+            ),
+            GoRoute(
+              path: 'arc',
+              builder: (context, state) => const ArcScreen(),
+            ),
+            GoRoute(
+              path: 'gcode-gen',
+              builder: (context, state) => const GcodeGenScreen(),
+            ),
+            GoRoute(
+              path: 'true-position',
+              builder: (context, state) => const TruePositionScreen(),
+            ),
+            GoRoute(
+              path: 'weight',
+              builder: (context, state) => const PartWeightScreen(),
+            ),
+            GoRoute(
+              path: 'quiz',
+              builder: (context, state) => const QuizScreen(),
+            ),
+            GoRoute(
+              path: 'tool-wear',
+              builder: (context, state) => const ToolWearScreen(),
+            ),
+          ],
         ),
         GoRoute(
           path: RouteNames.gcodeAnalyzer,

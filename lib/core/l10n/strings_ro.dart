@@ -261,4 +261,67 @@ class AppStringsRo implements AppStrings {
     'După analiza G-code, apăsați Salvează în fila Rezumat.',
     'Apăsați orice înregistrare pentru detalii complete; glisați la stânga pentru a șterge.',
   ];
+
+  // ── Tools Hub ──
+  @override String get toolsHubTitle    => 'Unelte de prelucrare';
+  @override String get toolComingSoon   => 'CURÂND';
+  @override String get catMilling       => 'Frezare';
+  @override String get catTurning       => 'Strunjire';
+  @override String get catDrilling      => 'Găurire & Filetare';
+  @override String get catCoordinates   => 'Coordonate & Programe';
+  @override String get catConverters    => 'Convertoare';
+  @override String get catReference     => 'Precizie & Referință';
+  @override String get toolMilling          => 'Avans & viteză frezare';
+  @override String get toolMillingSub       => 'RPM, avans, încărcare, MRR';
+  @override String get toolTurning          => 'Avans & viteză strunjire';
+  @override String get toolTurningSub       => 'RPM, avans, timp tăiere';
+  @override String get toolDrilling         => 'Burghiu & Tarod';
+  @override String get toolDrillingSub      => 'Viteze, timp, burghiu tarod';
+  @override String get toolTaper            => 'Coordonate conicitate';
+  @override String get toolTaperSub         => 'X/Z cu comp. rază vârf';
+  @override String get toolArc              => 'Arc / Rază';
+  @override String get toolArcSub           => 'Coordonate tangentă & capăt';
+  @override String get toolGcodeGen         => 'Generatoare G-code';
+  @override String get toolGcodeGenSub      => 'Filet G76, cicluri găurire';
+  @override String get toolConverters       => 'Convertoare viteză/avans';
+  @override String get toolConvertersSub    => 'SFM↔RPM, avans/rot↔min';
+  @override String get toolHardness         => 'Conversie duritate';
+  @override String get toolHardnessSub      => 'HRC ↔ HB ↔ HV';
+  @override String get toolTruePosition     => 'Poziție reală';
+  @override String get toolTruePositionSub  => 'GD&T cu toleranță bonus';
+  @override String get toolWeight           => 'Greutate material';
+  @override String get toolWeightSub        => 'Materiale și forme';
+  @override String get catLearn             => 'Învățare & Referință';
+  @override String get toolQuiz             => 'Test mecanic';
+  @override String get toolQuizSub          => 'Chestionar pe 7 teme';
+  @override String get toolWear             => 'Ghid uzură sculă';
+  @override String get toolWearSub          => 'Cauze & soluții';
+  @override String get quizScore            => 'Scor';
+  @override String get quizRestart          => 'Reîncepe';
+  @override String get quizNext             => 'Următor';
+  @override String get quizFinish           => 'Termină';
+  @override String get wearCause            => 'Cauze';
+  @override String get wearSolution         => 'Soluții';
+  @override String get secAdvanced          => 'Avansat (cap sferic)';
+  @override String get resCusp              => 'Înălțime creastă';
+  @override String get resChipThin          => 'Factor subțiere așchie';
+  @override String get labelStepover        => 'Pas lateral';
+
+  // ── Șiruri comune calculator ──
+  @override String get secInputs        => 'Date de intrare';
+  @override String get sectionTapDrill  => 'Burghiu tarod';
+  @override String get resCutTime       => 'Timp tăiere';
+  @override String get resFeedPerMin    => 'Avans';
+  @override String get resTapDrill      => 'Ø burghiu tarod';
+  @override String get resPointLength   => 'Lungime vârf';
+  @override String get resCoordinates   => 'Coordonate';
+  @override String get resDeviation     => 'Abatere';
+  @override String get resProgram       => 'Program';
+  @override String get btnCopy          => 'Copiază';
+  @override String get btnGenerate      => 'Generează';
+  @override String get convTabSpeed     => 'Viteză';
+  @override String get convTabFeed      => 'Avans';
+  @override String get hardEnterValue   => 'Introduceți o valoare pe orice scară';
+  @override String get taperWarnNoseR   => 'Raza vârfului prea mare pentru secțiune — interferență.';
+  @override String get taperWarnLength  => 'Raza depășește lungimea secțiunii.';
 }

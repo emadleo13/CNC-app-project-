@@ -259,4 +259,67 @@ class AppStringsFa implements AppStrings {
     'بعد از آنالیز G-code، در تب خلاصه «ذخیره» را بزنید.',
     'روی هر آیتم بزنید برای مشاهده جزئیات؛ به چپ بکشید برای حذف.',
   ];
+
+  // ── ابزارهای ماشینکاری ──
+  @override String get toolsHubTitle    => 'ابزارهای ماشینکاری';
+  @override String get toolComingSoon   => 'به‌زودی';
+  @override String get catMilling       => 'فرزکاری';
+  @override String get catTurning       => 'تراشکاری';
+  @override String get catDrilling      => 'سوراخکاری و قلاویز';
+  @override String get catCoordinates   => 'مختصات و برنامه';
+  @override String get catConverters    => 'مبدل‌ها';
+  @override String get catReference     => 'دقت و مرجع';
+  @override String get toolMilling          => 'پیشروی و سرعت فرز';
+  @override String get toolMillingSub       => 'دور، پیشروی، بار براده، MRR';
+  @override String get toolTurning          => 'پیشروی و سرعت تراش';
+  @override String get toolTurningSub       => 'دور، پیشروی، زمان برش';
+  @override String get toolDrilling         => 'مته و قلاویز';
+  @override String get toolDrillingSub      => 'سرعت، زمان، مته قلاویز';
+  @override String get toolTaper            => 'مختصات شیب (تیپر)';
+  @override String get toolTaperSub         => 'X/Z با جبران شعاع نوک';
+  @override String get toolArc              => 'قوس / شعاع';
+  @override String get toolArcSub           => 'مختصات مماس و انتها';
+  @override String get toolGcodeGen         => 'مولد جی‌کد';
+  @override String get toolGcodeGenSub      => 'رزوه G76، چرخه سوراخ';
+  @override String get toolConverters       => 'مبدل سرعت/پیشروی';
+  @override String get toolConvertersSub    => 'SFM↔RPM، پیشروی دور↔دقیقه';
+  @override String get toolHardness         => 'تبدیل سختی';
+  @override String get toolHardnessSub      => 'HRC ↔ HB ↔ HV';
+  @override String get toolTruePosition     => 'موقعیت واقعی';
+  @override String get toolTruePositionSub  => 'GD&T با تلرانس بونوس';
+  @override String get toolWeight           => 'وزن قطعه';
+  @override String get toolWeightSub        => 'مواد و اشکال مختلف';
+  @override String get catLearn             => 'آموزش و مرجع';
+  @override String get toolQuiz             => 'آزمون ماشینکار';
+  @override String get toolQuizSub          => 'کوییز در ۷ موضوع';
+  @override String get toolWear             => 'راهنمای سایش ابزار';
+  @override String get toolWearSub          => 'علت‌ها و راه‌حل‌ها';
+  @override String get quizScore            => 'امتیاز';
+  @override String get quizRestart          => 'شروع مجدد';
+  @override String get quizNext             => 'بعدی';
+  @override String get quizFinish           => 'پایان';
+  @override String get wearCause            => 'علت‌ها';
+  @override String get wearSolution         => 'راه‌حل‌ها';
+  @override String get secAdvanced          => 'پیشرفته (سرکروی)';
+  @override String get resCusp              => 'ارتفاع پله';
+  @override String get resChipThin          => 'ضریب نازک‌شدن براده';
+  @override String get labelStepover        => 'گام جانبی';
+
+  // ── رشته‌های مشترک ماشین‌حساب ──
+  @override String get secInputs        => 'ورودی‌ها';
+  @override String get sectionTapDrill  => 'مته قلاویز';
+  @override String get resCutTime       => 'زمان برش';
+  @override String get resFeedPerMin    => 'نرخ پیشروی';
+  @override String get resTapDrill      => 'قطر مته قلاویز';
+  @override String get resPointLength   => 'طول نوک مته';
+  @override String get resCoordinates   => 'مختصات';
+  @override String get resDeviation     => 'انحراف';
+  @override String get resProgram       => 'برنامه';
+  @override String get btnCopy          => 'کپی';
+  @override String get btnGenerate      => 'تولید';
+  @override String get convTabSpeed     => 'سرعت';
+  @override String get convTabFeed      => 'پیشروی';
+  @override String get hardEnterValue   => 'مقدار را در هر مقیاسی وارد کنید';
+  @override String get taperWarnNoseR   => 'شعاع نوک برای این مقطع خیلی بزرگ است — تداخل.';
+  @override String get taperWarnLength  => 'شعاع از طول مقطع بیشتر است.';
 }

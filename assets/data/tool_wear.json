@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "wear_types": [
+    {
+      "name": "Flank Wear",
+      "icon": "trending_flat",
+      "severity": "normal",
+      "description": "Uniform wear band on the relief face from abrasion. The expected, predictable form of wear.",
+      "causes": ["Cutting speed too high", "Abrasive workpiece", "Insufficient tool hardness"],
+      "solutions": ["Reduce cutting speed", "Use a more wear-resistant grade/coating", "Maintain proper feed"]
+    },
+    {
+      "name": "Crater Wear",
+      "icon": "blur_circular",
+      "severity": "warning",
+      "description": "A cavity worn into the rake face behind the edge by chip flow and diffusion at high temperature.",
+      "causes": ["Excessive cutting temperature", "High speed with steel", "Chemical diffusion"],
+      "solutions": ["Reduce speed", "Use coated carbide (TiAlN)", "Improve coolant delivery"]
+    },
+    {
+      "name": "Built-Up Edge (BUE)",
+      "icon": "layers",
+      "severity": "warning",
+      "description": "Work material welds onto the cutting edge, then breaks away taking tool material and ruining finish.",
+      "causes": ["Cutting speed too low", "Gummy/ductile material", "Dull edge"],
+      "solutions": ["Increase cutting speed", "Use sharper/polished edge", "Apply coolant or lubricity coating"]
+    },
+    {
+      "name": "Notching",
+      "icon": "content_cut",
+      "severity": "warning",
+      "description": "Localized wear at the depth-of-cut line, common in stainless and superalloys due to work hardening.",
+      "causes": ["Work hardening at DOC line", "Abrasive scale", "Oxidation"],
+      "solutions": ["Vary depth of cut", "Use a lead/approach angle", "Tougher grade"]
+    },
+    {
+      "name": "Chipping",
+      "icon": "broken_image",
+      "severity": "critical",
+      "description": "Small fractures of the cutting edge rather than gradual wear, leaving a serrated edge.",
+      "causes": ["Interrupted cuts / vibration", "Edge too brittle", "Built-up edge breaking away"],
+      "solutions": ["Use a tougher grade", "Add edge hone/chamfer", "Reduce feed or improve rigidity"]
+    },
+    {
+      "name": "Thermal Cracking",
+      "icon": "grid_on",
+      "severity": "critical",
+      "description": "Comb-shaped cracks perpendicular to the edge caused by cyclic heating/cooling.",
+      "causes": ["Intermittent cutting", "On/off coolant in milling", "Thermal shock"],
+      "solutions": ["Use coolant consistently or run dry", "Tougher grade", "Reduce speed"]
+    },
+    {
+      "name": "Edge Fracture",
+      "icon": "warning",
+      "severity": "critical",
+      "description": "Gross breakage of the insert from overload — the most catastrophic failure mode.",
+      "causes": ["Feed/DOC too high", "Insufficient rigidity", "Wrong/weak grade"],
+      "solutions": ["Reduce feed and depth", "Use stronger insert geometry", "Improve setup rigidity"]
+    },
+    {
+      "name": "Abrasive Wear",
+      "icon": "grain",
+      "severity": "normal",
+      "description": "General rounding of the edge from hard inclusions/particles in the workpiece.",
+      "causes": ["Hard inclusions (sand, carbides)", "Cast skin", "High silicon content"],
+      "solutions": ["Use a harder coated grade", "Reduce speed", "Pre-machine scale"]
+    }
+  ]
+}

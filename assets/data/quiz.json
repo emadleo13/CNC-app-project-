@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "category": "Speeds & Feeds",
+      "q": "Doubling the cutting diameter while keeping surface speed (Vc) constant does what to RPM?",
+      "options": ["Doubles it", "Halves it", "No change", "Quadruples it"],
+      "answer": 1
+    },
+    {
+      "category": "Speeds & Feeds",
+      "q": "Chip load (feed per tooth) primarily depends on which factors?",
+      "options": ["Coolant type", "Material and tool diameter", "Spindle brand", "Table size"],
+      "answer": 1
+    },
+    {
+      "category": "Speeds & Feeds",
+      "q": "Radial chip thinning occurs when radial width of cut is:",
+      "options": ["Greater than the diameter", "Less than half the diameter", "Exactly the diameter", "Zero"],
+      "answer": 1
+    },
+    {
+      "category": "G-code",
+      "q": "Which G-code commands rapid positioning?",
+      "options": ["G00", "G01", "G02", "G04"],
+      "answer": 0
+    },
+    {
+      "category": "G-code",
+      "q": "G43 on a mill activates:",
+      "options": ["Cutter comp", "Tool length offset", "Work offset", "Canned cycle"],
+      "answer": 1
+    },
+    {
+      "category": "G-code",
+      "q": "Which canned cycle is peck drilling?",
+      "options": ["G81", "G83", "G84", "G76"],
+      "answer": 1
+    },
+    {
+      "category": "M-code",
+      "q": "M03 commands:",
+      "options": ["Spindle stop", "Spindle CW", "Spindle CCW", "Coolant on"],
+      "answer": 1
+    },
+    {
+      "category": "M-code",
+      "q": "M08 turns on:",
+      "options": ["Flood coolant", "Air blast", "Spindle", "Conveyor"],
+      "answer": 0
+    },
+    {
+      "category": "Threads",
+      "q": "On a lathe, which compound cycle cuts threads?",
+      "options": ["G70", "G71", "G76", "G90"],
+      "answer": 2
+    },
+    {
+      "category": "Threads",
+      "q": "The 'pitch' of a metric thread is:",
+      "options": ["Threads per inch", "Distance between crests (mm)", "Major diameter", "Thread angle"],
+      "answer": 1
+    },
+    {
+      "category": "Tooling",
+      "q": "Flank wear is mainly caused by:",
+      "options": ["Too low speed", "Abrasion at the cutting edge", "Excess coolant", "Slow feed"],
+      "answer": 1
+    },
+    {
+      "category": "Tooling",
+      "q": "Built-up edge (BUE) is reduced by:",
+      "options": ["Lower cutting speed", "Higher cutting speed / sharper edge", "More depth of cut", "Dull tools"],
+      "answer": 1
+    },
+    {
+      "category": "GD&T",
+      "q": "True position tolerance is normally expressed as a:",
+      "options": ["Square zone", "Diametral (cylindrical) zone", "Linear band", "Single point"],
+      "answer": 1
+    },
+    {
+      "category": "GD&T",
+      "q": "Bonus tolerance is available when a feature is referenced at:",
+      "options": ["RFS", "MMC or LMC", "Basic only", "Never"],
+      "answer": 1
+    },
+    {
+      "category": "Materials",
+      "q": "Which material generally requires the LOWEST cutting speed?",
+      "options": ["Aluminium 6061", "1018 mild steel", "Titanium / superalloy", "Brass"],
+      "answer": 2
+    }
+  ]
+}

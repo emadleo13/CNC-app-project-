@@ -236,6 +236,69 @@ abstract class AppStrings {
   List<String> get helpErrRefSteps;
   String get helpHistoryTitle;
   List<String> get helpHistorySteps;
+
+  // ── Roadmap expansion — Tools Hub ──
+  String get toolsHubTitle;
+  String get toolComingSoon;
+  String get catMilling;
+  String get catTurning;
+  String get catDrilling;
+  String get catCoordinates;
+  String get catConverters;
+  String get catReference;
+  String get toolMilling;
+  String get toolMillingSub;
+  String get toolTurning;
+  String get toolTurningSub;
+  String get toolDrilling;
+  String get toolDrillingSub;
+  String get toolTaper;
+  String get toolTaperSub;
+  String get toolArc;
+  String get toolArcSub;
+  String get toolGcodeGen;
+  String get toolGcodeGenSub;
+  String get toolConverters;
+  String get toolConvertersSub;
+  String get toolHardness;
+  String get toolHardnessSub;
+  String get toolTruePosition;
+  String get toolTruePositionSub;
+  String get toolWeight;
+  String get toolWeightSub;
+  String get catLearn;
+  String get toolQuiz;
+  String get toolQuizSub;
+  String get toolWear;
+  String get toolWearSub;
+  String get quizScore;
+  String get quizRestart;
+  String get quizNext;
+  String get quizFinish;
+  String get wearCause;
+  String get wearSolution;
+  String get secAdvanced;
+  String get resCusp;
+  String get resChipThin;
+  String get labelStepover;
+
+  // ── Roadmap expansion — shared calculator strings ──
+  String get secInputs;
+  String get sectionTapDrill;
+  String get resCutTime;
+  String get resFeedPerMin;
+  String get resTapDrill;
+  String get resPointLength;
+  String get resCoordinates;
+  String get resDeviation;
+  String get resProgram;
+  String get btnCopy;
+  String get btnGenerate;
+  String get convTabSpeed;
+  String get convTabFeed;
+  String get hardEnterValue;
+  String get taperWarnNoseR;
+  String get taperWarnLength;
 }
 
 // Locale provider
