@@ -74,6 +74,7 @@ class AppStringsAr implements AppStrings {
   @override String get errRefFilterSiemens  => 'سيمنس';
   @override String get errRefFilterFanuc    => 'FANUC';
   @override String get errRefFilterHeidenhain => 'Heidenhain';
+  @override String get errRefFilterMazak      => 'Mazak';
   @override String get errRefNoResults      => 'لم يتم العثور على إنذارات';
   @override String get errRefCauses         => 'الأسباب المحتملة';
   @override String get errRefSolutions      => 'الحلول';
@@ -81,6 +82,41 @@ class AppStringsAr implements AppStrings {
   @override String get errRefSeverityWarning => 'تحذير';
   @override String get errRefSeverityError  => 'خطأ';
   @override String get errRefSeverityCritical => 'حرج';
+
+  // Knowledge base — G-code program library
+  @override String get progLibTitle         => 'مكتبة برامج G-code';
+  @override String get progLibSearchHint    => 'البحث عن البرامج…';
+  @override String get progLibFilterAll     => 'الكل';
+  @override String get progLibNoResults     => 'لم يتم العثور على برامج';
+  @override String get progLibCount         => 'برنامج';
+  @override String get progLibCodeLabel     => 'G-CODE';
+  @override String get progLibNotesLabel    => 'نصائح';
+  @override String get progLibCopy          => 'نسخ الكود';
+  @override String get progLibCopied        => 'تم النسخ إلى الحافظة';
+  @override String get progLibBeginner      => 'مبتدئ';
+  @override String get progLibIntermediate  => 'متوسط';
+  @override String get progLibAdvanced      => 'متقدم';
+  @override String get progCatCircles       => 'دوائر';
+  @override String get progCatPockets       => 'تجاويف';
+  @override String get progCatDrilling      => 'حفر';
+  @override String get progCatSpirals       => 'حلزوني';
+  @override String get progCatEngraving     => 'حفر زخرفي';
+  @override String get progCatContours      => 'محيطات';
+  @override String get progCatFacing        => 'تسوية السطح';
+  @override String get progCatTurning       => 'خراطة';
+
+  // Knowledge base — CNC guides
+  @override String get guidesTitle             => 'أدلة CNC';
+  @override String get guidesSearchHint        => 'البحث في الأدلة…';
+  @override String get guidesNoResults         => 'لم يتم العثور على أدلة';
+  @override String get guideCatMachineBasics   => 'أساسيات الماكينة';
+  @override String get guideCatAxesCoordinates => 'المحاور والإحداثيات';
+  @override String get guideCatTooling         => 'الأدوات';
+  @override String get guideCatWorkHolding     => 'تثبيت القطعة';
+  @override String get guideCatGcodeBasics     => 'أساسيات G-code';
+  @override String get guideCatSpeedsFeeds     => 'السرعات والتغذية';
+  @override String get guideCatLatheBasics     => 'أساسيات الخراطة';
+  @override String get guideCatSafety          => 'السلامة';
 
   @override String get settingsTitle        => 'الإعدادات';
   @override String get settingsLanguage     => 'اللغة';
@@ -250,6 +286,20 @@ class AppStringsAr implements AppStrings {
     'ابحث برقم الإنذار أو كلمة مفتاحية (مثل "مغزل" أو "450").',
     'استخدم فلتر الشركة المصنعة لتضييق النتائج حسب وحدة التحكم.',
     'اضغط أي إنذار لرؤية الأسباب المحتملة والحلول خطوة بخطوة.',
+  ];
+
+  @override String get helpProgLibTitle => 'مكتبة برامج G-code';
+  @override List<String> get helpProgLibSteps => [
+    'تصفح برامج نموذجية جاهزة للتشغيل — دوائر، تجاويف، أنماط حفر، حلزونات، نقش، والمزيد.',
+    'استخدم رقائق الفئات للتصفية، أو ابحث بالعنوان أو كلمة مفتاحية.',
+    'اضغط على أي برنامج لعرض كود G-code الكامل ونسخه وقراءة نصائح التشغيل الآمن.',
+  ];
+
+  @override String get helpGuidesTitle => 'كيف تعمل ماكينات CNC';
+  @override List<String> get helpGuidesSteps => [
+    'اقرأ أدلة قصيرة تغطي أساسيات الماكينة والمحاور والأدوات وتثبيت القطعة وG-code والسلامة.',
+    'استخدم رقائق الفئات للانتقال إلى موضوع، أو ابحث بكلمة مفتاحية.',
+    'اضغط على أي دليل لقراءة المقال الكامل.',
   ];
 
   @override String get helpHistoryTitle => 'السجل';

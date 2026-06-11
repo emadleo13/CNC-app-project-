@@ -22,6 +22,8 @@ class RouteNames {
   static const String knowledgeBase  = '/knowledge';
   static const String errorReference  = '/knowledge/errors';
   static const String gcodeReference  = '/knowledge/gcodes';
+  static const String gcodeProgramLibrary = '/knowledge/programs';
+  static const String cncGuides       = '/knowledge/guides';
   static const String login          = '/login';
   static const String register       = '/register';
   static const String profile        = '/profile';

@@ -16,6 +16,7 @@ const _brandMeta = {
   'sinumerik':  (label: 'Siemens',    bg: Color(0xFF1A5C3A), fg: Color(0xFF6EFFC3)),
   'fanuc':      (label: 'FANUC',      bg: Color(0xFF3A1A1A), fg: Color(0xFFFF9F6E)),
   'heidenhain': (label: 'Heidenhain', bg: Color(0xFF3A1A5C), fg: Color(0xFFCF9FFF)),
+  'mazak':      (label: 'Mazak',      bg: Color(0xFF1A2A5C), fg: Color(0xFF8FB6FF)),
 };
 
 class GcodeReferenceScreen extends ConsumerStatefulWidget {
@@ -100,6 +101,8 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
                 _BrandChip(brand: 'fanuc',      selected: _filter == 'fanuc',      onTap: () => setState(() => _filter = 'fanuc')),
                 const SizedBox(width: 8),
                 _BrandChip(brand: 'heidenhain', selected: _filter == 'heidenhain', onTap: () => setState(() => _filter = 'heidenhain')),
+                const SizedBox(width: 8),
+                _BrandChip(brand: 'mazak',      selected: _filter == 'mazak',      onTap: () => setState(() => _filter = 'mazak')),
               ],
             ),
           ),

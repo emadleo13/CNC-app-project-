@@ -76,6 +76,8 @@ flutter:
     - assets/data/errors.json
     - assets/data/quiz.json
     - assets/data/tool_wear.json
+    - assets/data/gcode_programs.json
+    - assets/data/guides.json
 
   fonts:
     - family: JetBrainsMono

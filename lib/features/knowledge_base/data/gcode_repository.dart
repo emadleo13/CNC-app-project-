@@ -89,6 +89,19 @@ class GcodeRepository {
       ));
     }
 
+    // mazak_codes
+    for (final item in (json['mazak_codes'] as List)) {
+      entries.add(GcodeEntry(
+        code:        item['code'] as String,
+        brand:       'mazak',
+        brands:      const ['mazak'],
+        name:        item['name'] as String,
+        description: item['description'] as String,
+        syntax:      item['syntax'] as String?,
+        warning:     item['warning'] as String?,
+      ));
+    }
+
     _cache = entries;
     return entries;
   }

@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "categories": ["machine_basics", "axes_coordinates", "tooling", "work_holding", "gcode_basics", "speeds_feeds", "lathe_basics", "safety"],
+  "guides": [
+    {
+      "id": "how_cnc_mill_works",
+      "title": "How a CNC Mill Works",
+      "category": "machine_basics",
+      "icon": "precision_manufacturing",
+      "summary": "The big picture: how a CNC mill turns a G-code program into physical motion and a finished part.",
+      "sections": [
+        {
+          "heading": "From program to motion",
+          "body": "A CNC (Computer Numerical Control) mill reads a G-code program line by line. Each line tells the controller where to move the spindle (X, Y, Z, and sometimes A/B/C rotary axes), how fast to move (feed rate), how fast to spin the tool (spindle speed), and which auxiliary functions to turn on or off (coolant, tool changes, etc.)."
+        },
+        {
+          "heading": "The main subsystems",
+          "body": "A typical mill has four core subsystems: the structure/frame (column, table, ways), the axis drive system (servo motors, ballscrews, linear guides) that moves the table and head, the spindle (motor + bearings that spin the cutting tool), and the controller (the computer that interprets G-code and commands the drives in real time)."
+        },
+        {
+          "heading": "Closed-loop feedback",
+          "body": "Each axis has a position feedback device (usually a rotary or linear encoder). The controller constantly compares the commanded position to the actual measured position and corrects any difference — this is what makes CNC machines accurate to thousandths of an inch (or hundredths of a millimeter) even under cutting load."
+        },
+        {
+          "heading": "Putting it together",
+          "body": "When you press cycle start, the controller streams the program: it positions the tool, turns on the spindle and coolant, performs cutting moves at the programmed feed, and executes tool changes when commanded. Limit switches, interlocks, and the emergency stop circuit run continuously in the background to keep the process safe."
+        }
+      ]
+    },
+    {
+      "id": "axes_and_coordinate_systems",
+      "title": "Understanding the X/Y/Z Axes",
+      "category": "axes_coordinates",
+      "icon": "grid_3x3",
+      "summary": "What X, Y, and Z actually mean on a mill and a lathe, and how the right-hand rule defines positive direction.",
+      "sections": [
+        {
+          "heading": "The three linear axes",
+          "body": "On a vertical mill, Z is always the spindle axis — moving the tool up (positive Z) away from the table or down (negative Z) into the part. X is typically the long travel of the table (left/right when facing the machine), and Y is the front-to-back travel."
+        },
+        {
+          "heading": "The right-hand rule",
+          "body": "Point your right thumb along the Z axis in the positive direction (tool retracting away from the part). Your index finger points toward positive X and your middle finger toward positive Y. This rule is consistent across every CNC machine, which is why programs are portable between machines once the work coordinate system is set."
+        },
+        {
+          "heading": "Rotary axes (A, B, C)",
+          "body": "A rotates around X, B rotates around Y, and C rotates around Z. A 4th-axis trunnion table is usually an A or B axis; a mill-turn machine's C axis lets the lathe spindle be positioned and milled into, like an indexing head."
+        },
+        {
+          "heading": "Lathe axes are different",
+          "body": "On a lathe, Z runs along the spindle centerline (toward/away from the chuck) and X is the radial/diameter direction — moving the tool toward the centerline decreases X. Many lathe controls program X in diameter values, so X20. means the tool is positioned at a 20mm diameter, not a 20mm radius."
+        }
+      ]
+    },
+    {
+      "id": "work_coordinate_systems_g54",
+      "title": "Work Coordinate Systems (G54-G59)",
+      "category": "axes_coordinates",
+      "icon": "my_location",
+      "summary": "Why G54 exists, how work offsets let you program in part-relative coordinates, and how to set them on the machine.",
+      "sections": [
+        {
+          "heading": "Machine zero vs. work zero",
+          "body": "Machine zero (sometimes called home or G53) is a fixed reference point set by the machine builder, usually found by a reference/homing move. Work zero is wherever YOU decide the part's origin should be — usually a corner or center of the part. G-code is written relative to work zero, not machine zero."
+        },
+        {
+          "heading": "What G54-G59 do",
+          "body": "G54 through G59 (and G54.1 P1-P48 on many controls for extra offsets) are work offset registers. Each one stores the distance from machine zero to that work zero, for every axis. Selecting G54 in your program tells the control 'use offset register #1 for X0 Y0 Z0 from now on'."
+        },
+        {
+          "heading": "Setting an offset in practice",
+          "body": "The operator jogs the spindle (with an edge finder, probe, or dial indicator) until the tool tip is exactly at the desired part origin, then presses a 'part zero set' softkey for X and Y. For Z, the tool is touched off the top of the part and Z0 is set there (or at the bottom, depending on shop convention)."
+        },
+        {
+          "heading": "Multiple setups, one program",
+          "body": "G54-G59 let you machine several identical parts (or several faces of one part) with the same program by simply changing which offset is active — G55 for vise position 2, G56 for position 3, and so on — without rewriting any coordinates."
+        }
+      ]
+    },
+    {
+      "id": "tool_offsets_explained",
+      "title": "Tool Length and Diameter Offsets (H & D)",
+      "category": "tooling",
+      "icon": "build_circle",
+      "summary": "Why every tool needs its own length and diameter numbers, and how H and D codes use them.",
+      "sections": [
+        {
+          "heading": "Why offsets exist",
+          "body": "Every tool in the magazine has a different length and diameter. Rather than rewriting the program every time you change a tool, the controller stores each tool's length and diameter in an offset table, and the program simply references the tool number plus an offset number (e.g. T1 H1 D1)."
+        },
+        {
+          "heading": "Tool length offset (H)",
+          "body": "G43 H_ activates tool length compensation: the control adds the stored length value to every Z move so the tool tip ends up where the program expects, regardless of how long the physical tool is. The length is usually measured from the gauge line (or spindle face) to the tool tip using a tool setter or by touching off the part."
+        },
+        {
+          "heading": "Cutter diameter offset (D)",
+          "body": "G41/G42 D_ activate cutter radius/diameter compensation. The control automatically offsets the toolpath left or right by the stored radius so the program can be written to the part's finished outline — if the cutter wears down slightly, you just update the D value and the part stays on size without editing the program."
+        },
+        {
+          "heading": "Common mistakes",
+          "body": "The two most common offset mistakes are: forgetting G49 to cancel length compensation before a tool change (can cause a crash on the next tool's first move), and entering a diameter value where the control expects a radius (or vice versa) — always check your control's convention."
+        }
+      ]
+    },
+    {
+      "id": "work_holding_methods",
+      "title": "Work Holding Methods",
+      "category": "work_holding",
+      "icon": "handyman",
+      "summary": "An overview of vises, clamps, fixtures, and chucks — and how to choose the right one for the job.",
+      "sections": [
+        {
+          "heading": "Vises",
+          "body": "The machine vise is the most common workholding device on a mill. A precision vise is bolted to the table and squared to the axes; the part is clamped between fixed and moving jaws. Soft jaws (machined to match the part) are used when extra accuracy or a custom shape is needed."
+        },
+        {
+          "heading": "Clamps and T-slots",
+          "body": "For parts too large or oddly shaped for a vise, step clamps or strap clamps bolt directly into the table's T-slots, pressing down on the part. Always support the clamp on the part side with a step block of equal height to keep it from tipping, and keep clamps clear of the toolpath."
+        },
+        {
+          "heading": "Fixtures",
+          "body": "A fixture is a custom-built holding device designed for one specific part (or family of parts), often used in production. Fixtures can locate the part precisely with pins and locators and clamp it in seconds, dramatically reducing setup time compared to a vise."
+        },
+        {
+          "heading": "Lathe chucks and collets",
+          "body": "On a lathe, a 3-jaw chuck self-centers round or hexagonal stock and is the most common holding method. A 4-jaw independent chuck lets each jaw move separately for off-center or irregular work. Collets grip precision round stock with very high concentricity, ideal for second operations."
+        }
+      ]
+    },
+    {
+      "id": "gcode_vs_mcode",
+      "title": "G-code vs. M-code: What's the Difference?",
+      "category": "gcode_basics",
+      "icon": "code",
+      "summary": "G-codes control geometry and motion; M-codes control the machine's auxiliary functions. Here's how they work together.",
+      "sections": [
+        {
+          "heading": "G-codes: motion and geometry",
+          "body": "G-codes (preparatory codes) tell the control HOW to move: rapid (G0), linear feed (G1), circular interpolation (G2/G3), canned cycles (G81-G89), plane selection (G17/G18/G19), units (G20/G21), and coordinate systems (G54-G59) all fall into this category."
+        },
+        {
+          "heading": "M-codes: machine functions",
+          "body": "M-codes (miscellaneous functions) turn things on and off: M3/M4/M5 control the spindle (forward/reverse/stop), M8/M9 control coolant, M6 performs a tool change, and M0/M1/M30 control program flow (stop, optional stop, end of program with rewind)."
+        },
+        {
+          "heading": "How they combine on one line",
+          "body": "A single block of G-code can mix both: 'G1 X1.0 Y2.0 F10. M8' moves the tool in a straight line at 10 units/min feed AND turns on flood coolant at the same time. The control executes the G-code motion and the M-code action together (or in the order the controller specifies for that M-code)."
+        },
+        {
+          "heading": "Modal vs. non-modal",
+          "body": "Most G-codes are modal — once commanded, they stay active until changed (e.g. G1 stays in effect for every following block until a G0, G2, G3, or canned cycle is called). Some codes (like G4 dwell, or G28 home) are non-modal and only apply to the line they're on."
+        }
+      ]
+    },
+    {
+      "id": "feeds_speeds_chip_load",
+      "title": "Feed Rate, Spindle Speed & Chip Load",
+      "category": "speeds_feeds",
+      "icon": "speed",
+      "summary": "The three numbers that determine how a tool cuts — and how they relate to each other.",
+      "sections": [
+        {
+          "heading": "Spindle speed (RPM)",
+          "body": "Spindle speed is derived from the cutting speed (Vc / SFM) recommended for the tool material and workpiece material, and the tool diameter: RPM = (Vc x 1000) / (pi x D) in metric, or RPM = (SFM x 3.82) / D in imperial. Carbide tools generally run much faster than HSS tools in the same material."
+        },
+        {
+          "heading": "Chip load (feed per tooth)",
+          "body": "Chip load is how much material each cutting edge removes per revolution — too small and the tool rubs instead of cutting (causing heat and premature wear); too large and the tool can break or deflect. Chip load is given in the manufacturer's tool catalog for each tool diameter and material."
+        },
+        {
+          "heading": "Calculating feed rate",
+          "body": "Feed rate (the F value in G-code, distance per minute) = chip load x number of flutes x RPM. For example, a 3-flute 1/2 inch endmill at 4000 RPM with a 0.004 in chip load gives F = 0.004 x 3 x 4000 = 48 in/min."
+        },
+        {
+          "heading": "Adjusting on the fly",
+          "body": "Most controls have feed-rate and spindle-speed override dials (50%-150% typical range) that let an operator fine-tune cutting conditions in real time without editing the program — useful for dialing in a new setup or compensating for harder-than-expected material."
+        }
+      ]
+    },
+    {
+      "id": "lathe_basics_turning_vs_milling",
+      "title": "CNC Lathe Basics: Turning vs. Milling",
+      "category": "lathe_basics",
+      "icon": "autorenew",
+      "summary": "How turning differs from milling, and the operations unique to a lathe.",
+      "sections": [
+        {
+          "heading": "The fundamental difference",
+          "body": "On a mill, the workpiece is stationary and the rotating tool moves through it. On a lathe, the workpiece itself rotates (held in a chuck or between centers) while a stationary, single-point tool moves to remove material — ideal for round, symmetric parts."
+        },
+        {
+          "heading": "Common turning operations",
+          "body": "Facing (cutting across the end of the part to create a flat face), OD turning (reducing the outside diameter along the length), boring (enlarging an internal diameter), grooving/parting (cutting a recess or cutting the finished part off), and threading (cutting helical threads with G76 or a single-point thread cycle)."
+        },
+        {
+          "heading": "Constant surface speed (CSS)",
+          "body": "G96 S_ activates constant surface speed mode: as the tool moves toward the centerline (smaller diameter), the spindle automatically speeds up to maintain the same cutting speed at the tool tip. G97 S_ switches back to a fixed RPM, typically used for threading or work near the centerline where CSS would spin the spindle dangerously fast."
+        },
+        {
+          "heading": "Live tooling and mill-turn",
+          "body": "Modern turning centers often include 'live tooling' — rotating tools mounted in the turret that can drill, mill, or tap on the part while it's still in the chuck, sometimes combined with a C axis for indexing. This lets a single mill-turn machine complete parts that would otherwise need a separate milling operation."
+        }
+      ]
+    },
+    {
+      "id": "cnc_safety_fundamentals",
+      "title": "CNC Safety Fundamentals",
+      "category": "safety",
+      "icon": "health_and_safety",
+      "summary": "The habits that keep operators safe around CNC machines — and why they matter.",
+      "sections": [
+        {
+          "heading": "Before cycle start",
+          "body": "Always verify the work offset, tool offsets, and program number before pressing cycle start on a new or edited program. Run the first cycle in single-block mode with the feed rate override turned down, and keep a hand near the feed-hold or emergency stop button."
+        },
+        {
+          "heading": "Guards and doors",
+          "body": "Never defeat or bypass machine guards, light curtains, or door interlocks — they exist to stop the spindle and axes instantly if a door opens during a cycle. Chips and coolant at high spindle speeds can be ejected with significant force."
+        },
+        {
+          "heading": "Personal protective equipment",
+          "body": "Safety glasses are mandatory at all times in the shop. Avoid loose clothing, gloves (near rotating spindles/chucks), jewelry, and long hair that isn't tied back — all of these can be caught by rotating components."
+        },
+        {
+          "heading": "Tool changes and chip clearing",
+          "body": "Never reach into the work envelope while the spindle is rotating, even to clear chips — use a brush, hook, or vacuum with the spindle stopped and the program in feed-hold or stopped. When changing tools manually, confirm the spindle has fully stopped (M5) before approaching."
+        }
+      ]
+    },
+    {
+      "id": "spindle_and_drive_systems",
+      "title": "Spindle and Axis Drive Systems",
+      "category": "machine_basics",
+      "icon": "settings",
+      "summary": "What's inside the spindle and the axis drives that make precise, repeatable motion possible.",
+      "sections": [
+        {
+          "heading": "The spindle",
+          "body": "The spindle holds and rotates the cutting tool (mill) or the workpiece (lathe). It consists of a high-precision shaft supported by angular-contact or tapered-roller bearings, driven by a motor through a belt, gearbox, or direct-drive coupling. Spindle runout (wobble) directly affects surface finish and tool life."
+        },
+        {
+          "heading": "Servo motors and ballscrews",
+          "body": "Each linear axis is typically driven by a servo motor connected to a precision ballscrew, which converts rotary motion into linear motion with very little backlash. Linear guideways (rails and bearing blocks) support the moving table or head and keep motion smooth and accurate."
+        },
+        {
+          "heading": "Direct drive and linear motors",
+          "body": "High-speed machines sometimes use linear motors (no ballscrew at all — a magnetic track moves the axis directly) or direct-drive torque motors on rotary axes, eliminating mechanical backlash entirely and allowing extremely high accelerations."
+        },
+        {
+          "heading": "Tool changers (ATC)",
+          "body": "An automatic tool changer (ATC) stores multiple tools in a carousel or chain magazine. On M6, the spindle moves to a fixed tool-change position, the old tool is placed back in its pocket, and the new tool is picked up — all automatically, based on the tool number commanded in the program (e.g. T5 M6)."
+        }
+      ]
+    }
+  ]
+}

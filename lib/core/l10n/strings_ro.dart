@@ -74,6 +74,7 @@ class AppStringsRo implements AppStrings {
   @override String get errRefFilterSiemens    => 'Siemens';
   @override String get errRefFilterFanuc      => 'FANUC';
   @override String get errRefFilterHeidenhain => 'Heidenhain';
+  @override String get errRefFilterMazak      => 'Mazak';
   @override String get errRefNoResults        => 'Nicio alarmă găsită';
   @override String get errRefCauses         => 'Cauze posibile';
   @override String get errRefSolutions      => 'Soluții';
@@ -81,6 +82,41 @@ class AppStringsRo implements AppStrings {
   @override String get errRefSeverityWarning  => 'AVERTISMENT';
   @override String get errRefSeverityError    => 'EROARE';
   @override String get errRefSeverityCritical => 'CRITIC';
+
+  // Knowledge base — G-code program library
+  @override String get progLibTitle         => 'Bibliotecă de programe G-code';
+  @override String get progLibSearchHint    => 'Caută programe…';
+  @override String get progLibFilterAll     => 'Toate';
+  @override String get progLibNoResults     => 'Niciun program găsit';
+  @override String get progLibCount         => 'programe';
+  @override String get progLibCodeLabel     => 'G-CODE';
+  @override String get progLibNotesLabel    => 'Sfaturi';
+  @override String get progLibCopy          => 'Copiază codul';
+  @override String get progLibCopied        => 'Copiat în clipboard';
+  @override String get progLibBeginner      => 'Începător';
+  @override String get progLibIntermediate  => 'Intermediar';
+  @override String get progLibAdvanced      => 'Avansat';
+  @override String get progCatCircles       => 'Cercuri';
+  @override String get progCatPockets       => 'Buzunare';
+  @override String get progCatDrilling      => 'Găurire';
+  @override String get progCatSpirals       => 'Spirale';
+  @override String get progCatEngraving     => 'Gravare';
+  @override String get progCatContours      => 'Contururi';
+  @override String get progCatFacing        => 'Frezare frontală';
+  @override String get progCatTurning       => 'Strunjire';
+
+  // Knowledge base — CNC guides
+  @override String get guidesTitle             => 'Ghiduri CNC';
+  @override String get guidesSearchHint        => 'Caută ghiduri…';
+  @override String get guidesNoResults         => 'Niciun ghid găsit';
+  @override String get guideCatMachineBasics   => 'Noțiuni despre mașină';
+  @override String get guideCatAxesCoordinates => 'Axe și coordonate';
+  @override String get guideCatTooling         => 'Scule';
+  @override String get guideCatWorkHolding     => 'Fixarea piesei';
+  @override String get guideCatGcodeBasics     => 'Noțiuni de G-code';
+  @override String get guideCatSpeedsFeeds     => 'Viteze și avansuri';
+  @override String get guideCatLatheBasics     => 'Noțiuni de strunjire';
+  @override String get guideCatSafety          => 'Siguranță';
 
   @override String get settingsTitle        => 'Setări';
   @override String get settingsLanguage     => 'Limbă';
@@ -252,6 +288,20 @@ class AppStringsRo implements AppStrings {
     'Căutați după numărul alarmei sau cuvânt cheie (ex: "arbore" sau "450").',
     'Folosiți filtrul de marcă pentru a restrânge rezultatele la controlerul dvs.',
     'Apăsați orice alarmă pentru cauzele posibile și soluții pas cu pas.',
+  ];
+
+  @override String get helpProgLibTitle => 'Bibliotecă de programe G-code';
+  @override List<String> get helpProgLibSteps => [
+    'Răsfoiește programe exemplu gata de rulat — cercuri, buzunare, modele de găurire, spirale, gravură și altele.',
+    'Folosește etichetele de categorie pentru filtrare sau caută după titlu ori cuvânt cheie.',
+    'Atinge un program pentru a vedea codul G complet, a-l copia și a citi sfaturi pentru rularea în siguranță.',
+  ];
+
+  @override String get helpGuidesTitle => 'Cum funcționează mașinile CNC';
+  @override List<String> get helpGuidesSteps => [
+    'Citește ghiduri scurte despre noțiuni de bază ale mașinii, axe, scule, fixarea piesei, G-code și siguranță.',
+    'Folosește etichetele de categorie pentru a sări la un subiect sau caută după cuvânt cheie.',
+    'Atinge un ghid pentru a citi articolul complet.',
   ];
 
   @override String get helpHistoryTitle => 'Istoric';

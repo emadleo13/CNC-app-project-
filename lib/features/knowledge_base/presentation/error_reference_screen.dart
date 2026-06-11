@@ -96,6 +96,8 @@ class _ErrorReferenceScreenState extends ConsumerState<ErrorReferenceScreen> {
                 _FilterChip(label: s.errRefFilterFanuc,       value: 'fanuc',        selected: _filter == 'fanuc',        onTap: () => setState(() => _filter = 'fanuc')),
                 const SizedBox(width: 8),
                 _FilterChip(label: s.errRefFilterHeidenhain,  value: 'heidenhain',   selected: _filter == 'heidenhain',   onTap: () => setState(() => _filter = 'heidenhain')),
+                const SizedBox(width: 8),
+                _FilterChip(label: s.errRefFilterMazak,       value: 'mazak',        selected: _filter == 'mazak',        onTap: () => setState(() => _filter = 'mazak')),
               ],
             ),
           ),
@@ -322,6 +324,7 @@ class _AlarmCard extends StatelessWidget {
     'sinumerik'  => 'SNK $code',
     'fanuc'      => 'FANUC $code',
     'heidenhain' => 'TNC $code',
+    'mazak'      => 'Mazak $code',
     _            => code,
   };
 
@@ -346,6 +349,7 @@ class _MachineBadge extends StatelessWidget {
       'sinumerik'  => ('Siemens',    const Color(0xFF1A5C3A), const Color(0xFF6EFFC3)),
       'fanuc'      => ('FANUC',      const Color(0xFF3A1A1A), const Color(0xFFFF9F6E)),
       'heidenhain' => ('Heidenhain', const Color(0xFF3A1A5C), const Color(0xFFCF9FFF)),
+      'mazak'      => ('Mazak',      const Color(0xFF1A2A5C), const Color(0xFF8FB6FF)),
       _            => (machine,      const Color(0xFF2A2A2A), const Color(0xFFAAAAAA)),
     };
     return Container(

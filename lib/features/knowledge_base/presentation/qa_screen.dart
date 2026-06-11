@@ -364,6 +364,16 @@ class _QaScreenState extends ConsumerState<QaScreen> {
             onPressed: () => context.push(RouteNames.errorReference),
           ),
           IconButton(
+            icon:    const Icon(Icons.auto_awesome_motion_outlined, size: 20),
+            tooltip: s.progLibTitle,
+            onPressed: () => context.push(RouteNames.gcodeProgramLibrary),
+          ),
+          IconButton(
+            icon:    const Icon(Icons.menu_book_outlined, size: 20),
+            tooltip: s.guidesTitle,
+            onPressed: () => context.push(RouteNames.cncGuides),
+          ),
+          IconButton(
             icon:    const Icon(Icons.settings_outlined, size: 20),
             onPressed: () => context.push(RouteNames.settings),
             tooltip: s.navSettings,

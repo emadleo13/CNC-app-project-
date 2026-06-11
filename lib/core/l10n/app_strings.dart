@@ -89,6 +89,7 @@ abstract class AppStrings {
   String get errRefFilterSiemens;
   String get errRefFilterFanuc;
   String get errRefFilterHeidenhain;
+  String get errRefFilterMazak;
   String get errRefNoResults;
   String get errRefCauses;
   String get errRefSolutions;
@@ -96,6 +97,41 @@ abstract class AppStrings {
   String get errRefSeverityWarning;
   String get errRefSeverityError;
   String get errRefSeverityCritical;
+
+  // Knowledge base — G-code program library
+  String get progLibTitle;
+  String get progLibSearchHint;
+  String get progLibFilterAll;
+  String get progLibNoResults;
+  String get progLibCount;
+  String get progLibCodeLabel;
+  String get progLibNotesLabel;
+  String get progLibCopy;
+  String get progLibCopied;
+  String get progLibBeginner;
+  String get progLibIntermediate;
+  String get progLibAdvanced;
+  String get progCatCircles;
+  String get progCatPockets;
+  String get progCatDrilling;
+  String get progCatSpirals;
+  String get progCatEngraving;
+  String get progCatContours;
+  String get progCatFacing;
+  String get progCatTurning;
+
+  // Knowledge base — CNC guides
+  String get guidesTitle;
+  String get guidesSearchHint;
+  String get guidesNoResults;
+  String get guideCatMachineBasics;
+  String get guideCatAxesCoordinates;
+  String get guideCatTooling;
+  String get guideCatWorkHolding;
+  String get guideCatGcodeBasics;
+  String get guideCatSpeedsFeeds;
+  String get guideCatLatheBasics;
+  String get guideCatSafety;
 
   // Settings
   String get settingsTitle;
@@ -234,6 +270,10 @@ abstract class AppStrings {
   List<String> get helpGcodeRefSteps;
   String get helpErrRefTitle;
   List<String> get helpErrRefSteps;
+  String get helpProgLibTitle;
+  List<String> get helpProgLibSteps;
+  String get helpGuidesTitle;
+  List<String> get helpGuidesSteps;
   String get helpHistoryTitle;
   List<String> get helpHistorySteps;
 

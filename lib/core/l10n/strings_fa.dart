@@ -74,6 +74,7 @@ class AppStringsFa implements AppStrings {
   @override String get errRefFilterSiemens  => 'زیمنس';
   @override String get errRefFilterFanuc    => 'FANUC';
   @override String get errRefFilterHeidenhain => 'Heidenhain';
+  @override String get errRefFilterMazak      => 'Mazak';
   @override String get errRefNoResults      => 'آلارمی یافت نشد';
   @override String get errRefCauses         => 'دلایل احتمالی';
   @override String get errRefSolutions      => 'راه‌حل‌ها';
@@ -81,6 +82,41 @@ class AppStringsFa implements AppStrings {
   @override String get errRefSeverityWarning => 'هشدار';
   @override String get errRefSeverityError  => 'خطا';
   @override String get errRefSeverityCritical => 'بحرانی';
+
+  // Knowledge base — G-code program library
+  @override String get progLibTitle         => 'کتابخانه برنامه‌های جی‌کد';
+  @override String get progLibSearchHint    => 'جستجوی برنامه‌ها…';
+  @override String get progLibFilterAll     => 'همه';
+  @override String get progLibNoResults     => 'برنامه‌ای یافت نشد';
+  @override String get progLibCount         => 'برنامه';
+  @override String get progLibCodeLabel     => 'جی‌کد';
+  @override String get progLibNotesLabel    => 'نکات';
+  @override String get progLibCopy          => 'کپی کد';
+  @override String get progLibCopied        => 'در کلیپ‌بورد کپی شد';
+  @override String get progLibBeginner      => 'مبتدی';
+  @override String get progLibIntermediate  => 'متوسط';
+  @override String get progLibAdvanced      => 'پیشرفته';
+  @override String get progCatCircles       => 'دایره‌ها';
+  @override String get progCatPockets       => 'حفره‌ها';
+  @override String get progCatDrilling      => 'سوراخ‌کاری';
+  @override String get progCatSpirals       => 'مارپیچ';
+  @override String get progCatEngraving     => 'حکاکی';
+  @override String get progCatContours      => 'پروفایل (کانتور)';
+  @override String get progCatFacing        => 'صفحه‌تراشی';
+  @override String get progCatTurning       => 'تراشکاری';
+
+  // Knowledge base — CNC guides
+  @override String get guidesTitle             => 'راهنمای دستگاه‌های CNC';
+  @override String get guidesSearchHint        => 'جستجوی راهنماها…';
+  @override String get guidesNoResults         => 'راهنمایی یافت نشد';
+  @override String get guideCatMachineBasics   => 'اصول دستگاه';
+  @override String get guideCatAxesCoordinates => 'محورها و مختصات';
+  @override String get guideCatTooling         => 'ابزار';
+  @override String get guideCatWorkHolding     => 'بستن قطعه کار';
+  @override String get guideCatGcodeBasics     => 'اصول جی‌کد';
+  @override String get guideCatSpeedsFeeds     => 'سرعت و فید';
+  @override String get guideCatLatheBasics     => 'اصول تراش';
+  @override String get guideCatSafety          => 'ایمنی';
 
   @override String get settingsTitle        => 'تنظیمات';
   @override String get settingsLanguage     => 'زبان';
@@ -250,6 +286,20 @@ class AppStringsFa implements AppStrings {
     'با شماره آلارم یا کلمه کلیدی جستجو کنید (مثلاً "اسپیندل" یا "450").',
     'از فیلتر برند برای محدود کردن نتایج به کنترلر دستگاه خود استفاده کنید.',
     'روی هر آلارم بزنید تا دلایل احتمالی و راه‌حل‌های گام‌به‌گام ببینید.',
+  ];
+
+  @override String get helpProgLibTitle => 'کتابخانه برنامه‌های جی‌کد';
+  @override List<String> get helpProgLibSteps => [
+    'برنامه‌های نمونه آماده اجرا را مرور کنید — دایره، حفره، الگوهای سوراخ‌کاری، مارپیچ، حکاکی و موارد دیگر.',
+    'برای فیلتر کردن از دسته‌بندی‌ها استفاده کنید یا با عنوان یا کلمه کلیدی جستجو کنید.',
+    'روی هر برنامه ضربه بزنید تا کد کامل را ببینید، آن را کپی کنید و نکات اجرای ایمن آن را بخوانید.',
+  ];
+
+  @override String get helpGuidesTitle => 'نحوه کارکرد دستگاه‌های CNC';
+  @override List<String> get helpGuidesSteps => [
+    'راهنماهای کوتاهی درباره اصول دستگاه، محورها، ابزار، بستن قطعه کار، جی‌کد و ایمنی بخوانید.',
+    'برای رفتن به یک موضوع از دسته‌بندی‌ها استفاده کنید یا با کلمه کلیدی جستجو کنید.',
+    'روی هر راهنما ضربه بزنید تا مقاله کامل را بخوانید.',
   ];
 
   @override String get helpHistoryTitle => 'تاریخچه';

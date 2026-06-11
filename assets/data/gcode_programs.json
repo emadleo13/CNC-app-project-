@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "categories": ["circles", "pockets", "drilling", "spirals", "engraving", "contours", "facing", "turning"],
+  "programs": [
+    {
+      "id": "circle_pocket_helical",
+      "title": "Helical Circle Pocket",
+      "category": "circles",
+      "dialect": "haas",
+      "difficulty": "beginner",
+      "description": "Mills a round pocket by ramping down on a helix instead of plunging straight down. Great first practice program for getting comfortable with G2/G3 arcs and tool length offsets.",
+      "code": "%\nO1001 (HELICAL CIRCLE POCKET)\n(TOOL 1: 1/2 IN FLAT ENDMILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT1 M6\nG54\nS3500 M3\nG0 X0. Y0.\nG43 H1 Z1. M8\nG1 Z0.1 F20.\nG91\nG3 X-0.5 Y0. Z-0.6 I-0.5 J0. F12.\nG3 I0.5 J0.\nG3 I0.5 J0.\nG3 I0.5 J0.\nG90\nG0 Z1.\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "I/J values define the arc center relative to the start point — keep them consistent for a true circle.",
+        "Each G3 loop drops Z by a small amount (helical ramp) until full depth is reached, then one final full-circle pass cleans the floor.",
+        "Increase the I/J radius and number of loops to cut a larger pocket with the same endmill."
+      ]
+    },
+    {
+      "id": "hex_pocket_cutter_comp",
+      "title": "Hexagonal Pocket (Cutter Comp)",
+      "category": "pockets",
+      "dialect": "haas",
+      "difficulty": "intermediate",
+      "description": "Cuts a regular hexagon pocket using G41 cutter compensation, with a lead-in/lead-out arc so the tool enters and exits the wall smoothly without a witness mark.",
+      "code": "%\nO1002 (HEXAGON POCKET - CUTTER COMP)\n(TOOL 2: 3/8 IN FLAT ENDMILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT2 M6\nG54\nS4500 M3\nG0 X-0.8 Y-1.5\nG43 H2 Z1. M8\nG1 Z-0.4 F15.\nG41 D2 X0. Y-1.0 F25.\nG3 X0.866 Y-1.5 R0.5\nG1 X1.732 Y-1.0\nG1 X1.732 Y1.0\nG1 X0.866 Y1.5\nG1 X-0.866 Y1.5\nG1 X-1.732 Y1.0\nG1 X-1.732 Y-1.0\nG1 X-0.866 Y-1.5\nG1 X0. Y-1.0\nG3 X-0.8 Y-1.5 R0.5\nG40 G1 X-0.8 Y-1.5\nG0 Z1.\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "G41 D2 turns on left-side cutter compensation using the diameter stored in offset register D2.",
+        "The G3 ... R0.5 moves are quarter-circle lead-in and lead-out arcs — never turn cutter comp on or off with a straight plunge into the wall.",
+        "Each G1 segment is one of the six hexagon sides; rotate the X/Y values to make a different polygon (pentagon, octagon, etc.)."
+      ]
+    },
+    {
+      "id": "bolt_hole_circle_drilling",
+      "title": "Bolt Hole Circle Drilling",
+      "category": "drilling",
+      "dialect": "haas",
+      "difficulty": "beginner",
+      "description": "Drills a ring of equally-spaced holes (a flange bolt pattern) using the Haas G70 bolt-hole-circle canned cycle combined with a peck drilling cycle.",
+      "code": "%\nO1003 (BOLT HOLE CIRCLE - 6 HOLES)\n(TOOL 3: #7 DRILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT3 M6\nG54\nS2200 M3\nG0 X0. Y0.\nG43 H3 Z1. M8\nG99 G83 Z-0.6 R0.1 Q0.15 F8.\nG70 X0. Y0. Z-0.6 I2.0 J0. K6 L0\nG80\nG0 Z1.\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "G70 X_ Y_ I_ J_ K_ — X/Y is the bolt circle center, I is the circle radius, J is the start angle, K is the number of holes (evenly spaced).",
+        "G83 is a peck drilling cycle: Q sets the peck increment so chips clear from a deep hole.",
+        "Always cancel canned cycles with G80 before moving to the next operation."
+      ]
+    },
+    {
+      "id": "drilling_grid_pattern",
+      "title": "Drilling Grid Pattern",
+      "category": "drilling",
+      "dialect": "haas",
+      "difficulty": "beginner",
+      "description": "Drills a 3x3 grid of through-holes — a classic plate program for practicing positioning moves and a simple canned drilling cycle.",
+      "code": "%\nO1004 (3x3 DRILL GRID)\n(TOOL 4: 5/16 IN DRILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT4 M6\nG54\nS1800 M3\nG43 H4 Z1. M8\nG99 G81 X0. Y0. Z-0.55 R0.1 F6.\nX1. Y0.\nX2. Y0.\nX0. Y1.\nX1. Y1.\nX2. Y1.\nX0. Y2.\nX1. Y2.\nX2. Y2.\nG80\nG0 Z1.\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "The first G81 line sets up the cycle (depth Z, retract plane R, feed F); every line after that just repeats the cycle at a new X/Y.",
+        "R0.1 is the retract (rapid plane) above the part — keep it just clear of clamps and the part surface.",
+        "Change the X/Y increments to match your bolt spacing, or generate them from CAM for larger grids."
+      ]
+    },
+    {
+      "id": "spiral_pocket_sinumerik",
+      "title": "Spiral Pocket (R-Parameter Loop)",
+      "category": "spirals",
+      "dialect": "sinumerik",
+      "difficulty": "advanced",
+      "description": "Uses Sinumerik R-parameters and a GOTOB loop to mill an outward spiral, growing the arc radius on every pass until the pocket reaches full size — a compact alternative to programming dozens of separate arcs.",
+      "code": "N10 G17 G54 G90 G94 G71\nN20 T1 D1 M6\nN30 S6000 M3\nN40 G0 X0 Y0 Z2\nN50 R1=2 R2=25 R3=1.5\nN60 G1 Z-3 F200\nLOOP1:\nN70 G3 X=R1 Y=0 I=-R1 J=0 F400\nN80 R1=R1+R3\nN90 IF R1<=R2 GOTOB LOOP1\nN100 G0 Z50\nN110 M30",
+      "notes": [
+        "R1 is the current spiral radius, R2 is the final radius, and R3 is how much the radius grows on each lap.",
+        "The GOTOB LOOP1 line jumps back to the LOOP1: label as long as R1 is still smaller than R2, generating one continuous spiral.",
+        "Because each pass overlaps the previous one by (R3 / tool diameter), keep R3 small relative to the cutter to avoid leaving uncut ridges."
+      ]
+    },
+    {
+      "id": "star_engraving",
+      "title": "5-Point Star Engraving",
+      "category": "engraving",
+      "dialect": "haas",
+      "difficulty": "intermediate",
+      "description": "Traces a 5-point star outline with a V-bit at a shallow engraving depth — a fun, attractive pattern for testing tool offsets and engraving feeds before running a real nameplate job.",
+      "code": "%\nO1005 (5-POINT STAR ENGRAVING)\n(TOOL 5: 60 DEG V-BIT)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT5 M6\nG54\nS8000 M3\nG0 X0. Y1.5\nG43 H5 Z0.5\nG1 Z-0.02 F5.\nG1 X0.3527 Y0.4635 F12.\nG1 X1.4266 Y0.4635\nG1 X0.5369 Y-0.1771\nG1 X0.8817 Y-1.2135\nG1 X0. Y-0.5729\nG1 X-0.8817 Y-1.2135\nG1 X-0.5369 Y-0.1771\nG1 X-1.4266 Y0.4635\nG1 X-0.3527 Y0.4635\nG1 X0. Y1.5\nG0 Z0.5\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "A 60-degree V-bit gives a crisp engraved line at a very shallow Z depth (here only 0.02 in) — too deep and the line becomes too wide.",
+        "The X/Y points trace the five outer tips and five inner notches of the star in one continuous loop.",
+        "Slow the feed rate (F) further for harder materials or smaller V-bit angles to avoid chipping the point of the tool."
+      ]
+    },
+    {
+      "id": "rectangular_contour_profile",
+      "title": "Rectangular Contour Profile",
+      "category": "contours",
+      "dialect": "haas",
+      "difficulty": "intermediate",
+      "description": "Profiles the outside of a rectangular plate using G42 cutter compensation with a tangential lead-in/out arc — the standard way to cut a finished outline to size.",
+      "code": "%\nO1006 (RECTANGLE OUTSIDE PROFILE)\n(TOOL 6: 1/2 IN FLAT ENDMILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT6 M6\nG54\nS3800 M3\nG0 X-3.5 Y-2.0\nG43 H6 Z1. M8\nG1 Z-0.5 F15.\nG42 D6 X-3.0 Y-1.5 F20.\nG3 X-2.5 Y-2.0 R0.5\nG1 X2.5 Y-2.0\nG3 X3.0 Y-1.5 R0.5\nG1 X3.0 Y1.5\nG3 X2.5 Y2.0 R0.5\nG1 X-2.5 Y2.0\nG3 X-3.0 Y1.5 R0.5\nG1 X-3.0 Y-1.5\nG3 X-3.5 Y-2.0 R0.5\nG40 G1 X-3.5 Y-2.0\nG0 Z1.\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "G42 D6 applies right-side cutter compensation using diameter offset register D6 — use G41 instead if cutting the part on the other side of the tool path.",
+        "Each corner uses a small G3 fillet (R0.5) so the tool decelerates smoothly instead of stopping dead at a sharp corner.",
+        "Run this in graphics/verify mode first — incorrect comp direction (G41 vs G42) will cut the part oversize or undersize."
+      ]
+    },
+    {
+      "id": "face_milling_zigzag",
+      "title": "Face Milling (Zig-Zag Passes)",
+      "category": "facing",
+      "dialect": "haas",
+      "difficulty": "beginner",
+      "description": "Squares up the top of a stock block with a back-and-forth (zig-zag) facing pattern using a large face mill — usually the very first operation in a setup.",
+      "code": "%\nO1007 (FACE MILL - ZIGZAG)\n(TOOL 7: 2 IN FACE MILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT7 M6\nG54\nS1200 M3\nG0 X-2.0 Y-2.5\nG43 H7 Z0.25 M8\nG1 Z-0.05 F30.\nG1 X4.0 F25.\nG1 Y-1.0\nG1 X-2.0\nG1 Y0.5\nG1 X4.0\nG1 Y2.0\nG1 X-2.0\nG0 Z0.25\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "Step over by roughly 60-70% of the face mill diameter so each pass overlaps the last and leaves no ridges.",
+        "Take a light depth of cut (0.02-0.05 in) for facing — the goal is a flat, clean surface, not heavy stock removal.",
+        "Start the first pass off the edge of the stock so the cutter enters the air, not directly into material."
+      ]
+    },
+    {
+      "id": "slot_ramp_milling",
+      "title": "Slot Milling with Ramp Entry",
+      "category": "pockets",
+      "dialect": "haas",
+      "difficulty": "intermediate",
+      "description": "Mills a closed slot by ramping the endmill diagonally into the material instead of plunging straight down — much easier on the tool and spindle.",
+      "code": "%\nO1008 (SLOT - RAMP ENTRY)\n(TOOL 8: 3/8 IN FLAT ENDMILL)\nG20 G17 G40 G49 G80 G90\nG28 G91 Z0.\nG90\nT8 M6\nG54\nS4500 M3\nG0 X-1.0 Y0.\nG43 H8 Z0.5 M8\nG1 Z0.05 F20.\nG1 X-0.5 Z-0.4 F15.\nG1 X1.0 Z-0.4 F25.\nG1 X-1.0\nG1 X1.0\nG0 Z0.5\nM9\nG91 G28 Z0.\nM30\n%",
+      "notes": [
+        "The first cut moves both X and Z at once — that diagonal move is the ramp, ending exactly at full slot depth.",
+        "Once at depth, run one or more straight passes back and forth to clean up the slot floor and walls.",
+        "If the slot is narrower than the cutter diameter, this becomes a simple groove; widen the X travel for a wider pocket."
+      ]
+    },
+    {
+      "id": "lathe_od_turning_threading",
+      "title": "Lathe OD Turning + Threading",
+      "category": "turning",
+      "dialect": "fanuc",
+      "difficulty": "advanced",
+      "description": "A complete two-tool lathe program: G71 rough turns a stepped shaft to a finish profile, G70 finishes it, then a second tool cuts a 60-degree thread with G76.",
+      "code": "O2000 (OD ROUGH, FINISH, THREAD)\nG21 G99 G18\nG28 U0 W0\nT0101\nG96 S180 M3\nG0 X52. Z2.\nG71 U1.5 R1.\nG71 P10 Q20 U0.5 W0.1 F0.25\nN10 G0 X20.\nG1 Z0 F0.15\nX30. Z-5.\nZ-30.\nX40.\nZ-50.\nN20 X52.\nG70 P10 Q20\nG28 U0 W0\nT0202\nG97 S600 M3\nG0 X32. Z2.\nG76 P010060 Q50 R0.05\nG76 X28.16 Z-28. P1190 Q400 F2.0\nG28 U0 W0\nM30",
+      "notes": [
+        "G71 P10 Q20 U0.5 W0.1 F0.25 rough-turns everything between blocks N10 and N20, leaving 0.5mm on diameter and 0.1mm on the face for the finish pass.",
+        "G70 P10 Q20 re-runs the same N10-N20 profile at finishing speed/feed to clean up to the final dimension.",
+        "G76 P010060 Q50 R0.05 sets a 60-degree thread angle with a 0.05mm finishing allowance; the next G76 line gives the thread's final X diameter, Z length, depth (P) and first-pass depth (Q)."
+      ]
+    }
+  ]
+}

@@ -2316,5 +2316,135 @@
       "syntax": "FN 0: Q_ = _  (e.g. FN 0: Q1 = 25.0)",
       "warning": null
     }
+  ],
+  "mazak_codes": [
+    {
+      "code": "G07",
+      "brand": "mazak",
+      "name": "Hypothetical Axis Interpolation",
+      "description": "Designates an axis as a 'hypothetical' (dummy) axis for interpolation purposes — used on Multi-Tasking machines so a rotary or auxiliary axis can be treated as a linear axis in a interpolation block.",
+      "syntax": "G07 a1 (a = axis address, 1 = enable hypothetical mode)",
+      "warning": "Mitsubishi/Mazak-specific. Cancel with G07 a0 before normal moves on that axis."
+    },
+    {
+      "code": "G07.1 / G107",
+      "brand": "mazak",
+      "name": "Cylindrical Interpolation",
+      "description": "Unwraps a rotary (C) axis so that programmed linear distances on the cylinder surface are converted into the correct rotary motion — used for milling slots or grooves on a cylindrical part.",
+      "syntax": "G07.1 C_ (radius)  ... moves ...  G07.1 C0 (cancel)",
+      "warning": "Program rotary axis values in linear distance units while active. Always cancel with C0 before other rotary moves."
+    },
+    {
+      "code": "G12.1",
+      "brand": "mazak",
+      "name": "Polar Coordinate Interpolation ON",
+      "description": "Converts commanded X/C (or X/Y) motion into synchronized linear and rotary axis motion, allowing flat features (slots, flats) to be milled on a turning center using straight-line G01/G02/G03 blocks.",
+      "syntax": "G12.1 ... G01/G02/G03 X_ C_ F_ ... G13.1",
+      "warning": "Requires C-axis and live tooling. Always pair with G13.1 to cancel."
+    },
+    {
+      "code": "G13.1",
+      "brand": "mazak",
+      "name": "Polar Coordinate Interpolation OFF",
+      "description": "Cancels polar coordinate interpolation mode started by G12.1, returning the rotary axis to normal independent control.",
+      "syntax": "G13.1",
+      "warning": null
+    },
+    {
+      "code": "G31",
+      "brand": "mazak",
+      "name": "Skip Function",
+      "description": "Linear feed move that is aborted immediately if the skip signal (e.g. a probe or limit switch) is received, with the position at the moment of the signal captured into a system variable.",
+      "syntax": "G31 X_ Y_ Z_ F_",
+      "warning": "Following moves should reference the captured skip position before assuming probe contact occurred."
+    },
+    {
+      "code": "G31.1-G31.3",
+      "brand": "mazak",
+      "name": "Multi-Step Skip Functions",
+      "description": "Extended skip cycles (G31.1, G31.2, G31.3) used with multiple touch probes or for multi-point measurement sequences, each storing the trigger position in a separate system variable set.",
+      "syntax": "G31.1 X_ Y_ Z_ F_  (repeat with G31.2 / G31.3 for additional probes)",
+      "warning": "Probe input must be configured and enabled in the machine parameters before use."
+    },
+    {
+      "code": "G68",
+      "brand": "mazak",
+      "name": "Coordinate System Rotation",
+      "description": "Rotates the programmed coordinate system about a specified center point by a given angle, allowing a feature programmed once to be repeated at multiple angular positions.",
+      "syntax": "G68 X_ Y_ R_ (center X/Y, rotation angle R)  ... G69 (cancel)",
+      "warning": "All subsequent coordinates are interpreted in the rotated system until G69 cancels it."
+    },
+    {
+      "code": "G68.2",
+      "brand": "mazak",
+      "name": "Tilted Working Plane Command",
+      "description": "Establishes a tilted work coordinate system on a 5-axis or Multi-Tasking machine, defined by Euler angles, so that subsequent G01/G02/G03 moves and cycles are programmed in the tilted plane.",
+      "syntax": "G68.2 X_ Y_ Z_ I_ J_ K_  (origin + tilt angles)  followed by G53.1 to align rotary axes",
+      "warning": "Requires the 5-axis option. Always cancel with G69 before returning to the machine coordinate system."
+    },
+    {
+      "code": "G69",
+      "brand": "mazak",
+      "name": "Cancel Coordinate Rotation / Tilted Plane",
+      "description": "Cancels an active G68 coordinate rotation or G68.2 tilted working plane, returning to the standard work coordinate system.",
+      "syntax": "G69",
+      "warning": null
+    },
+    {
+      "code": "G96 / G97",
+      "brand": "mazak",
+      "name": "Constant Surface Speed Control ON/OFF",
+      "description": "G96 maintains a constant cutting surface speed (m/min or sfm) by automatically adjusting spindle RPM as the turning diameter changes; G97 returns to direct RPM control.",
+      "syntax": "G96 S_ (surface speed)  /  G97 S_ (RPM)",
+      "warning": "Set a maximum spindle speed with G50/G92 before using G96 to prevent over-speed at small diameters."
+    },
+    {
+      "code": "G50",
+      "brand": "mazak",
+      "name": "Maximum Spindle Speed Setting",
+      "description": "Sets an upper RPM limit that the control will not exceed while G96 constant surface speed control is active, protecting the chuck and workpiece at small diameters.",
+      "syntax": "G50 S_ (max RPM)",
+      "warning": "Required before G96 on parts with a wide diameter range."
+    },
+    {
+      "code": "G28.1",
+      "brand": "mazak",
+      "name": "Second Reference Point Return (Turret/B-axis Index)",
+      "description": "Sends the specified axis (commonly the turret or B-axis on Multi-Tasking machines) to a second, user-defined reference position used for tool-change clearance.",
+      "syntax": "G28.1 B_ (or relevant axis)",
+      "warning": "Ensure the path to the second reference point is clear of fixtures and the opposing spindle/turret."
+    },
+    {
+      "code": "M21 / M22",
+      "brand": "mazak",
+      "name": "Tailstock Advance / Retract",
+      "description": "M21 advances the tailstock quill to support the workpiece between centers; M22 retracts it. Used on turning centers and Multi-Tasking machines.",
+      "syntax": "M21  (advance)   M22  (retract)",
+      "warning": "Verify tailstock pressure is appropriate for the part — excessive force can bow slender shafts."
+    },
+    {
+      "code": "M68 / M69",
+      "brand": "mazak",
+      "name": "Hydraulic Chuck Clamp / Unclamp",
+      "description": "M68 clamps the hydraulic chuck (or secondary chuck on a sub-spindle) to grip the workpiece; M69 releases it.",
+      "syntax": "M68  (clamp)   M69  (unclamp)",
+      "warning": "Never command M69 with the spindle rotating or while a part is unsupported — workpiece can eject."
+    },
+    {
+      "code": "M198",
+      "brand": "mazak",
+      "name": "Subprogram Call from External Device",
+      "description": "Calls a subprogram stored on an external device (memory card, USB, or network share) rather than from internal program memory, useful for very large programs run in DNC-style operation.",
+      "syntax": "M198 P_ (program number)",
+      "warning": "The external device/path must be configured and connected before the calling program runs."
+    },
+    {
+      "code": "G141",
+      "brand": "mazak",
+      "name": "3D Tool Radius Compensation",
+      "description": "Applies cutter radius compensation in three dimensions, maintaining the programmed surface offset for ball-nose and other tools moving along simultaneous 5-axis paths.",
+      "syntax": "G141 D_ ... (3D moves) ... G140 (cancel)",
+      "warning": "Requires the 5-axis/simultaneous machining option and a correctly defined tool radius (D) value."
+    }
   ]
 }

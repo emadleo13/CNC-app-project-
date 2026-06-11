@@ -74,6 +74,7 @@ class AppStringsEn implements AppStrings {
   @override String get errRefFilterSiemens    => 'Siemens';
   @override String get errRefFilterFanuc      => 'FANUC';
   @override String get errRefFilterHeidenhain => 'Heidenhain';
+  @override String get errRefFilterMazak      => 'Mazak';
   @override String get errRefNoResults        => 'No alarms found';
   @override String get errRefCauses         => 'Possible Causes';
   @override String get errRefSolutions      => 'Solutions';
@@ -81,6 +82,41 @@ class AppStringsEn implements AppStrings {
   @override String get errRefSeverityWarning  => 'WARNING';
   @override String get errRefSeverityError    => 'ERROR';
   @override String get errRefSeverityCritical => 'CRITICAL';
+
+  // Knowledge base — G-code program library
+  @override String get progLibTitle         => 'G-Code Program Library';
+  @override String get progLibSearchHint    => 'Search programs…';
+  @override String get progLibFilterAll     => 'All';
+  @override String get progLibNoResults     => 'No programs found';
+  @override String get progLibCount         => 'programs';
+  @override String get progLibCodeLabel     => 'G-CODE';
+  @override String get progLibNotesLabel    => 'Tips';
+  @override String get progLibCopy          => 'Copy code';
+  @override String get progLibCopied        => 'Copied to clipboard';
+  @override String get progLibBeginner      => 'Beginner';
+  @override String get progLibIntermediate  => 'Intermediate';
+  @override String get progLibAdvanced      => 'Advanced';
+  @override String get progCatCircles       => 'Circles';
+  @override String get progCatPockets       => 'Pockets';
+  @override String get progCatDrilling      => 'Drilling';
+  @override String get progCatSpirals       => 'Spirals';
+  @override String get progCatEngraving     => 'Engraving';
+  @override String get progCatContours      => 'Contours';
+  @override String get progCatFacing        => 'Facing';
+  @override String get progCatTurning       => 'Turning';
+
+  // Knowledge base — CNC guides
+  @override String get guidesTitle             => 'CNC Guides';
+  @override String get guidesSearchHint        => 'Search guides…';
+  @override String get guidesNoResults         => 'No guides found';
+  @override String get guideCatMachineBasics   => 'Machine Basics';
+  @override String get guideCatAxesCoordinates => 'Axes & Coordinates';
+  @override String get guideCatTooling         => 'Tooling';
+  @override String get guideCatWorkHolding     => 'Work Holding';
+  @override String get guideCatGcodeBasics     => 'G-code Basics';
+  @override String get guideCatSpeedsFeeds     => 'Speeds & Feeds';
+  @override String get guideCatLatheBasics     => 'Lathe Basics';
+  @override String get guideCatSafety          => 'Safety';
 
   @override String get settingsTitle        => 'Settings';
   @override String get settingsLanguage     => 'Language';
@@ -252,6 +288,20 @@ class AppStringsEn implements AppStrings {
     'Search by alarm number or keyword (e.g. "spindle" or "450").',
     'Use the brand filter to narrow results to your machine controller.',
     'Tap any alarm to see possible causes and step-by-step solutions.',
+  ];
+
+  @override String get helpProgLibTitle => 'G-Code Program Library';
+  @override List<String> get helpProgLibSteps => [
+    'Browse ready-to-run sample programs — circles, pockets, drilling patterns, spirals, engraving, and more.',
+    'Use the category chips to filter, or search by title or keyword.',
+    'Tap any program to view the full G-code, copy it, and read tips for running it safely.',
+  ];
+
+  @override String get helpGuidesTitle => 'How CNC Machines Work';
+  @override List<String> get helpGuidesSteps => [
+    'Read short guides covering machine basics, axes, tooling, work holding, G-code, and safety.',
+    'Use the category chips to jump to a topic, or search by keyword.',
+    'Tap any guide to read the full article.',
   ];
 
   @override String get helpHistoryTitle => 'History';

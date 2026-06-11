@@ -18,6 +18,8 @@ import '../../features/gcode_analyzer/presentation/analysis_result_screen.dart';
 import '../../features/knowledge_base/presentation/qa_screen.dart';
 import '../../features/knowledge_base/presentation/error_reference_screen.dart';
 import '../../features/knowledge_base/presentation/gcode_reference_screen.dart';
+import '../../features/knowledge_base/presentation/gcode_program_library_screen.dart';
+import '../../features/knowledge_base/presentation/cnc_guides_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/subscription/presentation/subscription_screen.dart';
@@ -107,6 +109,14 @@ final appRouter = GoRouter(
             GoRoute(
               path: 'gcodes',
               builder: (context, state) => const GcodeReferenceScreen(),
+            ),
+            GoRoute(
+              path: 'programs',
+              builder: (context, state) => const GcodeProgramLibraryScreen(),
+            ),
+            GoRoute(
+              path: 'guides',
+              builder: (context, state) => const CncGuidesScreen(),
             ),
           ],
         ),
