@@ -172,6 +172,7 @@ abstract class AppStrings {
   String get commonCopy;
   String get commonRetry;
   String get subProductUnavailable;
+  String get subNeedsPlayStore;
   String get commonError;
   String get commonLoading;
 

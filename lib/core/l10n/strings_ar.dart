@@ -158,6 +158,7 @@ class AppStringsAr implements AppStrings {
   @override String get commonCopy           => 'نسخ';
   @override String get commonRetry          => 'إعادة المحاولة';
   @override String get subProductUnavailable => 'سعر المتجر غير متوفر. تحقق من اتصالك أو حاول لاحقًا.';
+  @override String get subNeedsPlayStore => 'تعمل المشتريات فقط عند تثبيت التطبيق من Google Play (اختبار داخلي أو أعلى) بحساب مختبِر. تم تثبيت هذه النسخة عبر التوزيع المباشر.';
   @override String get commonError          => 'خطأ';
   @override String get commonLoading        => 'جارٍ التحميل...';
 

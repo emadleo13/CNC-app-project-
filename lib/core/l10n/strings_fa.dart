@@ -158,6 +158,7 @@ class AppStringsFa implements AppStrings {
   @override String get commonCopy           => 'کپی';
   @override String get commonRetry          => 'تلاش دوباره';
   @override String get subProductUnavailable => 'قیمت زنده از فروشگاه در دسترس نیست. اتصال اینترنت را بررسی کن یا بعداً دوباره امتحان کن.';
+  @override String get subNeedsPlayStore => 'خرید فقط وقتی اپ از Google Play (نسخهٔ تست داخلی یا بالاتر) با حساب tester نصب شده باشد فعال است. این نسخه از طریق توزیع مستقیم نصب شده است.';
   @override String get commonError          => 'خطا';
   @override String get commonLoading        => 'در حال بارگذاری...';
 

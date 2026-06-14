@@ -17,7 +17,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   ProductDetails? _product;
   bool            _loading    = true;
   bool            _purchasing = false;
-  String?         _errorMsg;
+  String?         _errorMsg;   // red — a real failure (e.g. purchase failed)
+  String?         _infoMsg;    // amber — a benign notice (store/price unavailable)
   StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
 
   @override
@@ -35,25 +36,30 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
   Future<void> _loadProduct() async {
     final s = ref.read(appStringsProvider);
-    setState(() { _loading = true; _errorMsg = null; });
+    setState(() { _loading = true; _errorMsg = null; _infoMsg = null; });
     try {
       final repo = ref.read(subscriptionRepoProvider);
-      final available = await repo.isAvailable();
+      final available = await repo
+          .isAvailable()
+          .timeout(const Duration(seconds: 8), onTimeout: () => false);
       if (!available) {
-        if (mounted) setState(() => _errorMsg = s.subNotAvailable);
+        if (mounted) setState(() => _infoMsg = s.subNotAvailable);
         return;
       }
-      final product = await repo.loadProduct();
+      final product = await repo
+          .loadProduct()
+          .timeout(const Duration(seconds: 8), onTimeout: () => null);
       if (mounted) {
         setState(() {
           _product = product;
-          // Store is reachable but the product isn't configured/returned.
-          if (product == null) _errorMsg = s.subProductUnavailable;
+          // Store is reachable but the product isn't configured/returned —
+          // benign (common in unpublished builds), so show a soft notice.
+          if (product == null) _infoMsg = s.subProductUnavailable;
         });
       }
     } catch (_) {
       // Billing client not ready, no Play Store, unsupported device, etc.
-      if (mounted) setState(() => _errorMsg = s.subNotAvailable);
+      if (mounted) setState(() => _infoMsg = s.subNotAvailable);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -87,8 +93,19 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _subscribe() async {
-    if (_product == null) return;
-    setState(() { _purchasing = true; _errorMsg = null; });
+    final s = ref.read(appStringsProvider);
+    // No product means Play Billing isn't available (e.g. a sideloaded build,
+    // or the subscription isn't live in Play Console yet). Give clear feedback
+    // instead of doing nothing.
+    if (_product == null) {
+      setState(() => _infoMsg = s.subNeedsPlayStore);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(s.subNeedsPlayStore),
+        backgroundColor: AppColors.warningYellow,
+      ));
+      return;
+    }
+    setState(() { _purchasing = true; _errorMsg = null; _infoMsg = null; });
     try {
       await ref.read(subscriptionRepoProvider).buySubscription(_product!);
     } catch (_) {
@@ -97,7 +114,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _restore() async {
-    setState(() { _purchasing = true; _errorMsg = null; });
+    setState(() { _purchasing = true; _errorMsg = null; _infoMsg = null; });
     try {
       await ref.read(subscriptionRepoProvider).restorePurchases();
     } catch (_) {
@@ -110,13 +127,11 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     final s    = ref.watch(appStringsProvider);
     final tier = ref.watch(currentTierProvider);
 
+    // Never block the whole screen on the tier lookup — show content
+    // immediately, treating an unknown tier as 'free'.
     return Scaffold(
       appBar: AppBar(title: Text(s.subTitle)),
-      body: tier.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error:   (e, st) => _buildContent(s, 'free'),
-        data:    (t) => _buildContent(s, t),
-      ),
+      body: _buildContent(s, tier.valueOrNull ?? 'free'),
     );
   }
 
@@ -185,6 +200,30 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 style: const TextStyle(color: AppColors.errorRed, fontSize: 13)),
             ),
 
+          // Benign notice (e.g. live price unavailable) — calm, not an alarm.
+          if (_infoMsg != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.warningYellow.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.warningYellow.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.info_outline, size: 16, color: AppColors.warningYellow),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_infoMsg!,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12, height: 1.4)),
+                  ),
+                ],
+              ),
+            ),
+
           if (!isPro) ...[
             // Free trial badge
             Container(
@@ -208,9 +247,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ),
 
             ElevatedButton(
-              // Disabled when no purchasable product is loaded, so the button is
-              // never a silent no-op.
-              onPressed: (_purchasing || _loading || _product == null) ? null : _subscribe,
+              // Always tappable (unless busy): when no product is loaded the tap
+              // explains why purchases are unavailable rather than doing nothing.
+              onPressed: (_purchasing || _loading) ? null : _subscribe,
               style: ElevatedButton.styleFrom(
                 padding:  const EdgeInsets.symmetric(vertical: 14),
                 backgroundColor: AppColors.primary,
