@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 
@@ -59,13 +58,11 @@ class ToolDef {
 
 /// Single source of truth for the hub grid. Routes here must match the
 /// `GoRoute` paths registered in app_router.dart.
-///
-/// Non-const because the industrial [MdiIcons] glyphs are runtime getters.
-final List<ToolDef> kTools = [
+const List<ToolDef> kTools = [
   // ── Milling ──
   ToolDef(
     id: 'milling',
-    icon: MdiIcons.sawBlade,
+    icon: Icons.rotate_right,
     route: RouteNames.calcMilling,
     category: ToolCategory.milling,
     title: _millingTitle,
@@ -75,7 +72,7 @@ final List<ToolDef> kTools = [
   // ── Turning ──
   ToolDef(
     id: 'turning',
-    icon: MdiIcons.circleDouble,
+    icon: Icons.album_outlined,
     route: RouteNames.calcTurning,
     category: ToolCategory.turning,
     title: _turningTitle,
@@ -85,7 +82,7 @@ final List<ToolDef> kTools = [
   // ── Drilling ──
   ToolDef(
     id: 'drilling',
-    icon: MdiIcons.screwLag,
+    icon: Icons.vertical_align_bottom,
     route: RouteNames.calcDrilling,
     category: ToolCategory.drilling,
     title: _drillingTitle,
@@ -95,7 +92,7 @@ final List<ToolDef> kTools = [
   // ── Coordinates ──
   ToolDef(
     id: 'taper',
-    icon: MdiIcons.angleAcute,
+    icon: Icons.change_history,
     route: RouteNames.calcTaper,
     category: ToolCategory.coordinates,
     title: _taperTitle,
@@ -103,7 +100,7 @@ final List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'arc',
-    icon: MdiIcons.vectorRadius,
+    icon: Icons.architecture,
     route: RouteNames.calcArc,
     category: ToolCategory.coordinates,
     title: _arcTitle,
@@ -111,7 +108,7 @@ final List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'gcode_gen',
-    icon: MdiIcons.robotIndustrial,
+    icon: Icons.precision_manufacturing,
     route: RouteNames.calcGcodeGen,
     category: ToolCategory.coordinates,
     title: _gcodeGenTitle,
@@ -121,7 +118,7 @@ final List<ToolDef> kTools = [
   // ── Converters ──
   ToolDef(
     id: 'converters',
-    icon: MdiIcons.swapHorizontal,
+    icon: Icons.swap_horiz,
     route: RouteNames.calcConverters,
     category: ToolCategory.converters,
     title: _convertersTitle,
@@ -129,7 +126,7 @@ final List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'hardness',
-    icon: MdiIcons.diamondStone,
+    icon: Icons.diamond,
     route: RouteNames.calcHardness,
     category: ToolCategory.converters,
     title: _hardnessTitle,
@@ -138,7 +135,7 @@ final List<ToolDef> kTools = [
   // ── Reference ──
   ToolDef(
     id: 'true_position',
-    icon: MdiIcons.bullseyeArrow,
+    icon: Icons.center_focus_strong,
     route: RouteNames.calcTruePosition,
     category: ToolCategory.reference,
     title: _truePosTitle,
@@ -146,7 +143,7 @@ final List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'weight',
-    icon: MdiIcons.weightKilogram,
+    icon: Icons.scale,
     route: RouteNames.calcWeight,
     category: ToolCategory.reference,
     title: _weightTitle,
@@ -155,7 +152,7 @@ final List<ToolDef> kTools = [
   // ── Learn ──
   ToolDef(
     id: 'quiz',
-    icon: MdiIcons.headQuestionOutline,
+    icon: Icons.quiz_outlined,
     route: RouteNames.calcQuiz,
     category: ToolCategory.learn,
     title: _quizTitle,
@@ -164,7 +161,7 @@ final List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'tool_wear',
-    icon: MdiIcons.hammerWrench,
+    icon: Icons.construction,
     route: RouteNames.calcToolWear,
     category: ToolCategory.learn,
     title: _wearTitle,
