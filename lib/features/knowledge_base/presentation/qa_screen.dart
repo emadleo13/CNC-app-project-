@@ -405,6 +405,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
                 ? _EmptyState(s: s,
                     onErrorRef:   () => context.push(RouteNames.errorReference),
                     onGcodeRef:   () => context.push(RouteNames.gcodeReference),
+                    onAsk:        _sendMessage,
                   )
                 : ListView.builder(
                     controller:  _scrollCtrl,
@@ -578,45 +579,92 @@ class _EmptyState extends StatelessWidget {
   final AppStrings   s;
   final VoidCallback onErrorRef;
   final VoidCallback onGcodeRef;
-  const _EmptyState({required this.s, required this.onErrorRef, required this.onGcodeRef});
+  final ValueChanged<String> onAsk;
+  const _EmptyState({
+    required this.s,
+    required this.onErrorRef,
+    required this.onGcodeRef,
+    required this.onAsk,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+      children: [
+        Center(
+          child: Column(
+            children: [
+              Container(
+                width: 96, height: 96,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                ),
+                child: const Icon(Icons.smart_toy_outlined, size: 44, color: AppColors.primary),
+              ),
+              const SizedBox(height: 18),
+              Text(s.kbEmptyTitle,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Text(s.kbEmptySubtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 28),
+
+        // 🔥 Popular questions
+        Row(children: [
+          const Text('🔥', style: TextStyle(fontSize: 15)),
+          const SizedBox(width: 6),
+          Text(s.popularQuestions,
+            style: const TextStyle(
+              fontSize: 11, letterSpacing: 1.1,
+              fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+        ]),
+        const SizedBox(height: 10),
+        ...s.popularQuestionsList.map((q) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Material(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => onAsk(q),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(children: [
+                  const Icon(Icons.help_outline, size: 16, color: AppColors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(q, style: const TextStyle(fontSize: 13))),
+                  const Icon(Icons.north_east, size: 14, color: AppColors.textMuted),
+                ]),
+              ),
+            ),
+          ),
+        )),
+        const SizedBox(height: 20),
+
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
           children: [
-            const Icon(Icons.school_outlined, size: 64, color: AppColors.textMuted),
-            const SizedBox(height: 16),
-            Text(s.kbEmptyTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text(s.kbEmptySubtitle,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: onGcodeRef,
-                  icon:  const Icon(Icons.code, size: 16),
-                  label: Text(s.gcodeRefTitle),
-                ),
-                OutlinedButton.icon(
-                  onPressed: onErrorRef,
-                  icon:  const Icon(Icons.warning_amber_outlined, size: 16),
-                  label: Text(s.errRefTitle),
-                ),
-              ],
+            OutlinedButton.icon(
+              onPressed: onGcodeRef,
+              icon:  const Icon(Icons.code, size: 16),
+              label: Text(s.gcodeRefTitle),
+            ),
+            OutlinedButton.icon(
+              onPressed: onErrorRef,
+              icon:  const Icon(Icons.warning_amber_outlined, size: 16),
+              label: Text(s.errRefTitle),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

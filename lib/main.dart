@@ -34,12 +34,14 @@ void main() async {
   String? savedLocale;
   String? savedUnits;
   String? savedDialect;
+  String? savedName;
   bool    onboardingSeen = false;
   try {
     const storage = FlutterSecureStorage();
     savedLocale    = await storage.read(key: 'locale');
     savedUnits     = await storage.read(key: 'units');
     savedDialect   = await storage.read(key: 'dialect');
+    savedName      = await storage.read(key: 'user_name');
     onboardingSeen = (await storage.read(key: 'onboarding_seen')) == 'true';
   } catch (_) {}
 
@@ -49,6 +51,7 @@ void main() async {
         if (savedLocale   != null) localeProvider.overrideWith((ref)          => savedLocale!),
         if (savedUnits    != null) defaultUnitsProvider.overrideWith((ref)    => savedUnits!),
         if (savedDialect  != null) defaultDialectProvider.overrideWith((ref)  => savedDialect!),
+        if (savedName     != null) userNameProvider.overrideWith((ref)        => savedName!),
         if (onboardingSeen)        onboardingSeenProvider.overrideWith((ref)  => true),
       ],
       child: const CncAssistApp(),

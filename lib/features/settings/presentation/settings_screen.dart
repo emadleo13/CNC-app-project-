@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:country_flags/country_flags.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
@@ -18,6 +19,25 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  late final TextEditingController _nameCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: ref.read(userNameProvider));
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  void _setName(String name) {
+    ref.read(userNameProvider.notifier).state = name;
+    ref.read(_settingsRepoProvider).saveName(name);
+  }
+
   Future<void> _setLocale(String locale) async {
     ref.read(localeProvider.notifier).state = locale;
     await ref.read(_settingsRepoProvider).saveLocale(locale);
@@ -46,6 +66,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // ── Display name ──────────────────────────────────────────────────
+          _SectionHeader(s.settingsName),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: TextField(
+                controller: _nameCtrl,
+                textInputAction: TextInputAction.done,
+                onChanged: _setName,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+                  hintText: s.settingsNameHint,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
           // ── Subscription ─────────────────────────────────────────────────
           _SectionHeader(s.settingsSubscription),
           Card(
@@ -67,21 +108,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Card(
             child: Column(children: [
               _RadioTile<String>(
+                leading: const _Flag('GB'),
                 title: s.settingsLanguageEn, subtitle: 'English',
                 value: 'en', groupValue: locale, onChanged: _setLocale,
               ),
               const Divider(height: 1, color: AppColors.border),
               _RadioTile<String>(
+                leading: const _Flag('RO'),
                 title: s.settingsLanguageRo, subtitle: 'Română',
                 value: 'ro', groupValue: locale, onChanged: _setLocale,
               ),
               const Divider(height: 1, color: AppColors.border),
               _RadioTile<String>(
+                leading: const _Flag('IR'),
                 title: s.settingsLanguageFa, subtitle: 'Persian · فارسی',
                 value: 'fa', groupValue: locale, onChanged: _setLocale,
               ),
               const Divider(height: 1, color: AppColors.border),
               _RadioTile<String>(
+                leading: const _Flag('SA'),
                 title: s.settingsLanguageAr, subtitle: 'Arabic · العربية',
                 value: 'ar', groupValue: locale, onChanged: _setLocale,
               ),
@@ -267,6 +312,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
+class _Flag extends StatelessWidget {
+  final String countryCode;
+  const _Flag(this.countryCode);
+
+  @override
+  Widget build(BuildContext context) {
+    return CountryFlag.fromCountryCode(
+      countryCode,
+      theme: const ImageTheme(width: 34, height: 24, shape: RoundedRectangle(4)),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader(this.title);
@@ -291,15 +349,18 @@ class _RadioTile<T> extends StatelessWidget {
   final T              value;
   final T              groupValue;
   final ValueChanged<T> onChanged;
+  final Widget?        leading;
   const _RadioTile({
     required this.title, required this.subtitle,
     required this.value, required this.groupValue, required this.onChanged,
+    this.leading,
   });
 
   @override
   Widget build(BuildContext context) {
     final selected = value == groupValue;
     return ListTile(
+      leading:  leading,
       title:    Text(title),
       subtitle: Text(subtitle,
         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),

@@ -390,4 +390,36 @@ class AppStringsRo implements AppStrings {
   @override String get onboard2Body  => 'Lipește sau încarcă un program și vezi erorile și avertismentele linie cu linie, evidențiate color.';
   @override String get onboard3Title => 'Bază de cunoștințe inteligentă';
   @override String get onboard3Body  => 'Pune orice întrebare CNC și răsfoiește o referință completă de coduri G și M.';
+
+  @override String get heroHello         => 'Salut';
+  @override String get greetingMorning   => 'Bună dimineața 👋';
+  @override String get greetingAfternoon => 'Bună ziua 👋';
+  @override String get greetingEvening   => 'Bună seara 👋';
+  @override String get heroPrompt        => 'Ce vrei să calculezi azi?';
+  @override String get statTools         => 'Unelte';
+  @override String get statGcodes        => 'Coduri G';
+  @override String get statErrors        => 'Erori CNC';
+  @override String get tipOfDayTitle     => 'Sfatul CNC al zilei';
+  @override List<String> get cncTips => const [
+    'G43 aplică compensarea lungimii sculei.',
+    'G41 este compensarea sculei la stânga traseului; G42 la dreapta.',
+    'M03 rotește axul în sensul acelor de ceas; M04 invers.',
+    'G90 este poziționare absolută; G91 incrementală.',
+    'Pentru oțel moale, viteza de așchiere a carburii e de obicei de 3–4× față de HSS.',
+    'Verifică mereu numărul sculei și offsetul H înainte de G43 pentru a evita coliziunea.',
+    'G54–G59 sunt sistemele de coordonate de lucru programabile.',
+    'Reducerea avansului pe dinte la diametre mici previne ruperea sculei.',
+  ];
+  @override String get badgePopular => 'Popular';
+  @override String get badgeNew     => 'Nou';
+  @override String get badgePro     => 'Pro';
+  @override String get popularQuestions => 'Întrebări populare';
+  @override List<String> get popularQuestionsList => const [
+    'Care e diferența dintre G41 și G42?',
+    'Care e diferența dintre G90 și G91?',
+    'Care e diferența dintre M03 și M04?',
+    'Cum se calculează RPM?',
+  ];
+  @override String get settingsName     => 'Numele tău';
+  @override String get settingsNameHint => 'Pentru salutul de pe ecranul principal';
 }

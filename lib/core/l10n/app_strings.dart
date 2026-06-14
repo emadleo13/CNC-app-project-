@@ -356,6 +356,31 @@ abstract class AppStrings {
   String get onboard2Body;
   String get onboard3Title;
   String get onboard3Body;
+
+  // Home dashboard / hero
+  String get heroHello;            // "Hello" / "سلام"
+  String get greetingMorning;
+  String get greetingAfternoon;
+  String get greetingEvening;
+  String get heroPrompt;           // "What do you want to calculate today?"
+  String get statTools;
+  String get statGcodes;
+  String get statErrors;
+  String get tipOfDayTitle;
+  List<String> get cncTips;
+
+  // Tool card badges
+  String get badgePopular;
+  String get badgeNew;
+  String get badgePro;
+
+  // Knowledge — popular questions
+  String get popularQuestions;
+  List<String> get popularQuestionsList;
+
+  // Settings — display name
+  String get settingsName;
+  String get settingsNameHint;
 }
 
 // Locale provider
@@ -369,6 +394,9 @@ final defaultDialectProvider = StateProvider<String>((ref) => 'haas');
 
 // Whether the first-run onboarding has been completed.
 final onboardingSeenProvider = StateProvider<bool>((ref) => false);
+
+// Optional display name used in the home greeting (empty = no name).
+final userNameProvider = StateProvider<String>((ref) => '');
 
 final appStringsProvider = Provider<AppStrings>((ref) {
   final locale = ref.watch(localeProvider);

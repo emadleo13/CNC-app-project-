@@ -388,4 +388,36 @@ class AppStringsFa implements AppStrings {
   @override String get onboard2Body  => 'برنامه را الصاق یا آپلود کن؛ خطاها و هشدارها را با هایلایت رنگی خط‌به‌خط ببین.';
   @override String get onboard3Title => 'پایگاه دانش هوشمند';
   @override String get onboard3Body  => 'هر سؤال CNC را بپرس و به مرجع کامل کدهای G و M دسترسی داشته باش.';
+
+  @override String get heroHello         => 'سلام';
+  @override String get greetingMorning   => 'صبح بخیر 👋';
+  @override String get greetingAfternoon => 'ظهر بخیر 👋';
+  @override String get greetingEvening   => 'عصر بخیر 👋';
+  @override String get heroPrompt        => 'امروز چه چیزی محاسبه می‌کنید؟';
+  @override String get statTools         => 'ابزار';
+  @override String get statGcodes        => 'کد G';
+  @override String get statErrors        => 'خطای CNC';
+  @override String get tipOfDayTitle     => 'نکتهٔ امروز CNC';
+  @override List<String> get cncTips => const [
+    'G43 برای اعمال جبران طول ابزار (Tool Length Offset) استفاده می‌شود.',
+    'G41 جبران شعاع ابزار از سمت چپ مسیر و G42 از سمت راست است.',
+    'M03 دوک را ساعت‌گرد و M04 پادساعت‌گرد می‌چرخاند.',
+    'G90 مختصات مطلق و G91 مختصات نسبی (افزایشی) است.',
+    'برای فولاد نرم، سرعت برش کاربید معمولاً ۳ تا ۴ برابر HSS است.',
+    'همیشه قبل از G43 شمارهٔ ابزار و H آن را بررسی کن تا تصادف رخ ندهد.',
+    'G54 تا G59 سیستم‌های مختصات کاری قابل‌برنامه‌ریزی هستند.',
+    'کاهش بار براده در قطرهای کوچک از شکستن ابزار جلوگیری می‌کند.',
+  ];
+  @override String get badgePopular => 'پرکاربرد';
+  @override String get badgeNew     => 'جدید';
+  @override String get badgePro     => 'حرفه‌ای';
+  @override String get popularQuestions => 'سوالات پرطرفدار';
+  @override List<String> get popularQuestionsList => const [
+    'تفاوت G41 و G42 چیست؟',
+    'تفاوت G90 و G91 چیست؟',
+    'تفاوت M03 و M04 چیست؟',
+    'RPM چطور محاسبه می‌شود؟',
+  ];
+  @override String get settingsName     => 'نام شما';
+  @override String get settingsNameHint => 'برای خوش‌آمدگویی در صفحهٔ اصلی';
 }

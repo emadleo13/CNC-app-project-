@@ -7,16 +7,37 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/tool_def.dart';
 import '../domain/recent_tools.dart';
 
-/// Phase 0 — the calculator "hub": a grid of every machining tool, grouped by
-/// category. Replaces the old single milling screen as the `/calculator` tab.
+// Reference counts shown in the hero. Tools is derived; the others mirror the
+// entry counts in assets/data/gcode_reference.json and errors.json.
+const int _kGcodeCount = 252;
+const int _kErrorCount = 273;
+
+/// The calculator "hub": a dashboard hero, quick access, and a grid of every
+/// machining tool grouped by category.
 class ToolsHubScreen extends ConsumerWidget {
   const ToolsHubScreen({super.key});
 
+  String _greeting(AppStrings s, String name) {
+    if (name.trim().isNotEmpty) return '${s.heroHello} ${name.trim()} 👋';
+    final h = DateTime.now().hour;
+    if (h < 12) return s.greetingMorning;
+    if (h < 18) return s.greetingAfternoon;
+    return s.greetingEvening;
+  }
+
+  String _tipOfDay(AppStrings s) {
+    final tips = s.cncTips;
+    if (tips.isEmpty) return '';
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year)).inDays;
+    return tips[dayOfYear % tips.length];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(appStringsProvider);
+    final s    = ref.watch(appStringsProvider);
+    final name = ref.watch(userNameProvider);
 
-    // Resolve the persisted recent ids into enabled tools, newest first.
     final recentIds = ref.watch(recentToolsProvider);
     final recentTools = <ToolDef>[
       for (final id in recentIds)
@@ -29,9 +50,44 @@ class ToolsHubScreen extends ConsumerWidget {
       context.push(tool.route);
     }
 
+    // Assemble the scroll children with a running index so every block fades
+    // and slides in with a staggered cascade.
+    final children = <Widget>[];
+    var idx = 0;
+    Widget entrance(Widget w) => _Entrance(index: idx++, child: w);
+
+    children.add(entrance(_HeroHeader(
+      greeting: _greeting(s, name),
+      prompt:   s.heroPrompt,
+      s:        s,
+    )));
+    children.add(entrance(_TipCard(title: s.tipOfDayTitle, tip: _tipOfDay(s))));
+
+    if (recentTools.isNotEmpty) {
+      children.add(entrance(_QuickAccessRow(
+        tools: recentTools, label: s.quickAccess, s: s, onTap: open,
+      )));
+    }
+
+    for (final category in ToolCategory.values) {
+      final tools = kTools.where((t) => t.category == category).toList();
+      if (tools.isEmpty) continue;
+      children.add(entrance(_SectionLabel(category.label(s))));
+      children.add(GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 1.55,
+        children: tools.map((t) => entrance(_ToolCard(tool: t, s: s, onTap: open))).toList(),
+      ));
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(s.toolsHubTitle),
+        titleSpacing: 0,
+        title: const SizedBox.shrink(),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, size: 20),
@@ -41,39 +97,129 @@ class ToolsHubScreen extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+        children: children,
+      ),
+    );
+  }
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────
+
+class _HeroHeader extends StatelessWidget {
+  final String greeting;
+  final String prompt;
+  final AppStrings s;
+  const _HeroHeader({required this.greeting, required this.prompt, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (recentTools.isNotEmpty) _QuickAccessRow(
-            tools: recentTools,
-            label: s.quickAccess,
-            s: s,
-            onTap: open,
-          ),
-          for (final category in ToolCategory.values)
-            ..._buildCategory(s, category, open),
+          Text(greeting,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(prompt,
+              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+          const SizedBox(height: 16),
+          Row(children: [
+            _StatPill(value: '${kTools.length}', label: s.statTools),
+            const SizedBox(width: 10),
+            _StatPill(value: '$_kGcodeCount', label: s.statGcodes),
+            const SizedBox(width: 10),
+            _StatPill(value: '$_kErrorCount', label: s.statErrors),
+          ]),
         ],
       ),
     );
   }
+}
 
-  List<Widget> _buildCategory(
-      AppStrings s, ToolCategory category, void Function(ToolDef) onTap) {
-    final tools = kTools.where((t) => t.category == category).toList();
-    if (tools.isEmpty) return const [];
-    return [
-      _SectionLabel(category.label(s)),
-      GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.55,
-        children: tools.map((t) => _ToolCard(tool: t, s: s, onTap: onTap)).toList(),
+class _StatPill extends StatelessWidget {
+  final String value;
+  final String label;
+  const _StatPill({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Text(value,
+                style: const TextStyle(
+                  fontFamily: 'JetBrainsMono',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                )),
+            const SizedBox(height: 2),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          ],
+        ),
       ),
-    ];
+    );
   }
 }
+
+// ── Tip of the day ──────────────────────────────────────────────────────────
+
+class _TipCard extends StatelessWidget {
+  final String title;
+  final String tip;
+  const _TipCard({required this.title, required this.tip});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.info.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lightbulb_outline, color: AppColors.info, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      letterSpacing: 1.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.info,
+                    )),
+                const SizedBox(height: 5),
+                Text(tip,
+                    style: const TextStyle(fontSize: 13, height: 1.5)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Section label & quick access ────────────────────────────────────────────
 
 class _SectionLabel extends StatelessWidget {
   final String text;
@@ -96,7 +242,7 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-/// Horizontal strip of recently-opened tools shown at the top of the hub.
+/// Horizontal strip of recently-opened tools shown near the top of the hub.
 class _QuickAccessRow extends StatelessWidget {
   final List<ToolDef> tools;
   final String label;
@@ -161,6 +307,8 @@ class _QuickAccessRow extends StatelessWidget {
   }
 }
 
+// ── Tool card ────────────────────────────────────────────────────────────────
+
 class _ToolCard extends StatelessWidget {
   final ToolDef tool;
   final AppStrings s;
@@ -189,19 +337,9 @@ class _ToolCard extends StatelessWidget {
                   Icon(tool.icon, size: 22, color: AppColors.primary),
                   const Spacer(),
                   if (tool.comingSoon)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.warningYellow.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(s.toolComingSoon,
-                          style: const TextStyle(
-                              fontSize: 8,
-                              color: AppColors.warningYellow,
-                              fontWeight: FontWeight.bold)),
-                    ),
+                    _Badge(label: s.toolComingSoon, color: AppColors.warningYellow)
+                  else if (tool.badge != null)
+                    _Badge.forTool(tool.badge!, s),
                 ],
               ),
               const Spacer(),
@@ -223,6 +361,85 @@ class _ToolCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Badge({required this.label, required this.color});
+
+  factory _Badge.forTool(ToolBadge badge, AppStrings s) {
+    return switch (badge) {
+      ToolBadge.popular => _Badge(label: s.badgePopular, color: AppColors.successGreen),
+      ToolBadge.isNew   => _Badge(label: s.badgeNew,     color: AppColors.info),
+      ToolBadge.pro     => _Badge(label: s.badgePro,     color: AppColors.primary),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 9, color: color, fontWeight: FontWeight.bold)),
+    );
+  }
+}
+
+// ── Entrance animation ────────────────────────────────────────────────────────
+
+/// Fades + slides its child up once, after a per-index delay, for a staggered
+/// page-entrance cascade. Replays whenever the subtree is rebuilt fresh (e.g.
+/// switching back to this tab).
+class _Entrance extends StatefulWidget {
+  final int index;
+  final Widget child;
+  const _Entrance({required this.index, required this.child});
+
+  @override
+  State<_Entrance> createState() => _EntranceState();
+}
+
+class _EntranceState extends State<_Entrance>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  late final Animation<double> _curved;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 360));
+    _curved = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+    // Cap the stagger so long lists don't trail for too long.
+    final delayMs = (40 * widget.index).clamp(0, 600);
+    Future.delayed(Duration(milliseconds: delayMs), () {
+      if (mounted) _c.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _curved,
+      child: SlideTransition(
+        position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+            .animate(_curved),
+        child: widget.child,
       ),
     );
   }

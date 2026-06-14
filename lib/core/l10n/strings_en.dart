@@ -390,4 +390,36 @@ class AppStringsEn implements AppStrings {
   @override String get onboard2Body  => 'Paste or upload a program and spot errors and warnings line by line with color highlighting.';
   @override String get onboard3Title => 'Smart Knowledge Base';
   @override String get onboard3Body  => 'Ask any CNC question and browse a full G & M code reference.';
+
+  @override String get heroHello         => 'Hello';
+  @override String get greetingMorning   => 'Good morning 👋';
+  @override String get greetingAfternoon => 'Good afternoon 👋';
+  @override String get greetingEvening   => 'Good evening 👋';
+  @override String get heroPrompt        => 'What do you want to calculate today?';
+  @override String get statTools         => 'Tools';
+  @override String get statGcodes        => 'G-codes';
+  @override String get statErrors        => 'CNC errors';
+  @override String get tipOfDayTitle     => 'CNC Tip of the Day';
+  @override List<String> get cncTips => const [
+    'G43 applies the tool length offset.',
+    'G41 is cutter compensation left of the path; G42 is to the right.',
+    'M03 spins the spindle clockwise; M04 counter-clockwise.',
+    'G90 is absolute positioning; G91 is incremental.',
+    'For mild steel, carbide cutting speed is usually 3–4× that of HSS.',
+    'Always verify the tool number and its H offset before G43 to avoid a crash.',
+    'G54–G59 are the programmable work coordinate systems.',
+    'Lowering chip load on small diameters helps prevent tool breakage.',
+  ];
+  @override String get badgePopular => 'Popular';
+  @override String get badgeNew     => 'New';
+  @override String get badgePro     => 'Pro';
+  @override String get popularQuestions => 'Popular questions';
+  @override List<String> get popularQuestionsList => const [
+    'What is the difference between G41 and G42?',
+    'What is the difference between G90 and G91?',
+    'What is the difference between M03 and M04?',
+    'How is RPM calculated?',
+  ];
+  @override String get settingsName     => 'Your name';
+  @override String get settingsNameHint => 'For the home greeting';
 }

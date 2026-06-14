@@ -379,6 +379,79 @@ class _DismissBackground extends StatelessWidget {
   }
 }
 
+/// A branded badge whose outer ring keeps pulsing outward (radar style),
+/// giving the empty state a subtle animated illustration in pure Flutter.
+class _PulseBadge extends StatefulWidget {
+  final IconData icon;
+  const _PulseBadge({required this.icon});
+
+  @override
+  State<_PulseBadge> createState() => _PulseBadgeState();
+}
+
+class _PulseBadgeState extends State<_PulseBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2200))
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 132,
+      height: 132,
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Two expanding rings, offset in phase.
+              _ring(_c.value),
+              _ring((_c.value + 0.5) % 1.0),
+              child!,
+            ],
+          );
+        },
+        child: Container(
+          width: 76,
+          height: 76,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.primary.withValues(alpha: 0.14),
+          ),
+          child: Icon(widget.icon, size: 36, color: AppColors.primary),
+        ),
+      ),
+    );
+  }
+
+  Widget _ring(double t) {
+    final size = 76.0 + t * 56.0;          // 76 → 132
+    final opacity = (1.0 - t) * 0.28;       // fade out as it grows
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primary.withValues(alpha: opacity),
+      ),
+    );
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   final AppStrings s;
   final IconData icon;
@@ -399,25 +472,8 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Branded badge: concentric tonal rings around the tab's icon.
-            Container(
-              width: 104,
-              height: 104,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.08),
-              ),
-              alignment: Alignment.center,
-              child: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.14),
-                ),
-                child: Icon(icon, size: 36, color: AppColors.primary),
-              ),
-            ),
+            // Branded animated badge: a slow "radar" pulse behind the tab icon.
+            _PulseBadge(icon: icon),
             const SizedBox(height: 20),
             Text(s.historyEmpty,
                 style: const TextStyle(

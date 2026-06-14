@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 
@@ -12,6 +13,9 @@ enum ToolCategory {
   reference,
   learn
 }
+
+/// Small corner badge highlighting a tool's status on the hub grid.
+enum ToolBadge { popular, isNew, pro }
 
 extension ToolCategoryX on ToolCategory {
   String label(AppStrings s) => switch (this) {
@@ -35,6 +39,9 @@ class ToolDef {
   final String Function(AppStrings) title;
   final String Function(AppStrings) subtitle;
 
+  /// Optional status badge shown at the top of the card.
+  final ToolBadge? badge;
+
   /// Marks a tool not yet implemented (shown but disabled with a "soon" badge).
   final bool comingSoon;
 
@@ -45,44 +52,50 @@ class ToolDef {
     required this.category,
     required this.title,
     required this.subtitle,
+    this.badge,
     this.comingSoon = false,
   });
 }
 
 /// Single source of truth for the hub grid. Routes here must match the
 /// `GoRoute` paths registered in app_router.dart.
-const List<ToolDef> kTools = [
+///
+/// Non-const because the industrial [MdiIcons] glyphs are runtime getters.
+final List<ToolDef> kTools = [
   // ── Milling ──
   ToolDef(
     id: 'milling',
-    icon: Icons.rotate_right,
+    icon: MdiIcons.sawBlade,
     route: RouteNames.calcMilling,
     category: ToolCategory.milling,
     title: _millingTitle,
     subtitle: _millingSub,
+    badge: ToolBadge.popular,
   ),
   // ── Turning ──
   ToolDef(
     id: 'turning',
-    icon: Icons.album_outlined,
+    icon: MdiIcons.circleDouble,
     route: RouteNames.calcTurning,
     category: ToolCategory.turning,
     title: _turningTitle,
     subtitle: _turningSub,
+    badge: ToolBadge.popular,
   ),
   // ── Drilling ──
   ToolDef(
     id: 'drilling',
-    icon: Icons.vertical_align_bottom,
+    icon: MdiIcons.screwLag,
     route: RouteNames.calcDrilling,
     category: ToolCategory.drilling,
     title: _drillingTitle,
     subtitle: _drillingSub,
+    badge: ToolBadge.popular,
   ),
   // ── Coordinates ──
   ToolDef(
     id: 'taper',
-    icon: Icons.show_chart,
+    icon: MdiIcons.angleAcute,
     route: RouteNames.calcTaper,
     category: ToolCategory.coordinates,
     title: _taperTitle,
@@ -90,7 +103,7 @@ const List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'arc',
-    icon: Icons.architecture,
+    icon: MdiIcons.vectorRadius,
     route: RouteNames.calcArc,
     category: ToolCategory.coordinates,
     title: _arcTitle,
@@ -98,16 +111,17 @@ const List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'gcode_gen',
-    icon: Icons.precision_manufacturing_outlined,
+    icon: MdiIcons.robotIndustrial,
     route: RouteNames.calcGcodeGen,
     category: ToolCategory.coordinates,
     title: _gcodeGenTitle,
     subtitle: _gcodeGenSub,
+    badge: ToolBadge.pro,
   ),
   // ── Converters ──
   ToolDef(
     id: 'converters',
-    icon: Icons.swap_horiz,
+    icon: MdiIcons.swapHorizontal,
     route: RouteNames.calcConverters,
     category: ToolCategory.converters,
     title: _convertersTitle,
@@ -115,7 +129,7 @@ const List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'hardness',
-    icon: Icons.diamond_outlined,
+    icon: MdiIcons.diamondStone,
     route: RouteNames.calcHardness,
     category: ToolCategory.converters,
     title: _hardnessTitle,
@@ -124,7 +138,7 @@ const List<ToolDef> kTools = [
   // ── Reference ──
   ToolDef(
     id: 'true_position',
-    icon: Icons.gps_fixed,
+    icon: MdiIcons.bullseyeArrow,
     route: RouteNames.calcTruePosition,
     category: ToolCategory.reference,
     title: _truePosTitle,
@@ -132,7 +146,7 @@ const List<ToolDef> kTools = [
   ),
   ToolDef(
     id: 'weight',
-    icon: Icons.scale_outlined,
+    icon: MdiIcons.weightKilogram,
     route: RouteNames.calcWeight,
     category: ToolCategory.reference,
     title: _weightTitle,
@@ -141,19 +155,21 @@ const List<ToolDef> kTools = [
   // ── Learn ──
   ToolDef(
     id: 'quiz',
-    icon: Icons.quiz_outlined,
+    icon: MdiIcons.headQuestionOutline,
     route: RouteNames.calcQuiz,
     category: ToolCategory.learn,
     title: _quizTitle,
     subtitle: _quizSub,
+    badge: ToolBadge.isNew,
   ),
   ToolDef(
     id: 'tool_wear',
-    icon: Icons.handyman_outlined,
+    icon: MdiIcons.hammerWrench,
     route: RouteNames.calcToolWear,
     category: ToolCategory.learn,
     title: _wearTitle,
     subtitle: _wearSub,
+    badge: ToolBadge.isNew,
   ),
 ];
 

@@ -388,4 +388,36 @@ class AppStringsAr implements AppStrings {
   @override String get onboard2Body  => 'الصق أو ارفع برنامجًا واكتشف الأخطاء والتحذيرات سطرًا بسطر مع تلوين الصياغة.';
   @override String get onboard3Title => 'قاعدة معرفة ذكية';
   @override String get onboard3Body  => 'اسأل أي سؤال عن CNC وتصفّح مرجعًا كاملًا لأكواد G و M.';
+
+  @override String get heroHello         => 'مرحبًا';
+  @override String get greetingMorning   => 'صباح الخير 👋';
+  @override String get greetingAfternoon => 'طاب يومك 👋';
+  @override String get greetingEvening   => 'مساء الخير 👋';
+  @override String get heroPrompt        => 'ماذا تريد أن تحسب اليوم؟';
+  @override String get statTools         => 'أدوات';
+  @override String get statGcodes        => 'أكواد G';
+  @override String get statErrors        => 'أخطاء CNC';
+  @override String get tipOfDayTitle     => 'نصيحة CNC اليوم';
+  @override List<String> get cncTips => const [
+    'يُستخدم G43 لتطبيق تعويض طول الأداة.',
+    'G41 تعويض الأداة على يسار المسار؛ وG42 على اليمين.',
+    'M03 يدير المغزل باتجاه عقارب الساعة؛ وM04 عكسها.',
+    'G90 إحداثيات مطلقة؛ وG91 تزايدية.',
+    'للفولاذ الطري، سرعة قطع الكربيد عادةً 3–4 أضعاف HSS.',
+    'تحقق دائمًا من رقم الأداة وتعويض H قبل G43 لتجنّب الاصطدام.',
+    'G54–G59 هي أنظمة إحداثيات العمل القابلة للبرمجة.',
+    'تقليل حمل القطع عند الأقطار الصغيرة يمنع كسر الأداة.',
+  ];
+  @override String get badgePopular => 'شائع';
+  @override String get badgeNew     => 'جديد';
+  @override String get badgePro     => 'احترافي';
+  @override String get popularQuestions => 'أسئلة شائعة';
+  @override List<String> get popularQuestionsList => const [
+    'ما الفرق بين G41 وG42؟',
+    'ما الفرق بين G90 وG91؟',
+    'ما الفرق بين M03 وM04؟',
+    'كيف يُحسب RPM؟',
+  ];
+  @override String get settingsName     => 'اسمك';
+  @override String get settingsNameHint => 'للترحيب في الشاشة الرئيسية';
 }

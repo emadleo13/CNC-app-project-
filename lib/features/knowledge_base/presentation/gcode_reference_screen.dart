@@ -284,23 +284,22 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color:        selected ? AppColors.primary : AppColors.surfaceAlt,
-          borderRadius: BorderRadius.circular(20),
-          border:       Border.all(color: selected ? AppColors.primary : AppColors.border),
-        ),
-        child: Text(label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            color: selected ? AppColors.onPrimary : AppColors.textSecondary,
-          )),
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      showCheckmark: true,
+      checkmarkColor: AppColors.onPrimary,
+      backgroundColor: AppColors.surfaceAlt,
+      selectedColor: AppColors.primary,
+      side: BorderSide(color: selected ? AppColors.primary : AppColors.border),
+      labelStyle: TextStyle(
+        fontSize: 13,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        color: selected ? AppColors.onPrimary : AppColors.textSecondary,
       ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 }
@@ -314,26 +313,25 @@ class _BrandChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final meta = _brandMeta[brand]!;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color:        selected ? meta.bg : AppColors.surfaceAlt,
-          borderRadius: BorderRadius.circular(20),
-          border:       Border.all(
-            color: selected ? meta.fg : AppColors.border,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Text(meta.label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            color: selected ? meta.fg : AppColors.textSecondary,
-          )),
+    return FilterChip(
+      label: Text(meta.label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      showCheckmark: true,
+      checkmarkColor: meta.fg,
+      backgroundColor: AppColors.surfaceAlt,
+      selectedColor: meta.bg,
+      side: BorderSide(
+        color: selected ? meta.fg : AppColors.border,
+        width: selected ? 1.5 : 1,
       ),
+      labelStyle: TextStyle(
+        fontSize: 13,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        color: selected ? meta.fg : AppColors.textSecondary,
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 }
