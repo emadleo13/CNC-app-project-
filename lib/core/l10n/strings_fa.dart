@@ -145,6 +145,8 @@ class AppStringsFa implements AppStrings {
   @override String get historyAnalyses       => 'تحلیل‌ها';
   @override String get historyEmpty          => 'هیچ موردی ذخیره نشده';
   @override String get historyEmptyDesc      => 'محاسبات و تحلیل‌های جی‌کد را ذخیره کنید\nتا اینجا دسترسی داشته باشید.';
+  @override String get historyEmptyCtaCalc     => 'اولین محاسبه را شروع کن';
+  @override String get historyEmptyCtaAnalysis => 'اولین برنامه را تحلیل کن';
   @override String get historySave           => 'ذخیره';
   @override String get historySaved          => 'در تاریخچه ذخیره شد';
   @override String get historyDeleteAll      => 'حذف همه';
@@ -153,6 +155,9 @@ class AppStringsFa implements AppStrings {
   @override String get commonCancel         => 'لغو';
   @override String get commonSave           => 'ذخیره';
   @override String get commonClear          => 'پاک کردن';
+  @override String get commonCopy           => 'کپی';
+  @override String get commonRetry          => 'تلاش دوباره';
+  @override String get subProductUnavailable => 'قیمت زنده از فروشگاه در دسترس نیست. اتصال اینترنت را بررسی کن یا بعداً دوباره امتحان کن.';
   @override String get commonError          => 'خطا';
   @override String get commonLoading        => 'در حال بارگذاری...';
 
@@ -312,6 +317,7 @@ class AppStringsFa implements AppStrings {
 
   // ── ابزارهای ماشینکاری ──
   @override String get toolsHubTitle    => 'ابزارهای ماشینکاری';
+  @override String get quickAccess      => 'دسترسی سریع';
   @override String get toolComingSoon   => 'به‌زودی';
   @override String get catMilling       => 'فرزکاری';
   @override String get catTurning       => 'تراشکاری';
@@ -372,4 +378,14 @@ class AppStringsFa implements AppStrings {
   @override String get hardEnterValue   => 'مقدار را در هر مقیاسی وارد کنید';
   @override String get taperWarnNoseR   => 'شعاع نوک برای این مقطع خیلی بزرگ است — تداخل.';
   @override String get taperWarnLength  => 'شعاع از طول مقطع بیشتر است.';
+
+  @override String get onboardSkip   => 'رد کردن';
+  @override String get onboardNext   => 'بعدی';
+  @override String get onboardStart  => 'شروع کنیم';
+  @override String get onboard1Title => 'محاسبه‌گر فید و سرعت';
+  @override String get onboard1Body  => 'پارامترهای برش دقیق برای هر متریال و ابزار را در چند ثانیه به‌دست بیاور.';
+  @override String get onboard2Title => 'آنالیزور جی‌کد';
+  @override String get onboard2Body  => 'برنامه را الصاق یا آپلود کن؛ خطاها و هشدارها را با هایلایت رنگی خط‌به‌خط ببین.';
+  @override String get onboard3Title => 'پایگاه دانش هوشمند';
+  @override String get onboard3Body  => 'هر سؤال CNC را بپرس و به مرجع کامل کدهای G و M دسترسی داشته باش.';
 }

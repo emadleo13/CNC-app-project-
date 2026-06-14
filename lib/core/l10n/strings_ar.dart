@@ -145,6 +145,8 @@ class AppStringsAr implements AppStrings {
   @override String get historyAnalyses       => 'التحليلات';
   @override String get historyEmpty          => 'لا توجد عناصر محفوظة';
   @override String get historyEmptyDesc      => 'احفظ الحسابات وتحليلات الجي-كود\nللوصول إليها هنا.';
+  @override String get historyEmptyCtaCalc     => 'ابدأ أول عملية حسابية';
+  @override String get historyEmptyCtaAnalysis => 'حلّل أول برنامج';
   @override String get historySave           => 'حفظ';
   @override String get historySaved          => 'تم الحفظ في السجل';
   @override String get historyDeleteAll      => 'حذف الكل';
@@ -153,6 +155,9 @@ class AppStringsAr implements AppStrings {
   @override String get commonCancel         => 'إلغاء';
   @override String get commonSave           => 'حفظ';
   @override String get commonClear          => 'مسح';
+  @override String get commonCopy           => 'نسخ';
+  @override String get commonRetry          => 'إعادة المحاولة';
+  @override String get subProductUnavailable => 'سعر المتجر غير متوفر. تحقق من اتصالك أو حاول لاحقًا.';
   @override String get commonError          => 'خطأ';
   @override String get commonLoading        => 'جارٍ التحميل...';
 
@@ -312,6 +317,7 @@ class AppStringsAr implements AppStrings {
 
   // ── أدوات التصنيع ──
   @override String get toolsHubTitle    => 'أدوات التصنيع';
+  @override String get quickAccess      => 'وصول سريع';
   @override String get toolComingSoon   => 'قريباً';
   @override String get catMilling       => 'التفريز';
   @override String get catTurning       => 'الخراطة';
@@ -372,4 +378,14 @@ class AppStringsAr implements AppStrings {
   @override String get hardEnterValue   => 'أدخل قيمة بأي مقياس';
   @override String get taperWarnNoseR   => 'نصف قطر الرأس كبير جداً لهذا المقطع — تداخل.';
   @override String get taperWarnLength  => 'نصف القطر يتجاوز طول المقطع.';
+
+  @override String get onboardSkip   => 'تخطٍّ';
+  @override String get onboardNext   => 'التالي';
+  @override String get onboardStart  => 'لنبدأ';
+  @override String get onboard1Title => 'حاسبة التغذية والسرعة';
+  @override String get onboard1Body  => 'احصل على معاملات قطع دقيقة لأي مادة وأداة في ثوانٍ.';
+  @override String get onboard2Title => 'محلّل G-code';
+  @override String get onboard2Body  => 'الصق أو ارفع برنامجًا واكتشف الأخطاء والتحذيرات سطرًا بسطر مع تلوين الصياغة.';
+  @override String get onboard3Title => 'قاعدة معرفة ذكية';
+  @override String get onboard3Body  => 'اسأل أي سؤال عن CNC وتصفّح مرجعًا كاملًا لأكواد G و M.';
 }

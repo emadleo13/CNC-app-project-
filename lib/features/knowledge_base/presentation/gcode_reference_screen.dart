@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/help_card.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../data/gcode_repository.dart';
 
 final _gcodeRepoProvider  = Provider((_) => GcodeRepository());
@@ -35,6 +37,12 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
   void dispose() {
     _searchCtrl.dispose();
     super.dispose();
+  }
+
+  void _select(String value) {
+    if (_filter == value) return;
+    HapticFeedback.selectionClick();
+    setState(() => _filter = value);
   }
 
   List<GcodeEntry> _applyFilter(List<GcodeEntry> all) {
@@ -92,17 +100,17 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                _Chip(label: s.gcodeRefFilterAll,         value: 'all',          selected: _filter == 'all',          onTap: () => setState(() => _filter = 'all')),
+                _Chip(label: s.gcodeRefFilterAll,         value: 'all',          selected: _filter == 'all',          onTap: () => _select('all')),
                 const SizedBox(width: 8),
-                _BrandChip(brand: 'haas',       selected: _filter == 'haas',       onTap: () => setState(() => _filter = 'haas')),
+                _BrandChip(brand: 'haas',       selected: _filter == 'haas',       onTap: () => _select('haas')),
                 const SizedBox(width: 8),
-                _BrandChip(brand: 'sinumerik',  selected: _filter == 'sinumerik',  onTap: () => setState(() => _filter = 'sinumerik')),
+                _BrandChip(brand: 'sinumerik',  selected: _filter == 'sinumerik',  onTap: () => _select('sinumerik')),
                 const SizedBox(width: 8),
-                _BrandChip(brand: 'fanuc',      selected: _filter == 'fanuc',      onTap: () => setState(() => _filter = 'fanuc')),
+                _BrandChip(brand: 'fanuc',      selected: _filter == 'fanuc',      onTap: () => _select('fanuc')),
                 const SizedBox(width: 8),
-                _BrandChip(brand: 'heidenhain', selected: _filter == 'heidenhain', onTap: () => setState(() => _filter = 'heidenhain')),
+                _BrandChip(brand: 'heidenhain', selected: _filter == 'heidenhain', onTap: () => _select('heidenhain')),
                 const SizedBox(width: 8),
-                _BrandChip(brand: 'mazak',      selected: _filter == 'mazak',      onTap: () => setState(() => _filter = 'mazak')),
+                _BrandChip(brand: 'mazak',      selected: _filter == 'mazak',      onTap: () => _select('mazak')),
               ],
             ),
           ),
@@ -121,7 +129,7 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
           // List
           Expanded(
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonList(),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (all) {
                 final filtered = _applyFilter(all);
@@ -290,7 +298,7 @@ class _Chip extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            color: selected ? Colors.white : AppColors.textSecondary,
+            color: selected ? AppColors.onPrimary : AppColors.textSecondary,
           )),
       ),
     );

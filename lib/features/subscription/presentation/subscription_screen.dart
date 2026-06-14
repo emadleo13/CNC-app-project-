@@ -34,14 +34,29 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   }
 
   Future<void> _loadProduct() async {
-    final repo = ref.read(subscriptionRepoProvider);
-    final available = await repo.isAvailable();
-    if (!available) {
-      setState(() { _loading = false; _errorMsg = ref.read(appStringsProvider).subNotAvailable; });
-      return;
+    final s = ref.read(appStringsProvider);
+    setState(() { _loading = true; _errorMsg = null; });
+    try {
+      final repo = ref.read(subscriptionRepoProvider);
+      final available = await repo.isAvailable();
+      if (!available) {
+        if (mounted) setState(() => _errorMsg = s.subNotAvailable);
+        return;
+      }
+      final product = await repo.loadProduct();
+      if (mounted) {
+        setState(() {
+          _product = product;
+          // Store is reachable but the product isn't configured/returned.
+          if (product == null) _errorMsg = s.subProductUnavailable;
+        });
+      }
+    } catch (_) {
+      // Billing client not ready, no Play Store, unsupported device, etc.
+      if (mounted) setState(() => _errorMsg = s.subNotAvailable);
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-    final product = await repo.loadProduct();
-    setState(() { _product = product; _loading = false; });
   }
 
   void _listenPurchases() {
@@ -193,7 +208,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ),
 
             ElevatedButton(
-              onPressed: (_purchasing || _loading) ? null : _subscribe,
+              // Disabled when no purchasable product is loaded, so the button is
+              // never a silent no-op.
+              onPressed: (_purchasing || _loading || _product == null) ? null : _subscribe,
               style: ElevatedButton.styleFrom(
                 padding:  const EdgeInsets.symmetric(vertical: 14),
                 backgroundColor: AppColors.primary,
@@ -205,6 +222,18 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                   : Text(s.subSubscribeBtn,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
+
+            // When the live product couldn't load, offer a retry instead of a
+            // dead Subscribe button.
+            if (!_loading && _product == null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: OutlinedButton.icon(
+                  onPressed: _loadProduct,
+                  icon:  const Icon(Icons.refresh, size: 16),
+                  label: Text(s.commonRetry),
+                ),
+              ),
 
             // Cancel anytime text
             Padding(

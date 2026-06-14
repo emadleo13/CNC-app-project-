@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
@@ -12,6 +12,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/help_card.dart';
 import '../domain/cnc_dialect.dart';
 import '../parsers/gcode_parser.dart';
+import 'gcode_syntax.dart';
 
 class GcodeInputScreen extends ConsumerStatefulWidget {
   const GcodeInputScreen({super.key});
@@ -21,12 +22,20 @@ class GcodeInputScreen extends ConsumerStatefulWidget {
 }
 
 class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
-  final _controller   = TextEditingController();
+  final _controller   = GcodeHighlightController();
+  final _editorScroll = ScrollController();
+  final _gutterScroll = ScrollController();
   late CncDialect _dialect;
   bool       _autoDetect   = true;
   bool       _isLoading    = false; // ignore: prefer_final_fields
   bool       _isGenerating = false;
   Uint8List? _drawingBytes;
+
+  // Monospace line metrics shared by the editor and its line-number gutter.
+  static const double _editorFontSize = 13;
+  static const double _editorLineHt   = 1.6;
+  static const double _lineHeight      = _editorFontSize * _editorLineHt;
+  static const double _editorTopPad    = 12;
 
   @override
   void initState() {
@@ -37,6 +46,12 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
       'generic'   => CncDialect.generic,
       _           => CncDialect.haas,
     };
+    // Keep the gutter scroll position locked to the editor's.
+    _editorScroll.addListener(() {
+      if (!_gutterScroll.hasClients) return;
+      final max = _gutterScroll.position.maxScrollExtent;
+      _gutterScroll.jumpTo(_editorScroll.offset.clamp(0.0, max));
+    });
   }
 
   Future<void> _pickFile(AppStrings s) async {
@@ -176,6 +191,7 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
       return;
     }
 
+    HapticFeedback.mediumImpact();
     final dialect = _autoDetect ? GcodeParser.autoDetect(code) : _dialect;
     final lines   = GcodeParser.parse(code, dialect);
 
@@ -189,6 +205,8 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _editorScroll.dispose();
+    _gutterScroll.dispose();
     super.dispose();
   }
 
@@ -326,25 +344,48 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                       ]),
                     ),
                     Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        maxLines:   null,
-                        expands:    true,
-                        style: const TextStyle(
-                          fontFamily: 'JetBrainsMono',
-                          fontSize:   13,
-                          color:      AppColors.textPrimary,
-                          height:     1.6,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText:
-                              '% \nO1000 (PROGRAM NAME)\nT1 M6\nG54 G90\nG43 H1 Z50.\nM3 S1000\nG0 X0 Y0\n...',
-                          border:         InputBorder.none,
-                          enabledBorder:  InputBorder.none,
-                          focusedBorder:  InputBorder.none,
-                          contentPadding: EdgeInsets.all(16),
-                        ),
-                        onChanged: (v) => setState(() {}),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _LineNumberGutter(
+                            scroll:     _gutterScroll,
+                            lineCount:  lineCount < 1 ? 1 : lineCount,
+                            lineHeight: _lineHeight,
+                            topPad:     _editorTopPad,
+                            fontSize:   _editorFontSize,
+                          ),
+                          const VerticalDivider(width: 1, thickness: 1),
+                          Expanded(
+                            child: TextField(
+                              controller:      _controller,
+                              scrollController: _editorScroll,
+                              maxLines:   null,
+                              expands:    true,
+                              cursorColor: AppColors.primary,
+                              style: const TextStyle(
+                                fontFamily: 'JetBrainsMono',
+                                fontSize:   _editorFontSize,
+                                color:      AppColors.textPrimary,
+                                height:     _editorLineHt,
+                              ),
+                              decoration: const InputDecoration(
+                                hintText:
+                                    '% \nO1000 (PROGRAM NAME)\nT1 M6\nG54 G90\nG43 H1 Z50.\nM3 S1000\nG0 X0 Y0\n...',
+                                hintStyle: TextStyle(
+                                  fontFamily: 'JetBrainsMono',
+                                  fontSize:   _editorFontSize,
+                                  height:     _editorLineHt,
+                                  color:      AppColors.textMuted,
+                                ),
+                                border:         InputBorder.none,
+                                enabledBorder:  InputBorder.none,
+                                focusedBorder:  InputBorder.none,
+                                contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
+                              ),
+                              onChanged: (v) => setState(() {}),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -375,6 +416,53 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Right-aligned line-number column that scrolls in lock-step with the editor.
+class _LineNumberGutter extends StatelessWidget {
+  final ScrollController scroll;
+  final int    lineCount;
+  final double lineHeight;
+  final double topPad;
+  final double fontSize;
+
+  const _LineNumberGutter({
+    required this.scroll,
+    required this.lineCount,
+    required this.lineHeight,
+    required this.topPad,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 44,
+      child: SingleChildScrollView(
+        controller: scroll,
+        physics:    const NeverScrollableScrollPhysics(),
+        padding:    EdgeInsets.only(top: topPad, bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: List.generate(lineCount, (i) {
+              return Text(
+                '${i + 1}',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontFamily: 'JetBrainsMono',
+                  fontSize:   fontSize,
+                  height:     lineHeight / fontSize,
+                  color:      AppColors.gcodeN,
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );

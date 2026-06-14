@@ -143,6 +143,8 @@ class AppStringsEn implements AppStrings {
   @override String get historyAnalyses       => 'Analyses';
   @override String get historyEmpty          => 'No saved items yet';
   @override String get historyEmptyDesc      => 'Save calculations and G-code analyses\nto access them here.';
+  @override String get historyEmptyCtaCalc     => 'Start your first calculation';
+  @override String get historyEmptyCtaAnalysis => 'Analyze your first program';
   @override String get historySave           => 'Save';
   @override String get historySaved          => 'Saved to history';
   @override String get historyDeleteAll      => 'Clear all';
@@ -151,6 +153,9 @@ class AppStringsEn implements AppStrings {
   @override String get commonCancel         => 'Cancel';
   @override String get commonSave           => 'Save';
   @override String get commonClear          => 'Clear';
+  @override String get commonCopy           => 'Copy';
+  @override String get commonRetry          => 'Retry';
+  @override String get subProductUnavailable => 'Live store price unavailable. Check your connection or try again later.';
   @override String get commonError          => 'Error';
   @override String get commonLoading        => 'Loading...';
 
@@ -314,6 +319,7 @@ class AppStringsEn implements AppStrings {
 
   // ── Tools Hub ──
   @override String get toolsHubTitle    => 'Machining Tools';
+  @override String get quickAccess      => 'Quick access';
   @override String get toolComingSoon   => 'SOON';
   @override String get catMilling       => 'Milling';
   @override String get catTurning       => 'Turning';
@@ -374,4 +380,14 @@ class AppStringsEn implements AppStrings {
   @override String get hardEnterValue   => 'Enter a value in any scale';
   @override String get taperWarnNoseR   => 'Nose radius too large for this section — interference.';
   @override String get taperWarnLength  => 'Radius exceeds section length.';
+
+  @override String get onboardSkip   => 'Skip';
+  @override String get onboardNext   => 'Next';
+  @override String get onboardStart  => 'Get started';
+  @override String get onboard1Title => 'Feed & Speed Calculator';
+  @override String get onboard1Body  => 'Get precise cutting parameters for any material and tool in seconds.';
+  @override String get onboard2Title => 'G-code Analyzer';
+  @override String get onboard2Body  => 'Paste or upload a program and spot errors and warnings line by line with color highlighting.';
+  @override String get onboard3Title => 'Smart Knowledge Base';
+  @override String get onboard3Body  => 'Ask any CNC question and browse a full G & M code reference.';
 }

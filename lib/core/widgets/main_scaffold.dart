@@ -24,7 +24,25 @@ class MainScaffold extends ConsumerWidget {
 
     return Scaffold(
       appBar: null,
-      body: child,
+      // Cross-fade + subtle scale when switching top-level tabs. Keyed by tab
+      // index so navigating into a sub-route within a tab is left untouched
+      // (those keep their own push transition).
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(
+          key: ValueKey(_currentIndex(context)),
+          child: child,
+        ),
+      ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.border, width: 1)),

@@ -143,6 +143,8 @@ class AppStringsRo implements AppStrings {
   @override String get historyAnalyses       => 'Analize';
   @override String get historyEmpty          => 'Niciun element salvat';
   @override String get historyEmptyDesc      => 'Salvează calcule și analize G-code\npentru a le accesa aici.';
+  @override String get historyEmptyCtaCalc     => 'Începe primul calcul';
+  @override String get historyEmptyCtaAnalysis => 'Analizează primul program';
   @override String get historySave           => 'Salvează';
   @override String get historySaved          => 'Salvat în istoric';
   @override String get historyDeleteAll      => 'Șterge tot';
@@ -151,6 +153,9 @@ class AppStringsRo implements AppStrings {
   @override String get commonCancel         => 'Anulează';
   @override String get commonSave           => 'Salvează';
   @override String get commonClear          => 'Șterge';
+  @override String get commonCopy           => 'Copiază';
+  @override String get commonRetry          => 'Reîncearcă';
+  @override String get subProductUnavailable => 'Prețul din magazin nu este disponibil. Verifică conexiunea sau încearcă mai târziu.';
   @override String get commonError          => 'Eroare';
   @override String get commonLoading        => 'Se încarcă...';
 
@@ -314,6 +319,7 @@ class AppStringsRo implements AppStrings {
 
   // ── Tools Hub ──
   @override String get toolsHubTitle    => 'Unelte de prelucrare';
+  @override String get quickAccess      => 'Acces rapid';
   @override String get toolComingSoon   => 'CURÂND';
   @override String get catMilling       => 'Frezare';
   @override String get catTurning       => 'Strunjire';
@@ -374,4 +380,14 @@ class AppStringsRo implements AppStrings {
   @override String get hardEnterValue   => 'Introduceți o valoare pe orice scară';
   @override String get taperWarnNoseR   => 'Raza vârfului prea mare pentru secțiune — interferență.';
   @override String get taperWarnLength  => 'Raza depășește lungimea secțiunii.';
+
+  @override String get onboardSkip   => 'Omite';
+  @override String get onboardNext   => 'Înainte';
+  @override String get onboardStart  => 'Să începem';
+  @override String get onboard1Title => 'Calculator avans și viteză';
+  @override String get onboard1Body  => 'Obține parametri de așchiere preciși pentru orice material și sculă în câteva secunde.';
+  @override String get onboard2Title => 'Analizor G-code';
+  @override String get onboard2Body  => 'Lipește sau încarcă un program și vezi erorile și avertismentele linie cu linie, evidențiate color.';
+  @override String get onboard3Title => 'Bază de cunoștințe inteligentă';
+  @override String get onboard3Body  => 'Pune orice întrebare CNC și răsfoiește o referință completă de coduri G și M.';
 }

@@ -122,7 +122,14 @@ class _CalculationsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(appStringsProvider);
-    if (items.isEmpty) return _EmptyState(s: s);
+    if (items.isEmpty) {
+      return _EmptyState(
+        s: s,
+        icon: Icons.speed,
+        ctaLabel: s.historyEmptyCtaCalc,
+        onCta: () => context.go(RouteNames.calculator),
+      );
+    }
 
     return ListView.separated(
       padding: const EdgeInsets.all(12),
@@ -234,7 +241,14 @@ class _AnalysesList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(appStringsProvider);
-    if (items.isEmpty) return _EmptyState(s: s);
+    if (items.isEmpty) {
+      return _EmptyState(
+        s: s,
+        icon: Icons.code,
+        ctaLabel: s.historyEmptyCtaAnalysis,
+        onCta: () => context.go(RouteNames.gcodeAnalyzer),
+      );
+    }
 
     return ListView.separated(
       padding: const EdgeInsets.all(12),
@@ -367,7 +381,15 @@ class _DismissBackground extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final AppStrings s;
-  const _EmptyState({required this.s});
+  final IconData icon;
+  final String ctaLabel;
+  final VoidCallback onCta;
+  const _EmptyState({
+    required this.s,
+    required this.icon,
+    required this.ctaLabel,
+    required this.onCta,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -377,8 +399,26 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.history, size: 64, color: AppColors.textMuted),
-            const SizedBox(height: 16),
+            // Branded badge: concentric tonal rings around the tab's icon.
+            Container(
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary.withValues(alpha: 0.08),
+              ),
+              alignment: Alignment.center,
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.14),
+                ),
+                child: Icon(icon, size: 36, color: AppColors.primary),
+              ),
+            ),
+            const SizedBox(height: 20),
             Text(s.historyEmpty,
                 style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.w600)),
@@ -387,6 +427,12 @@ class _EmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style:
                     const TextStyle(color: AppColors.textSecondary)),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: onCta,
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(ctaLabel),
+            ),
           ],
         ),
       ),

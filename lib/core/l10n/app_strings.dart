@@ -158,6 +158,8 @@ abstract class AppStrings {
   String get historyAnalyses;
   String get historyEmpty;
   String get historyEmptyDesc;
+  String get historyEmptyCtaCalc;
+  String get historyEmptyCtaAnalysis;
   String get historySave;
   String get historySaved;
   String get historyDeleteAll;
@@ -167,6 +169,9 @@ abstract class AppStrings {
   String get commonCancel;
   String get commonSave;
   String get commonClear;
+  String get commonCopy;
+  String get commonRetry;
+  String get subProductUnavailable;
   String get commonError;
   String get commonLoading;
 
@@ -279,6 +284,7 @@ abstract class AppStrings {
 
   // ── Roadmap expansion — Tools Hub ──
   String get toolsHubTitle;
+  String get quickAccess;
   String get toolComingSoon;
   String get catMilling;
   String get catTurning;
@@ -339,6 +345,17 @@ abstract class AppStrings {
   String get hardEnterValue;
   String get taperWarnNoseR;
   String get taperWarnLength;
+
+  // Onboarding (first run)
+  String get onboardSkip;
+  String get onboardNext;
+  String get onboardStart;
+  String get onboard1Title;
+  String get onboard1Body;
+  String get onboard2Title;
+  String get onboard2Body;
+  String get onboard3Title;
+  String get onboard3Body;
 }
 
 // Locale provider
@@ -349,6 +366,9 @@ final defaultUnitsProvider = StateProvider<String>((ref) => 'metric');
 
 // Default G-code dialect: 'haas' | 'sinumerik' | 'generic'
 final defaultDialectProvider = StateProvider<String>((ref) => 'haas');
+
+// Whether the first-run onboarding has been completed.
+final onboardingSeenProvider = StateProvider<bool>((ref) => false);
 
 final appStringsProvider = Provider<AppStrings>((ref) {
   final locale = ref.watch(localeProvider);

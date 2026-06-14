@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/cnc_dialect.dart';
 import '../domain/gcode_line.dart';
 import '../parsers/gcode_parser.dart';
+import 'gcode_syntax.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/domain/saved_analysis.dart';
 
@@ -315,44 +316,15 @@ class _ColorizedCode extends StatelessWidget {
   final GcodeLine line;
   const _ColorizedCode({required this.line});
 
+  static const _base = TextStyle(fontFamily: 'JetBrainsMono', fontSize: 13);
+
   @override
   Widget build(BuildContext context) {
     final text = line.original;
     if (text.trim().isEmpty) return const SizedBox(height: 18);
-    if (text.trim().startsWith(';') || text.trim().startsWith('(')) {
-      return Text(text, style: const TextStyle(
-        fontFamily: 'JetBrainsMono', fontSize: 13, color: AppColors.gcodeComment,
-      ));
-    }
-
-    // Simple tokenized colorization
-    final spans = <TextSpan>[];
-    final pattern = RegExp(r'[A-Za-z][+-]?[\d.]*|[();\s]+|[^\s\w()]+');
-    for (final m in pattern.allMatches(text)) {
-      final tok = m.group(0)!;
-      spans.add(TextSpan(text: tok, style: TextStyle(
-        fontFamily: 'JetBrainsMono',
-        fontSize:   13,
-        color:      _colorFor(tok),
-      )));
-    }
-
-    return RichText(text: TextSpan(children: spans));
-  }
-
-  Color _colorFor(String token) {
-    final t = token.toUpperCase().trim();
-    if (t.isEmpty || t == ' ') return AppColors.gcodeValue;
-    if (t.startsWith(';') || t.startsWith('(') || t.startsWith(')')) return AppColors.gcodeComment;
-    if (RegExp(r'^N\d+$').hasMatch(t)) return AppColors.gcodeN;
-    if (RegExp(r'^G[\d.]+$').hasMatch(t)) return AppColors.gcodeG;
-    if (RegExp(r'^M[\d.]+$').hasMatch(t)) return AppColors.gcodeM;
-    if (RegExp(r'^CYCLE\d+$').hasMatch(t)) return AppColors.gcodeCycle;
-    if (RegExp(r'^(TRANS|ATRANS|ROT|AROT|DEF|REAL|INT|PROC|ENDPROC|CALL)$').hasMatch(t)) return AppColors.gcodeCycle;
-    if (RegExp(r'^[XYZABCIJKF]$').hasMatch(t)) return AppColors.gcodeAddr;
-    if (RegExp(r'^[STHDRQP]$').hasMatch(t)) return AppColors.gcodeAddr;
-    if (RegExp(r'^[+-]?[\d.]+$').hasMatch(t)) return AppColors.gcodeValue;
-    return AppColors.gcodeValue;
+    return RichText(
+      text: TextSpan(style: _base, children: buildGcodeSpans(text, _base)),
+    );
   }
 }
 

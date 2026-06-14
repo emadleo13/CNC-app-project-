@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -410,7 +410,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
                     controller:  _scrollCtrl,
                     padding:     const EdgeInsets.all(16),
                     itemCount:   _messages.length,
-                    itemBuilder: (ctx, i) => _MessageBubble(message: _messages[i]),
+                    itemBuilder: (ctx, i) => _MessageBubble(message: _messages[i], s: s),
                   ),
           ),
           if (_isLoading) const LinearProgressIndicator(
@@ -623,10 +623,31 @@ class _EmptyState extends StatelessWidget {
 
 class _MessageBubble extends StatelessWidget {
   final _Message message;
-  const _MessageBubble({required this.message});
+  final AppStrings s;
+  const _MessageBubble({required this.message, required this.s});
+
+  bool get _canCopy =>
+      !message.isUser && !message.isPending && message.text.isNotEmpty;
+
+  void _copy(BuildContext context) {
+    HapticFeedback.selectionClick();
+    Clipboard.setData(ClipboardData(text: message.text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(s.progLibCopied), duration: const Duration(seconds: 1)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Asymmetric corner on the "tail" side gives a more modern bubble shape.
+    final radius = message.isUser
+        ? const BorderRadius.only(
+            topLeft: Radius.circular(14), topRight: Radius.circular(14),
+            bottomLeft: Radius.circular(14), bottomRight: Radius.circular(4))
+        : const BorderRadius.only(
+            topLeft: Radius.circular(14), topRight: Radius.circular(14),
+            bottomLeft: Radius.circular(4), bottomRight: Radius.circular(14));
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -645,37 +666,60 @@ class _MessageBubble extends StatelessWidget {
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color:  message.isUser ? AppColors.primaryDim : AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: message.isUser ? null : Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (message.imageBytes != null) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.memory(
-                        message.imageBytes!,
-                        width: 220, height: 160, fit: BoxFit.cover,
+            child: Column(
+              crossAxisAlignment:
+                  message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color:  message.isUser ? AppColors.primaryDim : AppColors.surface,
+                    borderRadius: radius,
+                    border: message.isUser ? null : Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (message.imageBytes != null) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.memory(
+                            message.imageBytes!,
+                            width: 220, height: 160, fit: BoxFit.cover,
+                          ),
+                        ),
+                        if (message.text.isNotEmpty) const SizedBox(height: 8),
+                      ],
+                      if (message.text.isNotEmpty)
+                        Text(
+                          message.text,
+                          style: TextStyle(
+                            fontSize:  14,
+                            color:     message.isPending ? AppColors.textSecondary : AppColors.textPrimary,
+                            fontStyle: message.isPending ? FontStyle.italic : FontStyle.normal,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (_canCopy)
+                  InkWell(
+                    onTap: () => _copy(context),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.copy_outlined, size: 13, color: AppColors.textMuted),
+                          const SizedBox(width: 4),
+                          Text(s.commonCopy,
+                            style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                        ],
                       ),
                     ),
-                    if (message.text.isNotEmpty) const SizedBox(height: 8),
-                  ],
-                  if (message.text.isNotEmpty)
-                    Text(
-                      message.text,
-                      style: TextStyle(
-                        fontSize:  14,
-                        color:     message.isPending ? AppColors.textSecondary : AppColors.textPrimary,
-                        fontStyle: message.isPending ? FontStyle.italic : FontStyle.normal,
-                      ),
-                    ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
           if (message.isUser) const SizedBox(width: 8),
