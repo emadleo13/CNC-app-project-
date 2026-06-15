@@ -137,6 +137,15 @@ class AppStringsEn implements AppStrings {
   @override String get settingsTheme        => 'Theme';
   @override String get settingsThemeDark    => 'Dark (Industrial)';
 
+  @override String get settingsAccount             => 'Account';
+  @override String get settingsDeleteAccount       => 'Delete account & data';
+  @override String get settingsDeleteAccountDesc   => 'Permanently remove your account and all data from our servers and this device.';
+  @override String get deleteAccountConfirmTitle   => 'Delete account?';
+  @override String get deleteAccountConfirmBody    => 'This will permanently delete your account, subscription status, saved calculations and analyses. This cannot be undone.';
+  @override String get deleteAccountConfirmBtn     => 'Delete';
+  @override String get deleteAccountDone           => 'Your account and data have been deleted.';
+  @override String get deleteAccountError          => 'Could not delete account. Please check your connection and try again.';
+
   @override String get navHistory            => 'History';
   @override String get historyTitle          => 'History';
   @override String get historyCalculations   => 'Calculations';

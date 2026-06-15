@@ -137,6 +137,15 @@ class AppStringsRo implements AppStrings {
   @override String get settingsTheme        => 'Temă';
   @override String get settingsThemeDark    => 'Întunecat (Industrial)';
 
+  @override String get settingsAccount             => 'Cont';
+  @override String get settingsDeleteAccount       => 'Șterge contul și datele';
+  @override String get settingsDeleteAccountDesc   => 'Elimină definitiv contul și toate datele de pe serverele noastre și de pe acest dispozitiv.';
+  @override String get deleteAccountConfirmTitle   => 'Ștergi contul?';
+  @override String get deleteAccountConfirmBody    => 'Aceasta va șterge definitiv contul, starea abonamentului, calculele și analizele salvate. Acțiunea nu poate fi anulată.';
+  @override String get deleteAccountConfirmBtn     => 'Șterge';
+  @override String get deleteAccountDone           => 'Contul și datele tale au fost șterse.';
+  @override String get deleteAccountError          => 'Contul nu a putut fi șters. Verifică conexiunea și încearcă din nou.';
+
   @override String get navHistory            => 'Istoric';
   @override String get historyTitle          => 'Istoric';
   @override String get historyCalculations   => 'Calcule';

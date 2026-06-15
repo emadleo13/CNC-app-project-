@@ -7,6 +7,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/settings_repository.dart';
+import '../data/account_repository.dart';
 import '../../subscription/data/subscription_repository.dart';
 
 final _settingsRepoProvider = Provider((_) => SettingsRepository());
@@ -51,6 +52,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _setDialect(String dialect) async {
     ref.read(defaultDialectProvider.notifier).state = dialect;
     await ref.read(_settingsRepoProvider).saveDialect(dialect);
+  }
+
+  Future<void> _confirmDeleteAccount(AppStrings s) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title:   Text(s.deleteAccountConfirmTitle),
+        content: Text(s.deleteAccountConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child:     Text(s.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style:     TextButton.styleFrom(foregroundColor: AppColors.errorRed),
+            child:     Text(s.deleteAccountConfirmBtn),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    // Blocking progress indicator while the server processes deletion.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await ref.read(accountRepoProvider).deleteAccount();
+      if (!mounted) return;
+      Navigator.pop(context); // dismiss progress
+      // Reset in-memory state tied to the deleted account.
+      ref.read(userNameProvider.notifier).state = '';
+      _nameCtrl.text = '';
+      ref.invalidate(currentTierProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.deleteAccountDone)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      Navigator.pop(context); // dismiss progress
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.deleteAccountError)),
+      );
+    }
   }
 
   @override
@@ -260,6 +309,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               leading: const Icon(Icons.info_outline, color: AppColors.textSecondary),
               title:   const Text('CNC Assist'),
               subtitle: Text(s.settingsVersion),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Account (data deletion) ───────────────────────────────────────
+          _SectionHeader(s.settingsAccount),
+          Card(
+            child: ListTile(
+              leading:  const Icon(Icons.delete_forever_outlined, color: AppColors.errorRed),
+              title:    Text(s.settingsDeleteAccount,
+                  style: const TextStyle(color: AppColors.errorRed)),
+              subtitle: Text(s.settingsDeleteAccountDesc,
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              onTap:    () => _confirmDeleteAccount(s),
             ),
           ),
           const SizedBox(height: 32),

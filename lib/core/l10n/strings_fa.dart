@@ -139,6 +139,15 @@ class AppStringsFa implements AppStrings {
   @override String get settingsTheme        => 'پوسته';
   @override String get settingsThemeDark    => 'تیره (صنعتی)';
 
+  @override String get settingsAccount             => 'حساب کاربری';
+  @override String get settingsDeleteAccount       => 'حذف حساب و داده‌ها';
+  @override String get settingsDeleteAccountDesc   => 'حساب کاربری و تمام داده‌های شما به‌طور دائمی از سرور ما و این دستگاه حذف می‌شود.';
+  @override String get deleteAccountConfirmTitle   => 'حساب حذف شود؟';
+  @override String get deleteAccountConfirmBody    => 'این کار حساب، وضعیت اشتراک، محاسبات و تحلیل‌های ذخیره‌شده‌ی شما را برای همیشه حذف می‌کند. این عمل قابل بازگشت نیست.';
+  @override String get deleteAccountConfirmBtn     => 'حذف';
+  @override String get deleteAccountDone           => 'حساب و داده‌های شما حذف شد.';
+  @override String get deleteAccountError          => 'حذف حساب ممکن نشد. اتصال خود را بررسی کرده و دوباره تلاش کنید.';
+
   @override String get navHistory            => 'تاریخچه';
   @override String get historyTitle          => 'تاریخچه';
   @override String get historyCalculations   => 'محاسبات';

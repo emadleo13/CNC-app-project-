@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <application
-        android:label="cnc_assist"
+        android:label="CNC Assist"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

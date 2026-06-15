@@ -139,6 +139,15 @@ class AppStringsAr implements AppStrings {
   @override String get settingsTheme        => 'المظهر';
   @override String get settingsThemeDark    => 'داكن (صناعي)';
 
+  @override String get settingsAccount             => 'الحساب';
+  @override String get settingsDeleteAccount       => 'حذف الحساب والبيانات';
+  @override String get settingsDeleteAccountDesc   => 'إزالة حسابك وجميع بياناتك نهائيًا من خوادمنا ومن هذا الجهاز.';
+  @override String get deleteAccountConfirmTitle   => 'حذف الحساب؟';
+  @override String get deleteAccountConfirmBody    => 'سيؤدي هذا إلى حذف حسابك وحالة الاشتراك والحسابات والتحليلات المحفوظة نهائيًا. لا يمكن التراجع عن هذا الإجراء.';
+  @override String get deleteAccountConfirmBtn     => 'حذف';
+  @override String get deleteAccountDone           => 'تم حذف حسابك وبياناتك.';
+  @override String get deleteAccountError          => 'تعذّر حذف الحساب. تحقق من اتصالك وحاول مرة أخرى.';
+
   @override String get navHistory            => 'السجل';
   @override String get historyTitle          => 'السجل';
   @override String get historyCalculations   => 'الحسابات';

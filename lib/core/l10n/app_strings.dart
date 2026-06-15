@@ -151,6 +151,16 @@ abstract class AppStrings {
   String get settingsTheme;
   String get settingsThemeDark;
 
+  // Account / data deletion
+  String get settingsAccount;
+  String get settingsDeleteAccount;
+  String get settingsDeleteAccountDesc;
+  String get deleteAccountConfirmTitle;
+  String get deleteAccountConfirmBody;
+  String get deleteAccountConfirmBtn;
+  String get deleteAccountDone;
+  String get deleteAccountError;
+
   // History
   String get navHistory;
   String get historyTitle;
