@@ -73,15 +73,20 @@ class ToolsHubScreen extends ConsumerWidget {
       final tools = kTools.where((t) => t.category == category).toList();
       if (tools.isEmpty) continue;
       children.add(entrance(_SectionLabel(category.label(s))));
-      children.add(GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.55,
-        children: tools.map((t) => entrance(_ToolCard(tool: t, s: s, onTap: open))).toList(),
-      ));
+      if (tools.length == 1) {
+        // A lone tool spans the full width instead of leaving a dead column.
+        children.add(entrance(_WideToolCard(tool: tools.first, s: s, onTap: open)));
+      } else {
+        children.add(GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.55,
+          children: tools.map((t) => entrance(_ToolCard(tool: t, s: s, onTap: open))).toList(),
+        ));
+      }
     }
 
     return Scaffold(
@@ -358,6 +363,77 @@ class _ToolCard extends StatelessWidget {
                 style: const TextStyle(
                     fontSize: 11, color: AppColors.textSecondary),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-width horizontal card used when a category has a single tool, so it
+/// fills the row instead of leaving an empty second column.
+class _WideToolCard extends StatelessWidget {
+  final ToolDef tool;
+  final AppStrings s;
+  final void Function(ToolDef) onTap;
+  const _WideToolCard({required this.tool, required this.s, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = !tool.comingSoon;
+    return GestureDetector(
+      onTap: enabled ? () => onTap(tool) : null,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(tool.icon, size: 24, color: AppColors.primary),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tool.title(s),
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      tool.subtitle(s),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (tool.comingSoon)
+                _Badge(label: s.toolComingSoon, color: AppColors.warningYellow)
+              else if (tool.badge != null)
+                _Badge.forTool(tool.badge!, s),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, size: 20, color: AppColors.textMuted),
             ],
           ),
         ),

@@ -79,6 +79,7 @@ flutter:
     - assets/data/tool_wear.json
     - assets/data/gcode_programs.json
     - assets/data/guides.json
+    - assets/images/emad_owl.png
 
   fonts:
     - family: JetBrainsMono

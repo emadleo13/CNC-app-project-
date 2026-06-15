@@ -596,12 +596,16 @@ class _EmptyState extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                width: 96, height: 96,
-                decoration: BoxDecoration(
+                width: 104, height: 104,
+                padding: const EdgeInsets.all(14),
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.10),
+                  color: Colors.white,
                 ),
-                child: const Icon(Icons.smart_toy_outlined, size: 44, color: AppColors.primary),
+                child: Image.asset(
+                  'assets/images/emad_owl.png',
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 18),
               Text(s.kbEmptyTitle,
