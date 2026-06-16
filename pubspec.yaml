@@ -66,6 +66,16 @@ dev_dependencies:
   riverpod_generator: ^2.6.4
   freezed: ^2.5.7
   json_serializable: ^6.9.5
+  flutter_launcher_icons: ^0.14.4
+
+# App launcher icon generation: `dart run flutter_launcher_icons`
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#0C1421"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true

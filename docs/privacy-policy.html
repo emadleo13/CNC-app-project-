@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CNC Assist — Privacy Policy</title>
+<style>
+  :root { --bg:#0c1421; --card:#111c2e; --fg:#e6edf3; --muted:#9fb0c3; --accent:#2f9bff; --border:#22324a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; line-height:1.65; }
+  .wrap { max-width:820px; margin:0 auto; padding:40px 22px 80px; }
+  h1 { font-size:1.9rem; margin:0 0 4px; }
+  h2 { font-size:1.25rem; margin:34px 0 10px; color:#fff; }
+  h3 { font-size:1.02rem; margin:20px 0 6px; color:#fff; }
+  p, li { color:var(--fg); }
+  .muted { color:var(--muted); }
+  a { color:var(--accent); }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px;
+          padding:18px 20px; margin:18px 0; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:.95rem; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:#fff; }
+  code { background:#0a1220; padding:2px 6px; border-radius:6px; }
+  footer { margin-top:40px; color:var(--muted); font-size:.9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Privacy Policy</h1>
+  <p class="muted">CNC Assist &middot; Last updated: June 16, 2026</p>
+
+  <div class="card">
+    <p>This Privacy Policy explains how <strong>CNC Assist</strong> ("the app", "we", "us")
+    handles information when you use it. CNC Assist is a tool for CNC machine operators that
+    provides feed/speed calculators, a G-code analyzer, and an AI-powered knowledge base.
+    By using the app you agree to this policy.</p>
+    <p class="muted">Developer: Emad Leo &middot; Contact:
+    <a href="mailto:hamidleo1984@gmail.com">hamidleo1984@gmail.com</a></p>
+  </div>
+
+  <h2>1. Accounts</h2>
+  <p>CNC Assist does <strong>not</strong> require you to register with a name, email address,
+  or password. When you first open the app, an <strong>anonymous account</strong> is created
+  automatically on our backend (Supabase) so that features such as usage limits and
+  subscription status can work. This account is identified only by a random ID and is not
+  linked to your personal identity.</p>
+
+  <h2>2. Information we process</h2>
+  <table>
+    <tr><th>Data</th><th>Why</th><th>Stored?</th></tr>
+    <tr>
+      <td>Anonymous account ID</td>
+      <td>Operate the app, enforce free-tier limits, track subscription status</td>
+      <td>Yes, on our backend until you delete your account</td>
+    </tr>
+    <tr>
+      <td>Questions, G-code, images and PDFs you submit to AI features</td>
+      <td>To generate the answer/analysis you requested</td>
+      <td>Sent to our AI provider for processing. We do not store your images or PDFs.
+          We keep a short text excerpt of your question (up to ~300 characters) plus a
+          usage count, to operate the service and prevent abuse.</td>
+    </tr>
+    <tr>
+      <td>Subscription status &amp; purchase token</td>
+      <td>To verify and activate your subscription</td>
+      <td>Yes, on our backend / via Google Play Billing</td>
+    </tr>
+    <tr>
+      <td>Camera &amp; photo access</td>
+      <td>Only so you can capture or pick an image to analyze (e.g. a part, drawing,
+          or controller screen). Access is used at the moment you choose an image.</td>
+      <td>No image is collected unless you submit it to an AI feature</td>
+    </tr>
+    <tr>
+      <td>Your display name, settings, saved calculations and analyses</td>
+      <td>App preferences and your saved work</td>
+      <td>Stored <strong>only on your device</strong>; not uploaded to our servers</td>
+    </tr>
+  </table>
+
+  <p>We do <strong>not</strong> collect your email, phone number, precise location,
+  contacts, or advertising identifiers.</p>
+
+  <h2>3. AI processing</h2>
+  <p>The knowledge base and analysis features send the content you submit to
+  <strong>Anthropic</strong> (the Claude API) for processing, and may use
+  <strong>Pinecone</strong> to retrieve relevant reference material. Your content is sent
+  only to generate your result. Under Anthropic's API terms, content submitted through the
+  API is not used to train their models. Please avoid submitting confidential or
+  personally identifying information in your questions, images, or files.</p>
+
+  <h2>4. Service providers</h2>
+  <p>We rely on the following providers to operate the app. They process data only on our
+  behalf to deliver these features:</p>
+  <ul>
+    <li><strong>Supabase</strong> — backend, anonymous authentication, and database hosting</li>
+    <li><strong>Anthropic (Claude API)</strong> — AI question answering and analysis</li>
+    <li><strong>Pinecone</strong> — knowledge-base search</li>
+    <li><strong>Google Play Billing</strong> — subscription purchases and verification</li>
+  </ul>
+
+  <h2>5. Data retention</h2>
+  <p>Your anonymous account, usage records, and subscription status are kept while your
+  account exists. When you delete your account (see below), this data is removed from our
+  systems. Data stored locally on your device remains until you delete it or uninstall
+  the app.</p>
+
+  <h2>6. Deleting your account and data</h2>
+  <p>You can permanently delete your account and all associated data at any time:</p>
+  <ul>
+    <li><strong>In the app:</strong> open <em>Settings → Account → Delete account &amp; data</em>.
+        This removes your account and your records from our backend and clears the app's
+        local data on your device.</li>
+    <li><strong>By email:</strong> you may also request deletion by writing to
+        <a href="mailto:hamidleo1984@gmail.com">hamidleo1984@gmail.com</a>.</li>
+  </ul>
+
+  <h2>7. Security</h2>
+  <p>Data in transit is protected with HTTPS/TLS. Access to backend data is restricted by
+  row-level security so that each anonymous account can only access its own records.
+  Server-side secrets (such as AI provider keys) are never stored in the app.</p>
+
+  <h2>8. Children</h2>
+  <p>CNC Assist is a professional tool intended for industrial use by adults and is not
+  directed to children under 13 (or the minimum age in your country). We do not knowingly
+  collect data from children.</p>
+
+  <h2>9. Changes to this policy</h2>
+  <p>We may update this policy from time to time. Material changes will be reflected by
+  updating the "Last updated" date at the top of this page.</p>
+
+  <h2>10. Contact</h2>
+  <p>For any questions about this policy or your data, contact
+  <a href="mailto:hamidleo1984@gmail.com">hamidleo1984@gmail.com</a>.</p>
+
+  <footer>© 2026 Emad Leo — CNC Assist. All rights reserved.</footer>
+</div>
+</body>
+</html>
