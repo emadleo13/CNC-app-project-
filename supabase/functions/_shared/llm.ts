@@ -28,6 +28,22 @@ export interface LLMResult {
 const OR_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const OR_DEFAULT_MODEL = "google/gemma-4-31b-it:free";
 
+// Fallback chains of free models — tried in order when a model is rate-limited
+// (429) or returns an empty/failed response. Vision models must be multimodal.
+const OR_TEXT_MODELS = [
+  "google/gemma-4-31b-it:free",
+  "openai/gpt-oss-120b:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "qwen/qwen3-next-80b-a3b-instruct:free",
+];
+const OR_VISION_MODELS = [
+  "google/gemma-4-31b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "nvidia/nemotron-nano-12b-v2-vl:free",
+];
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function llmComplete(req: LLMRequest): Promise<LLMResult> {
   const orKey = Deno.env.get("OPENROUTER_API_KEY");
   return orKey ? viaOpenRouter(req, orKey) : viaAnthropic(req);
@@ -51,11 +67,11 @@ async function viaAnthropic(req: LLMRequest): Promise<LLMResult> {
 }
 
 async function viaOpenRouter(req: LLMRequest, key: string): Promise<LLMResult> {
-  const model = Deno.env.get("OPENROUTER_MODEL") ?? OR_DEFAULT_MODEL;
   let hasPdf = false;
+  let hasImage = false;
   const content = req.parts.map((p) => {
     if (p.kind === "text")  return { type: "text", text: p.text };
-    if (p.kind === "image") return { type: "image_url", image_url: { url: `data:${p.mediaType};base64,${p.data}` } };
+    if (p.kind === "image") { hasImage = true; return { type: "image_url", image_url: { url: `data:${p.mediaType};base64,${p.data}` } }; }
     hasPdf = true;
     return { type: "file", file: { filename: "document.pdf", file_data: `data:application/pdf;base64,${p.data}` } };
   });
@@ -64,29 +80,46 @@ async function viaOpenRouter(req: LLMRequest, key: string): Promise<LLMResult> {
   if (req.system) messages.push({ role: "system", content: req.system });
   messages.push({ role: "user", content });
 
-  const payload: Record<string, unknown> = { model, max_tokens: req.maxTokens, messages };
-  if (hasPdf) payload.plugins = [{ id: "file-parser", pdf: { engine: "pdf-text" } }];
+  // Build the candidate model list: configured/default model first, then fallbacks.
+  const configured = Deno.env.get("OPENROUTER_MODEL") ?? OR_DEFAULT_MODEL;
+  const chain = (hasImage || hasPdf) ? OR_VISION_MODELS : OR_TEXT_MODELS;
+  const candidates = [configured, ...chain.filter((m) => m !== configured)];
 
-  const resp = await fetch(OR_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${key}`,
-      "Content-Type":  "application/json",
-      "HTTP-Referer":  "https://cncassist.app",
-      "X-Title":       "CNC Assist",
-    },
-    body: JSON.stringify(payload),
-  });
+  let lastErr = "";
+  for (const model of candidates) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const payload: Record<string, unknown> = { model, max_tokens: req.maxTokens, messages };
+      if (hasPdf) payload.plugins = [{ id: "file-parser", pdf: { engine: "pdf-text" } }];
 
-  if (!resp.ok) {
-    const errText = await resp.text();
-    throw new Error(`OpenRouter ${resp.status}: ${errText}`);
+      const resp = await fetch(OR_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${key}`,
+          "Content-Type":  "application/json",
+          "HTTP-Referer":  "https://cncassist.app",
+          "X-Title":       "CNC Assist",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (resp.status === 429 || resp.status >= 500) {
+        lastErr = `OpenRouter ${resp.status} on ${model}: ${(await resp.text()).slice(0, 200)}`;
+        if (attempt === 0) { await sleep(1500); continue; } // quick retry, then next model
+        break;
+      }
+      if (!resp.ok) {
+        lastErr = `OpenRouter ${resp.status} on ${model}: ${(await resp.text()).slice(0, 200)}`;
+        break; // non-retryable (e.g. 400/404) — try next model
+      }
+
+      const data = await resp.json();
+      const raw = data.choices?.[0]?.message?.content;
+      const text = typeof raw === "string" ? raw : "";
+      if (!text.trim()) { lastErr = `Empty response from ${model}`; break; }
+      const tokens = data.usage?.total_tokens ??
+        ((data.usage?.prompt_tokens ?? 0) + (data.usage?.completion_tokens ?? 0));
+      return { text, tokens };
+    }
   }
-
-  const data = await resp.json();
-  const raw = data.choices?.[0]?.message?.content;
-  const text = typeof raw === "string" ? raw : "";
-  const tokens = data.usage?.total_tokens ??
-    ((data.usage?.prompt_tokens ?? 0) + (data.usage?.completion_tokens ?? 0));
-  return { text, tokens };
+  throw new Error(lastErr || "OpenRouter: all candidate models failed");
 }
