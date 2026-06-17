@@ -1,4 +1,4 @@
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.0";
+import { llmComplete } from "../_shared/llm.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -76,15 +76,11 @@ Please recommend:
 
 Be specific with product codes where possible. Keep it practical for a shop floor operator.`;
 
-    const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "" });
-
-    const message = await client.messages.create({
-      model:      "claude-haiku-4-5-20251001",
-      max_tokens: 1200,
-      messages:   [{ role: "user", content: prompt }],
+    const { text: answer } = await llmComplete({
+      parts:          [{ kind: "text", text: prompt }],
+      maxTokens:      1200,
+      anthropicModel: "claude-haiku-4-5-20251001",
     });
-
-    const answer = message.content[0].type === "text" ? message.content[0].text : "";
 
     return new Response(JSON.stringify({ answer }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

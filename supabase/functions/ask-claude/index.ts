@@ -1,4 +1,4 @@
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.0";
+import { llmComplete } from "../_shared/llm.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -107,23 +107,19 @@ Deno.serve(async (req) => {
       "- When uncertain, say so — do not guess critical safety or machine-specific information\n" +
       contextBlock;
 
-    const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "" });
-
-    const message = await client.messages.create({
-      model:      "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system:     systemPrompt,
-      messages:   [{ role: "user", content: question }],
+    const { text: answer, tokens } = await llmComplete({
+      system:         systemPrompt,
+      parts:          [{ kind: "text", text: question }],
+      maxTokens:      1024,
+      anthropicModel: "claude-haiku-4-5-20251001",
     });
-
-    const answer = message.content[0].type === "text" ? message.content[0].text : "";
 
     // Log usage (async — non-blocking)
     supabase.from("qa_logs").insert({
       user_id:            user.id,
       question_excerpt:   question.substring(0, 300),
       had_alarm_context:  !!alarmContext,
-      token_count:        message.usage.input_tokens + message.usage.output_tokens,
+      token_count:        tokens,
       is_image:           false,
     }).then(() => {}).catch(console.error);
 

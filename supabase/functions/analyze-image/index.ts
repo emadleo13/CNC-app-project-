@@ -1,4 +1,4 @@
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.0";
+import { llmComplete } from "../_shared/llm.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -128,25 +128,15 @@ Deno.serve(async (req) => {
       ? (question?.trim() || "What CNC alarm or error is shown in this image? Diagnose it and provide solutions.")
       : `Generate ${dialect.toUpperCase()} G-code for the part shown in this technical drawing.`;
 
-    const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "" });
-
-    const message = await client.messages.create({
-      model:      "claude-sonnet-4-6",
-      max_tokens: maxTokens,
+    const { text: answer, tokens } = await llmComplete({
       system,
-      messages: [{
-        role:    "user",
-        content: [
-          {
-            type:   "image",
-            source: { type: "base64", media_type: mediaType, data: imageBase64 },
-          },
-          { type: "text", text: userText },
-        ],
-      }],
+      parts: [
+        { kind: "image", mediaType, data: imageBase64 },
+        { kind: "text",  text: userText },
+      ],
+      maxTokens,
+      anthropicModel: "claude-sonnet-4-6",
     });
-
-    const answer = message.content[0].type === "text" ? message.content[0].text : "";
 
     // Log usage
     supabase.from("qa_logs").insert({
@@ -154,7 +144,7 @@ Deno.serve(async (req) => {
       question_excerpt:  `[image:${mode}] ${userText.substring(0, 100)}`,
       had_alarm_context: false,
       is_image:          true,
-      token_count:       message.usage.input_tokens + message.usage.output_tokens,
+      token_count:       tokens,
     }).then(() => {}).catch(console.error);
 
     return new Response(JSON.stringify({ answer }), {

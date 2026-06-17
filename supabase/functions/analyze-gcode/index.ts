@@ -1,4 +1,4 @@
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.0";
+import { llmComplete } from "../_shared/llm.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -100,22 +100,14 @@ Rules:
 - Flag suboptimal feeds, missing G-codes as warnings
 - DO NOT include markdown or text outside the JSON`;
 
-    const client = new Anthropic({
-      apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "",
-    });
-
-    const message = await client.messages.create({
-      model:      "claude-sonnet-4-6",
-      max_tokens: 8192,
-      system:     systemPrompt,
-      messages:   [{
-        role:    "user",
-        content: `Analyze this ${dialect.toUpperCase()} G-code program:\n\n${gcode}`,
-      }],
+    const { text: responseText, tokens } = await llmComplete({
+      system: systemPrompt,
+      parts:  [{ kind: "text", text: `Analyze this ${dialect.toUpperCase()} G-code program:\n\n${gcode}` }],
+      maxTokens:      8192,
+      anthropicModel: "claude-sonnet-4-6",
     });
 
     // Extract JSON from response
-    const responseText = message.content[0].type === "text" ? message.content[0].text : "";
     let analysisJson: Record<string, unknown>;
 
     try {
@@ -140,7 +132,7 @@ Rules:
       error_count:   (analysisJson.lines as Array<{severity: string}>)?.filter(l => l.severity === "error").length ?? 0,
       warning_count: (analysisJson.lines as Array<{severity: string}>)?.filter(l => l.severity === "warning").length ?? 0,
       line_count:    (analysisJson.lines as unknown[])?.length ?? 0,
-      token_count:   message.usage.input_tokens + message.usage.output_tokens,
+      token_count:   tokens,
     }).then(() => {}).catch(console.error);
 
     return new Response(JSON.stringify(analysisJson), {

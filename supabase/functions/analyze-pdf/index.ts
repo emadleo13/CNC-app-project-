@@ -1,4 +1,4 @@
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.0";
+import { llmComplete } from "../_shared/llm.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -80,32 +80,22 @@ Deno.serve(async (req) => {
       "4. State assumptions clearly when dimensions are not visible\n" +
       "If not a technical drawing, extract and summarize CNC-relevant information.";
 
-    const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "" });
-
-    const message = await client.messages.create({
-      model:      "claude-sonnet-4-6",
-      max_tokens: 4096,
-      system:     systemPrompt,
-      messages: [{
-        role:    "user",
-        content: [
-          {
-            type:   "document",
-            source: { type: "base64", media_type: "application/pdf", data: pdfBase64 },
-          } as never,
-          { type: "text", text: userQuestion },
-        ],
-      }],
+    const { text: answer, tokens } = await llmComplete({
+      system: systemPrompt,
+      parts: [
+        { kind: "pdf",  data: pdfBase64 },
+        { kind: "text", text: userQuestion },
+      ],
+      maxTokens:      4096,
+      anthropicModel: "claude-sonnet-4-6",
     });
-
-    const answer = message.content[0].type === "text" ? message.content[0].text : "";
 
     // Log usage
     supabase.from("qa_logs").insert({
       user_id:           user.id,
       question_excerpt:  `[pdf] ${userQuestion.substring(0, 200)}`,
       is_image:          true,
-      token_count:       message.usage.input_tokens + message.usage.output_tokens,
+      token_count:       tokens,
     }).then(() => {}).catch(console.error);
 
     return new Response(JSON.stringify({ answer }), {
