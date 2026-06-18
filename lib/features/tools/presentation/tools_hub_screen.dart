@@ -77,6 +77,9 @@ class ToolsHubScreen extends ConsumerWidget {
         // A lone tool spans the full width instead of leaving a dead column.
         children.add(entrance(_WideToolCard(tool: tools.first, s: s, onTap: open)));
       } else {
+        // An odd trailing tool would leave a dead column, so it spans full width.
+        final hasOddTrailing = tools.length.isOdd;
+        final gridTools = hasOddTrailing ? tools.sublist(0, tools.length - 1) : tools;
         children.add(GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -84,8 +87,12 @@ class ToolsHubScreen extends ConsumerWidget {
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
           childAspectRatio: 1.55,
-          children: tools.map((t) => entrance(_ToolCard(tool: t, s: s, onTap: open))).toList(),
+          children: gridTools.map((t) => entrance(_ToolCard(tool: t, s: s, onTap: open))).toList(),
         ));
+        if (hasOddTrailing) {
+          children.add(const SizedBox(height: 10));
+          children.add(entrance(_WideToolCard(tool: tools.last, s: s, onTap: open)));
+        }
       }
     }
 
