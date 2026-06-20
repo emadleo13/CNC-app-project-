@@ -30,6 +30,9 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
   bool       _isLoading    = false; // ignore: prefer_final_fields
   bool       _isGenerating = false;
   Uint8List? _drawingBytes;
+  // Cached auto-detected dialect so build()/keystrokes don't re-scan the whole
+  // program every frame.
+  CncDialect _detected = CncDialect.haas;
 
   // Monospace line metrics shared by the editor and its line-number gutter.
   static const double _editorFontSize = 13;
@@ -62,10 +65,12 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
       );
       if (result != null && result.files.single.path != null) {
         final content = await File(result.files.single.path!).readAsString();
-        setState(() => _controller.text = content);
-        if (_autoDetect) {
-          setState(() => _dialect = GcodeParser.autoDetect(content));
-        }
+        final detected = GcodeParser.autoDetect(content);
+        setState(() {
+          _controller.text = content;
+          _detected = detected;
+          if (_autoDetect) _dialect = detected;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -192,7 +197,7 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     }
 
     HapticFeedback.mediumImpact();
-    final dialect = _autoDetect ? GcodeParser.autoDetect(code) : _dialect;
+    final dialect = _autoDetect ? _detected : _dialect;
     final lines   = GcodeParser.parse(code, dialect);
 
     context.go('/gcode/result', extra: {
@@ -256,7 +261,10 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                       const Spacer(),
                       Switch(
                         value:     _autoDetect,
-                        onChanged: (v) => setState(() => _autoDetect = v),
+                        onChanged: (v) => setState(() {
+                          _autoDetect = v;
+                          if (v) _detected = GcodeParser.autoDetect(_controller.text);
+                        }),
                         activeThumbColor: AppColors.primary,
                       ),
                       Text(s.gcodeAuto,
@@ -283,7 +291,7 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                             size: 13, color: AppColors.successGreen),
                         const SizedBox(width: 4),
                         Text(
-                          '${s.gcodeDetected}: ${GcodeParser.autoDetect(_controller.text).displayName}',
+                          '${s.gcodeDetected}: ${_detected.displayName}',
                           style: const TextStyle(
                               fontSize: 12, color: AppColors.successGreen),
                         ),
@@ -382,7 +390,9 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                                 focusedBorder:  InputBorder.none,
                                 contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
                               ),
-                              onChanged: (v) => setState(() {}),
+                              onChanged: (v) => setState(() {
+                                if (_autoDetect) _detected = GcodeParser.autoDetect(v);
+                              }),
                             ),
                           ),
                         ],
@@ -440,6 +450,14 @@ class _LineNumberGutter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Render every line number in a single Text (one render object) instead of
+    // one widget per line. A real G-code program has thousands of lines; the
+    // per-line Column laid them all out eagerly and froze the UI on upload.
+    final numbers = StringBuffer();
+    for (var i = 0; i < lineCount; i++) {
+      if (i > 0) numbers.write('\n');
+      numbers.write(i + 1);
+    }
     return SizedBox(
       width: 44,
       child: SingleChildScrollView(
@@ -448,20 +466,15 @@ class _LineNumberGutter extends StatelessWidget {
         padding:    EdgeInsets.only(top: topPad, bottom: 12),
         child: Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: List.generate(lineCount, (i) {
-              return Text(
-                '${i + 1}',
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontFamily: 'JetBrainsMono',
-                  fontSize:   fontSize,
-                  height:     lineHeight / fontSize,
-                  color:      AppColors.gcodeN,
-                ),
-              );
-            }),
+          child: Text(
+            numbers.toString(),
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontFamily: 'JetBrainsMono',
+              fontSize:   fontSize,
+              height:     lineHeight / fontSize,
+              color:      AppColors.gcodeN,
+            ),
           ),
         ),
       ),

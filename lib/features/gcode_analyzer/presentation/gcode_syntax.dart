@@ -7,20 +7,35 @@ import '../../../core/theme/app_colors.dart';
 /// Used both by the live editor ([GcodeHighlightController]) and the read-only
 /// result view, so colors never drift between the two.
 
+// Pre-compiled once at load time. Building these per-token (the previous
+// behaviour) recompiled eight RegExps for every word in the file on every
+// rebuild — tens of thousands of allocations for a real G-code program, which
+// blocked the UI thread and triggered an ANR on upload.
+final RegExp _reN     = RegExp(r'^N\d+$');
+final RegExp _reG     = RegExp(r'^G[\d.]+$');
+final RegExp _reM     = RegExp(r'^M[\d.]+$');
+final RegExp _reCycle = RegExp(r'^CYCLE\d+$');
+final RegExp _reKw    = RegExp(r'^(TRANS|ATRANS|ROT|AROT|DEF|REAL|INT|PROC|ENDPROC|CALL)$');
+final RegExp _reAddr1 = RegExp(r'^[XYZABCIJKF][+-]?[\d.]*$');
+final RegExp _reAddr2 = RegExp(r'^[STHDRQP][+-]?[\d.]*$');
+final RegExp _reNum   = RegExp(r'^[+-]?[\d.]+$');
+
+/// Above this many characters the live editor skips syntax highlighting and
+/// renders plain text, so opening a large program stays responsive.
+const int kGcodeHighlightLimit = 20000;
+
 /// Returns the syntax color for a single whitespace-free token (word).
 Color gcodeTokenColor(String token) {
   final t = token.toUpperCase();
   if (t.isEmpty) return AppColors.gcodeValue;
-  if (RegExp(r'^N\d+$').hasMatch(t)) return AppColors.gcodeN;
-  if (RegExp(r'^G[\d.]+$').hasMatch(t)) return AppColors.gcodeG;
-  if (RegExp(r'^M[\d.]+$').hasMatch(t)) return AppColors.gcodeM;
-  if (RegExp(r'^CYCLE\d+$').hasMatch(t)) return AppColors.gcodeCycle;
-  if (RegExp(r'^(TRANS|ATRANS|ROT|AROT|DEF|REAL|INT|PROC|ENDPROC|CALL)$').hasMatch(t)) {
-    return AppColors.gcodeCycle;
-  }
-  if (RegExp(r'^[XYZABCIJKF][+-]?[\d.]*$').hasMatch(t)) return AppColors.gcodeAddr;
-  if (RegExp(r'^[STHDRQP][+-]?[\d.]*$').hasMatch(t)) return AppColors.gcodeAddr;
-  if (RegExp(r'^[+-]?[\d.]+$').hasMatch(t)) return AppColors.gcodeValue;
+  if (_reN.hasMatch(t)) return AppColors.gcodeN;
+  if (_reG.hasMatch(t)) return AppColors.gcodeG;
+  if (_reM.hasMatch(t)) return AppColors.gcodeM;
+  if (_reCycle.hasMatch(t)) return AppColors.gcodeCycle;
+  if (_reKw.hasMatch(t)) return AppColors.gcodeCycle;
+  if (_reAddr1.hasMatch(t)) return AppColors.gcodeAddr;
+  if (_reAddr2.hasMatch(t)) return AppColors.gcodeAddr;
+  if (_reNum.hasMatch(t)) return AppColors.gcodeValue;
   return AppColors.gcodeValue;
 }
 
@@ -120,6 +135,10 @@ class GcodeHighlightController extends TextEditingController {
     required bool withComposing,
   }) {
     final base = style ?? const TextStyle();
+    // Skip tokenizing very large programs to keep typing/scrolling responsive.
+    if (text.length > kGcodeHighlightLimit) {
+      return TextSpan(style: base, text: text);
+    }
     return TextSpan(style: base, children: buildGcodeSpans(text, base));
   }
 }
