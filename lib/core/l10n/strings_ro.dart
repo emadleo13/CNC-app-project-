@@ -179,6 +179,7 @@ class AppStringsRo implements AppStrings {
   @override String get gcodeFromDrawingHint      => 'Încarcă un desen tehnic sau foto piesă pentru a genera G-code';
   @override String get gcodeFromDrawingGenerating => 'Analizez desenul...';
   @override String get gcodeFromDrawingError     => 'Eroare la generarea G-code din desen';
+  @override String get gcodeLargeFileNotice      => 'Fișier mare — se afișează o previzualizare; tot programul va fi analizat';
 
   // Phase 1 — Usage / Quota
   @override String get proFreeLabel        => 'Gratuit';

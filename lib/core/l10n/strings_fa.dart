@@ -181,6 +181,7 @@ class AppStringsFa implements AppStrings {
   @override String get gcodeFromDrawingHint      => 'نقشه فنی یا عکس قطعه را آپلود کنید تا جی‌کد تولید شود';
   @override String get gcodeFromDrawingGenerating => 'در حال تحلیل نقشه...';
   @override String get gcodeFromDrawingError     => 'خطا در تولید جی‌کد از نقشه';
+  @override String get gcodeLargeFileNotice      => 'فایل بزرگ — فقط پیش‌نمایش نشان داده می‌شود؛ کل برنامه آنالیز خواهد شد';
 
   // Phase 1 — Usage / Quota
   @override String get proFreeLabel        => 'رایگان';

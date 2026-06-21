@@ -181,6 +181,7 @@ class AppStringsAr implements AppStrings {
   @override String get gcodeFromDrawingHint      => 'ارفع رسماً هندسياً أو صورة قطعة لتوليد الجي-كود';
   @override String get gcodeFromDrawingGenerating => 'جارٍ تحليل الرسم...';
   @override String get gcodeFromDrawingError     => 'فشل في توليد الجي-كود من الرسم';
+  @override String get gcodeLargeFileNotice      => 'ملف كبير — يتم عرض معاينة؛ سيتم تحليل البرنامج كاملاً';
 
   // Phase 1 — Usage / Quota
   @override String get proFreeLabel        => 'مجاني';

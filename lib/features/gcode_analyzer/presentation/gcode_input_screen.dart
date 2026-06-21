@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +12,17 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/help_card.dart';
 import '../domain/cnc_dialect.dart';
+import '../domain/gcode_line.dart';
 import '../parsers/gcode_parser.dart';
 import 'gcode_syntax.dart';
+
+/// Runs in a background isolate (via [compute]) so parsing a large program
+/// never blocks the UI thread.
+List<GcodeLine> _parseGcodeIsolate(Map<String, dynamic> args) {
+  final code    = args['code'] as String;
+  final dialect = CncDialect.values[args['dialect'] as int];
+  return GcodeParser.parse(code, dialect);
+}
 
 class GcodeInputScreen extends ConsumerStatefulWidget {
   const GcodeInputScreen({super.key});
@@ -27,12 +37,22 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
   final _gutterScroll = ScrollController();
   late CncDialect _dialect;
   bool       _autoDetect   = true;
-  bool       _isLoading    = false; // ignore: prefer_final_fields
+  bool       _isLoading    = false;
   bool       _isGenerating = false;
   Uint8List? _drawingBytes;
   // Cached auto-detected dialect so build()/keystrokes don't re-scan the whole
   // program every frame.
   CncDialect _detected = CncDialect.haas;
+  // When a file too large to render in the editor is uploaded, we keep the full
+  // text here and show only a preview in the TextField. Analysis still runs on
+  // the full content. Cleared as soon as the user edits the editor by hand.
+  String? _fullGcode;
+  int      _fullLineCount = 0;
+
+  // A live, editable TextField cannot hold a multi-MB program — Flutter lays out
+  // the entire text and freezes the UI thread. Above this many characters we
+  // load only a preview into the editor.
+  static const int _editorPreviewLimit = 60000;
 
   // Monospace line metrics shared by the editor and its line-number gutter.
   static const double _editorFontSize = 13;
@@ -67,9 +87,19 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
         final content = await File(result.files.single.path!).readAsString();
         final detected = GcodeParser.autoDetect(content);
         setState(() {
-          _controller.text = content;
           _detected = detected;
           if (_autoDetect) _dialect = detected;
+          if (content.length > _editorPreviewLimit) {
+            // Keep the whole program for analysis; show only a preview so the
+            // editor stays responsive.
+            _fullGcode      = content;
+            _fullLineCount  = '\n'.allMatches(content).length + 1;
+            _controller.text = _previewOf(content);
+          } else {
+            _fullGcode       = null;
+            _fullLineCount   = 0;
+            _controller.text = content;
+          }
         });
       }
     } catch (e) {
@@ -184,8 +214,17 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     }
   }
 
-  void _analyze(AppStrings s) {
-    final code = _controller.text.trim();
+  // First chunk of a large program, cut at a line boundary so the preview never
+  // ends mid-line.
+  String _previewOf(String content) {
+    var cut = content.lastIndexOf('\n', _editorPreviewLimit);
+    if (cut <= 0) cut = _editorPreviewLimit;
+    return content.substring(0, cut);
+  }
+
+  Future<void> _analyze(AppStrings s) async {
+    // Analyse the full program even when the editor only shows a preview.
+    final code = (_fullGcode ?? _controller.text).trim();
     if (code.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -198,7 +237,14 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
 
     HapticFeedback.mediumImpact();
     final dialect = _autoDetect ? _detected : _dialect;
-    final lines   = GcodeParser.parse(code, dialect);
+    setState(() => _isLoading = true);
+    // Parse on a background isolate so a large file never blocks the UI thread.
+    final lines = await compute(
+      _parseGcodeIsolate,
+      {'code': code, 'dialect': dialect.index},
+    );
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
     context.go('/gcode/result', extra: {
       'gcode':   code,
@@ -322,6 +368,26 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
               ),
             if (_isGenerating) const SizedBox(height: 12),
 
+            if (_fullGcode != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.infoBlue.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.info_outline, size: 16, color: AppColors.infoBlue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${s.gcodeLargeFileNotice} ($_fullLineCount ${s.gcodeLines})',
+                      style: const TextStyle(fontSize: 12, color: AppColors.infoBlue),
+                    ),
+                  ),
+                ]),
+              ),
+
             // G-code input area
             Expanded(
               child: Card(
@@ -344,8 +410,11 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                         const SizedBox(width: 8),
                         if (_controller.text.isNotEmpty)
                           GestureDetector(
-                            onTap: () =>
-                                setState(() => _controller.clear()),
+                            onTap: () => setState(() {
+                              _controller.clear();
+                              _fullGcode     = null;
+                              _fullLineCount = 0;
+                            }),
                             child: const Icon(Icons.clear,
                                 size: 16, color: AppColors.textMuted),
                           ),
@@ -391,6 +460,10 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                                 contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
                               ),
                               onChanged: (v) => setState(() {
+                                // Editing by hand replaces the preview — from now
+                                // on the visible text is the source of truth.
+                                _fullGcode     = null;
+                                _fullLineCount = 0;
                                 if (_autoDetect) _detected = GcodeParser.autoDetect(v);
                               }),
                             ),

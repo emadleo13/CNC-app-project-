@@ -179,6 +179,7 @@ class AppStringsEn implements AppStrings {
   @override String get gcodeFromDrawingHint      => 'Upload a technical drawing or part photo to generate G-code';
   @override String get gcodeFromDrawingGenerating => 'Analyzing drawing...';
   @override String get gcodeFromDrawingError     => 'Failed to generate G-code from drawing';
+  @override String get gcodeLargeFileNotice      => 'Large file — preview shown; the full program will be analyzed';
 
   // Phase 1 — Usage / Quota
   @override String get proFreeLabel        => 'Free';

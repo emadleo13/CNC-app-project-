@@ -199,6 +199,9 @@ abstract class AppStrings {
   String get gcodeFromDrawingGenerating;
   String get gcodeFromDrawingError;
 
+  // Large-file preview notice (editor shows a preview; full file is analyzed)
+  String get gcodeLargeFileNotice;
+
   // Phase 1 — Usage / Quota
   String get proFreeLabel;
   String get proProLabel;
