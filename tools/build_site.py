@@ -34,6 +34,7 @@ SOCIAL = {
     "Facebook": "https://www.facebook.com/people/Emad-Leo/100094017911170/",
     "TikTok":   "https://www.tiktok.com/@emadleo3",
     "LinkedIn": "https://www.linkedin.com/in/emadleo13-b42882236",
+    "YouTube":  "https://www.youtube.com/@emadleo13",
 }
 SOCIAL_LINKS = " · ".join(
     f'<a href="{u}" rel="me" target="_blank">{n}</a>' for n, u in SOCIAL.items()

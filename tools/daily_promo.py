@@ -95,6 +95,36 @@ def linkedin_block(*, headline, lead_en, bullets_en, close_en,
     return (["## LinkedIn — English", ""] + block(lead_en, bullets_en, close_en) +
             ["## LinkedIn — Română", ""] + block(lead_ro, bullets_ro, close_ro))
 
+
+def youtube_block(*, title, summary, chapters, link, tags):
+    """YouTube is a search engine; TikTok is a feed.
+
+    TikTok needs a hook because the video is pushed at people who were not
+    looking for it. YouTube needs an exact-match title because people type the
+    problem into the search bar -- "haas alarm 102" gets searched on YouTube
+    almost as much as on Google. Same vertical footage, different packaging.
+    Unlike TikTok, links in a YouTube description are clickable, so the CTA
+    lives there instead of in a bio.
+    """
+    return ["## YouTube — title, description, tags", "",
+            "```",
+            "TITLE (exact-match — this is the phrase people type, do not get clever):",
+            title,
+            "",
+            "DESCRIPTION:",
+            summary,
+            ""] + list(chapters) + [
+            "",
+            f"Free written reference: {link}",
+            f"Free Android app (offline, no ads): {PLAY.format(medium='youtube')}",
+            "",
+            f"TAGS: {tags}",
+            "```",
+            "",
+            "Reuse the TikTok footage above — the same vertical clip works as a Short. Only the",
+            "title and description change, because YouTube ranks on them and TikTok does not.",
+            ""]
+
 def build(day: date, alarms, codes) -> str:
     n = (day - date(2026, 1, 1)).days
     angle = n % 7
@@ -124,6 +154,16 @@ def build(day: date, alarms, codes) -> str:
                       "Explicația completă e gratuită și fără cont — o mașină oprită noaptea "
                       "nu ar trebui să ceară login pe un forum."),
             link=url)
+        yt = youtube_block(
+            title=f"{bname} Alarm {code} — {title} (What It Means and How to Clear It)",
+            summary=(f"{a.get('description','')} Here is what usually causes {bname} alarm {code} "
+                     f"and the first things to check before you call service."),
+            chapters=["00:00 What the alarm means",
+                      "00:20 Likely causes",
+                      "00:50 How to clear it"],
+            link=url,
+            tags=f"{bname.lower()} alarm {code}, {bname.lower()} alarm codes, cnc alarm, "
+                 f"{title.lower()}, cnc troubleshooting, machinist")
         out += [
             f"**Angle:** Alarm of the day — {bname} {code}", "",
             "## Facebook — English", "",
@@ -193,6 +233,17 @@ def build(day: date, alarms, codes) -> str:
             close_ro=("Din astfel de goluri mici apare rebutul. Referința completă e gratuită "
                       "și funcționează offline."),
             link=url)
+        yt = youtube_block(
+            title=f"{c['code']} Explained — {c.get('name','')} (CNC Programming)",
+            summary=(f"{c.get('description','')}"
+                     + (f" Syntax: {c['syntax']}" if c.get('syntax') else "")
+                     + (f" Watch out: {warn}" if warn else "")),
+            chapters=["00:00 What it does",
+                      "00:15 Syntax",
+                      "00:35 The mistake to avoid"],
+            link=url,
+            tags=f"{c['code'].lower()}, {c.get('name','').lower()}, g code, gcode programming, "
+                 f"cnc programming, machinist")
         out += [
             f"**Angle:** Code of the day — {c['code']}", "",
             "## Facebook — English", "",
@@ -258,6 +309,16 @@ def build(day: date, alarms, codes) -> str:
             close_ro=("Un ucenic care ajunge la aceste patru numere în zece secunde valorează mai "
                       "mult decât încă un raft de carbură."),
             link=PLAY.format(medium="linkedin"))
+        yt = youtube_block(
+            title=f"Speeds and Feeds for {name} — The 4 Numbers That Matter",
+            summary=("Vc, chip load, depth/width of cut and MRR decide whether the tool survives. "
+                     f"Here is how to get them right for {name}, in metric or imperial."),
+            chapters=["00:00 Why tools break",
+                      "00:15 The four numbers",
+                      "00:45 Working it out in seconds"],
+            link=f"{SITE}/",
+            tags=f"speeds and feeds, {name.lower()}, chip load, cutting speed, feed rate, "
+                 f"cnc milling, machinist calculator")
         out += [
             f"**Angle:** Speeds & feeds — {name}", "",
             "## Facebook — English", "",
@@ -321,6 +382,15 @@ def build(day: date, alarms, codes) -> str:
             close_ro=("Majoritatea coliziunilor nu sunt exotice. Sunt o capcană cunoscută care "
                       "întâlnește pe cineva care nu o știa încă. Merită zece minute de instructaj."),
             link=url)
+        yt = youtube_block(
+            title=f"The {c['code']} Mistake That Crashes Machines — {c.get('name','')}",
+            summary=f"{c.get('description','')} The trap: {c['warning']}",
+            chapters=["00:00 What the code does",
+                      "00:20 Where it bites",
+                      "00:40 How to stay out of trouble"],
+            link=url,
+            tags=f"{c['code'].lower()}, cnc crash, g code mistake, cnc programming, "
+                 f"machinist, gcode")
         out += [
             f"**Angle:** The trap — {c['code']}", "",
             "## Facebook — English", "",
@@ -383,6 +453,16 @@ def build(day: date, alarms, codes) -> str:
             close_ro=(f"Răspuns: {ans_letter}. Dacă majoritatea dintr-un atelier greșește, e o "
                       "problemă de instruire, nu de oameni."),
             link=PLAY.format(medium="linkedin"))
+        yt = youtube_block(
+            title=f"{qtext} (CNC Quiz)",
+            summary=("A quick one most operators get wrong. Answer at the end — no googling. "
+                     f"Correct answer: {ans_letter}."),
+            chapters=["00:00 The question",
+                      "00:08 Think about it",
+                      "00:12 The answer"],
+            link=f"{SITE}/",
+            tags=f"cnc quiz, {q.get('category','cnc').lower()}, machinist test, "
+                 f"cnc training, gcode")
         out += [
             "**Angle:** Sunday quiz", "",
             "## Facebook — English", "",
@@ -425,12 +505,13 @@ def build(day: date, alarms, codes) -> str:
             "```",
         ]
 
-    out += [""] + li
+    out += [""] + li + yt
     out += ["", "---", "",
             "**Posting checklist**",
             "- [ ] Facebook — post in the shop/machining groups you belong to (EN groups get EN, RO groups get RO)",
             "- [ ] TikTok — record the screen beats, keep it under 30s, put the link in bio (TikTok kills in-caption links)",
             "- [ ] LinkedIn — post as yourself, not as a page; tag no one; reply to every comment",
+            "- [ ] YouTube — upload the same vertical clip as a Short; the TITLE is what ranks, so paste it exactly",
             "- [ ] Reply to every comment in the first hour — it is the single biggest reach multiplier",
             "- [ ] Never drop a bare link in a group. Answer the question first, link second.",
             ""]

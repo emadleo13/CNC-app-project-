@@ -12,6 +12,7 @@ are also used as schema.org `sameAs` on every page of the reference site):
 - Facebook: `https://www.facebook.com/people/Emad-Leo/100094017911170/`
 - TikTok: `https://www.tiktok.com/@emadleo3`
 - LinkedIn: `https://www.linkedin.com/in/emadleo13-b42882236`
+- YouTube: `https://www.youtube.com/@emadleo13`
 
 > **The Facebook link is a personal profile, not a Page.** That is fine for posting inside groups —
 > which is the channel that actually works here — but a profile has no insights, no scheduling, a
@@ -124,6 +125,15 @@ Put the Play link in the bio of `@emadleo3` once and leave it there.
 ---
 
 ## 5. YouTube titles that get searched
+
+Channel: `https://www.youtube.com/@emadleo13`
+
+YouTube is the second-largest search engine and machinists use it exactly like Google — they type
+the alarm number. That makes the **title** the whole game: it must contain the phrase people type,
+not a clever hook. (TikTok is the opposite: it pushes video at people who were not searching, so
+there the first two seconds carry everything.) The same vertical clip serves both; only the
+packaging changes. `tools/daily_promo.py` now emits a ready YouTube title, description and tag
+list every day.
 
 These match what people actually type. One video each, 60–180 seconds, screen recording is fine.
 
