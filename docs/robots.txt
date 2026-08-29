@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://emadleo13.github.io/CNC-app-project-/sitemap.xml

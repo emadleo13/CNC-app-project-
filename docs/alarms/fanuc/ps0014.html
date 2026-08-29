@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fanuc Alarm PS0014 — COMMANDED FEED ZERO | CNC Assist</title>
+<meta name="description" content="A feed rate of zero was programmed or is active during a cutting move (G01, G02, G03). The axis cannot move without a valid feed rate.">
+<link rel="canonical" href="https://emadleo13.github.io/CNC-app-project-/alarms/fanuc/ps0014.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fanuc Alarm PS0014 — COMMANDED FEED ZERO | CNC Assist">
+<meta property="og:description" content="A feed rate of zero was programmed or is active during a cutting move (G01, G02, G03). The axis cannot move without a valid feed rate.">
+<meta property="og:url" content="https://emadleo13.github.io/CNC-app-project-/alarms/fanuc/ps0014.html">
+<meta name="robots" content="index,follow">
+<link rel="stylesheet" href="../../assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What causes Fanuc alarm PS0014?", "acceptedAnswer": {"@type": "Answer", "text": "F0 or no F word in the first cutting block Modal feed rate was cleared and not reprogrammed Feed per revolution mode active with spindle stopped (F = S x f = 0) Feed override dial at 0%"}}, {"@type": "Question", "name": "How do you clear Fanuc alarm PS0014?", "acceptedAnswer": {"@type": "Answer", "text": "Add a valid F word to the cutting motion block Verify feed rate is non-zero: e.g., G01 X100. F200 Check feed override dial is not at 0% If using G95 (feed per rev), ensure spindle is running"}}]}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../">CNC Assist</a>
+<nav>
+  <a href="../../alarms/">Alarm Codes</a>
+  <a href="../../gcode/">G &amp; M-Codes</a>
+  <a href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=nav&utm_campaign=seo">Get the App</a>
+</nav>
+</div></header>
+<main><div class="wrap">
+<p class="crumbs"><a href="../">Alarm codes</a> › <a href="./">Fanuc</a> › PS0014</p>
+<h1>Fanuc Alarm PS0014 — COMMANDED FEED ZERO</h1>
+<p class="sub"><span class="badge b-warning">warning</span></p>
+<div class="card"><p>A feed rate of zero was programmed or is active during a cutting move (G01, G02, G03). The axis cannot move without a valid feed rate.</p></div>
+<h2>Likely causes of Fanuc alarm PS0014</h2>
+<ul class="clean"><li>F0 or no F word in the first cutting block</li><li>Modal feed rate was cleared and not reprogrammed</li><li>Feed per revolution mode active with spindle stopped (F = S x f = 0)</li><li>Feed override dial at 0%</li></ul>
+<h2>How to clear alarm PS0014</h2>
+<ol class="clean"><li>Add a valid F word to the cutting motion block</li><li>Verify feed rate is non-zero: e.g., G01 X100. F200</li><li>Check feed override dial is not at 0%</li><li>If using G95 (feed per rev), ensure spindle is running</li></ol>
+<div class="cta">
+<p>All 66 Fanuc alarms — offline, in your pocket, next to a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<a class="btn" href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=alarm-page&utm_campaign=seo">Get CNC Assist — free on Google Play</a>
+</div>
+<div class="pager"><a href="ps0010.html">← Fanuc alarm PS0010</a><a href="ps0015.html">Fanuc alarm PS0015 →</a></div>
+<p class="note">Reference only — always confirm against the alarm text on your own control and the machine builder's manual before working on the machine.</p>
+</div></main>
+<footer class="site"><div class="wrap">
+<p>CNC Assist — free reference for CNC operators, programmers and setters.
+Also available as a free Android app with a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<p><a href="../../">Home</a> · <a href="../../alarms/">Alarm codes</a> ·
+<a href="../../gcode/">G &amp; M-codes</a> · <a href="../../privacy-policy.html">Privacy</a></p>
+<p>Reference information only. Always verify against your machine's own documentation before acting on it.
+Brand names are trademarks of their respective owners and are used here for identification only.</p>
+</div></footer>
+</body>
+</html>

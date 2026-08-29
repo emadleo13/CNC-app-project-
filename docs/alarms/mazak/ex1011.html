@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mazak Alarm EX1011 — OVERTRAVEL: + DIRECTION | CNC Assist</title>
+<meta name="description" content="An axis has reached or would exceed its positive software stroke limit. Motion in the positive direction is blocked.">
+<link rel="canonical" href="https://emadleo13.github.io/CNC-app-project-/alarms/mazak/ex1011.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mazak Alarm EX1011 — OVERTRAVEL: + DIRECTION | CNC Assist">
+<meta property="og:description" content="An axis has reached or would exceed its positive software stroke limit. Motion in the positive direction is blocked.">
+<meta property="og:url" content="https://emadleo13.github.io/CNC-app-project-/alarms/mazak/ex1011.html">
+<meta name="robots" content="index,follow">
+<link rel="stylesheet" href="../../assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What causes Mazak alarm EX1011?", "acceptedAnswer": {"@type": "Answer", "text": "Program coordinates command a position beyond the positive stroke limit Work coordinate offset (G54-G59) places the part outside machine travel Incremental (G91) moves accumulated past the limit Stroke limit parameter set incorrectly after a backup restore"}}, {"@type": "Question", "name": "How do you clear Mazak alarm EX1011?", "acceptedAnswer": {"@type": "Answer", "text": "Press RESET, then jog the axis in the negative direction away from the limit Check the work coordinate offset values in the Common Variable / Work Offset screen Review the program block shown in the alarm message for the offending coordinate Verify stroke limit parameters (Parameter 1320/1321 series on M800/M80) match the machine specification"}}]}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../">CNC Assist</a>
+<nav>
+  <a href="../../alarms/">Alarm Codes</a>
+  <a href="../../gcode/">G &amp; M-Codes</a>
+  <a href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=nav&utm_campaign=seo">Get the App</a>
+</nav>
+</div></header>
+<main><div class="wrap">
+<p class="crumbs"><a href="../">Alarm codes</a> › <a href="./">Mazak</a> › EX1011</p>
+<h1>Mazak Alarm EX1011 — OVERTRAVEL: + DIRECTION</h1>
+<p class="sub"><span class="badge b-error">error</span></p>
+<div class="card"><p>An axis has reached or would exceed its positive software stroke limit. Motion in the positive direction is blocked.</p></div>
+<h2>Likely causes of Mazak alarm EX1011</h2>
+<ul class="clean"><li>Program coordinates command a position beyond the positive stroke limit</li><li>Work coordinate offset (G54-G59) places the part outside machine travel</li><li>Incremental (G91) moves accumulated past the limit</li><li>Stroke limit parameter set incorrectly after a backup restore</li></ul>
+<h2>How to clear alarm EX1011</h2>
+<ol class="clean"><li>Press RESET, then jog the axis in the negative direction away from the limit</li><li>Check the work coordinate offset values in the Common Variable / Work Offset screen</li><li>Review the program block shown in the alarm message for the offending coordinate</li><li>Verify stroke limit parameters (Parameter 1320/1321 series on M800/M80) match the machine specification</li></ol>
+<div class="cta">
+<p>All 18 Mazak alarms — offline, in your pocket, next to a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<a class="btn" href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=alarm-page&utm_campaign=seo">Get CNC Assist — free on Google Play</a>
+</div>
+<div class="pager"><span></span><a href="ex1012.html">Mazak alarm EX1012 →</a></div>
+<p class="note">Reference only — always confirm against the alarm text on your own control and the machine builder's manual before working on the machine.</p>
+</div></main>
+<footer class="site"><div class="wrap">
+<p>CNC Assist — free reference for CNC operators, programmers and setters.
+Also available as a free Android app with a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<p><a href="../../">Home</a> · <a href="../../alarms/">Alarm codes</a> ·
+<a href="../../gcode/">G &amp; M-codes</a> · <a href="../../privacy-policy.html">Privacy</a></p>
+<p>Reference information only. Always verify against your machine's own documentation before acting on it.
+Brand names are trademarks of their respective owners and are used here for identification only.</p>
+</div></footer>
+</body>
+</html>

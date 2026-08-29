@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heidenhain Alarm 140 — RADIUS COMPENSATION: INCORRECT SIGN | CNC Assist</title>
+<meta name="description" content="The tool radius compensation direction (RR/RL) conflicts with the contour direction, risking an undercut or collision.">
+<link rel="canonical" href="https://emadleo13.github.io/CNC-app-project-/alarms/heidenhain/140.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Heidenhain Alarm 140 — RADIUS COMPENSATION: INCORRECT SIGN | CNC Assist">
+<meta property="og:description" content="The tool radius compensation direction (RR/RL) conflicts with the contour direction, risking an undercut or collision.">
+<meta property="og:url" content="https://emadleo13.github.io/CNC-app-project-/alarms/heidenhain/140.html">
+<meta name="robots" content="index,follow">
+<link rel="stylesheet" href="../../assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What causes Heidenhain alarm 140?", "acceptedAnswer": {"@type": "Answer", "text": "RR was used where RL is required, or vice versa Contour direction was reversed without updating the compensation Compensation was called on a contour element too small for the tool radius A sub-program was mirrored without adjusting the compensation side"}}, {"@type": "Question", "name": "How do you clear Heidenhain alarm 140?", "acceptedAnswer": {"@type": "Answer", "text": "Review the contour direction and switch RL/RR accordingly Run the program in graphic test mode before machining Remove compensation on arcs smaller than the tool radius Re-check mirrored sub-programs for the correct compensation side"}}]}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../">CNC Assist</a>
+<nav>
+  <a href="../../alarms/">Alarm Codes</a>
+  <a href="../../gcode/">G &amp; M-Codes</a>
+  <a href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=nav&utm_campaign=seo">Get the App</a>
+</nav>
+</div></header>
+<main><div class="wrap">
+<p class="crumbs"><a href="../">Alarm codes</a> › <a href="./">Heidenhain</a> › 140</p>
+<h1>Heidenhain Alarm 140 — RADIUS COMPENSATION: INCORRECT SIGN</h1>
+<p class="sub"><span class="badge b-error">error</span></p>
+<div class="card"><p>The tool radius compensation direction (RR/RL) conflicts with the contour direction, risking an undercut or collision.</p></div>
+<h2>Likely causes of Heidenhain alarm 140</h2>
+<ul class="clean"><li>RR was used where RL is required, or vice versa</li><li>Contour direction was reversed without updating the compensation</li><li>Compensation was called on a contour element too small for the tool radius</li><li>A sub-program was mirrored without adjusting the compensation side</li></ul>
+<h2>How to clear alarm 140</h2>
+<ol class="clean"><li>Review the contour direction and switch RL/RR accordingly</li><li>Run the program in graphic test mode before machining</li><li>Remove compensation on arcs smaller than the tool radius</li><li>Re-check mirrored sub-programs for the correct compensation side</li></ol>
+<div class="cta">
+<p>All 48 Heidenhain alarms — offline, in your pocket, next to a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<a class="btn" href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=alarm-page&utm_campaign=seo">Get CNC Assist — free on Google Play</a>
+</div>
+<div class="pager"><a href="130.html">← Heidenhain alarm 130</a><a href="150.html">Heidenhain alarm 150 →</a></div>
+<p class="note">Reference only — always confirm against the alarm text on your own control and the machine builder's manual before working on the machine.</p>
+</div></main>
+<footer class="site"><div class="wrap">
+<p>CNC Assist — free reference for CNC operators, programmers and setters.
+Also available as a free Android app with a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<p><a href="../../">Home</a> · <a href="../../alarms/">Alarm codes</a> ·
+<a href="../../gcode/">G &amp; M-codes</a> · <a href="../../privacy-policy.html">Privacy</a></p>
+<p>Reference information only. Always verify against your machine's own documentation before acting on it.
+Brand names are trademarks of their respective owners and are used here for identification only.</p>
+</div></footer>
+</body>
+</html>

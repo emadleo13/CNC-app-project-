@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/review/review_prompter.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
@@ -100,6 +101,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       return;
     }
     setState(() => _result = result);
+    ReviewPrompter.recordSuccess();
   }
 
   @override

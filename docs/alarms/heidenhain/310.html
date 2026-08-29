@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heidenhain Alarm 310 — SPINDLE SPEED MISSING | CNC Assist</title>
+<meta name="description" content="A spindle speed has not been programmed for a cutting move. The control requires an active spindle speed before machining.">
+<link rel="canonical" href="https://emadleo13.github.io/CNC-app-project-/alarms/heidenhain/310.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Heidenhain Alarm 310 — SPINDLE SPEED MISSING | CNC Assist">
+<meta property="og:description" content="A spindle speed has not been programmed for a cutting move. The control requires an active spindle speed before machining.">
+<meta property="og:url" content="https://emadleo13.github.io/CNC-app-project-/alarms/heidenhain/310.html">
+<meta name="robots" content="index,follow">
+<link rel="stylesheet" href="../../assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What causes Heidenhain alarm 310?", "acceptedAnswer": {"@type": "Answer", "text": "S value not programmed before cutting moves TOOL CALL without spindle speed specification Spindle speed cancelled and not reprogrammed Program restart skipped block containing S value"}}, {"@type": "Question", "name": "How do you clear Heidenhain alarm 310?", "acceptedAnswer": {"@type": "Answer", "text": "Add spindle speed to TOOL CALL: TOOL CALL 1 Z S5000 Program M3/M4 with S value before cutting moves Verify spindle speed is defined for the active tool Check if S value was in a block that was skipped during restart"}}]}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../">CNC Assist</a>
+<nav>
+  <a href="../../alarms/">Alarm Codes</a>
+  <a href="../../gcode/">G &amp; M-Codes</a>
+  <a href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=nav&utm_campaign=seo">Get the App</a>
+</nav>
+</div></header>
+<main><div class="wrap">
+<p class="crumbs"><a href="../">Alarm codes</a> › <a href="./">Heidenhain</a> › 310</p>
+<h1>Heidenhain Alarm 310 — SPINDLE SPEED MISSING</h1>
+<p class="sub"><span class="badge b-warning">warning</span></p>
+<div class="card"><p>A spindle speed has not been programmed for a cutting move. The control requires an active spindle speed before machining.</p></div>
+<h2>Likely causes of Heidenhain alarm 310</h2>
+<ul class="clean"><li>S value not programmed before cutting moves</li><li>TOOL CALL without spindle speed specification</li><li>Spindle speed cancelled and not reprogrammed</li><li>Program restart skipped block containing S value</li></ul>
+<h2>How to clear alarm 310</h2>
+<ol class="clean"><li>Add spindle speed to TOOL CALL: TOOL CALL 1 Z S5000</li><li>Program M3/M4 with S value before cutting moves</li><li>Verify spindle speed is defined for the active tool</li><li>Check if S value was in a block that was skipped during restart</li></ol>
+<div class="cta">
+<p>All 48 Heidenhain alarms — offline, in your pocket, next to a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<a class="btn" href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=alarm-page&utm_campaign=seo">Get CNC Assist — free on Google Play</a>
+</div>
+<div class="pager"><a href="303.html">← Heidenhain alarm 303</a><a href="326.html">Heidenhain alarm 326 →</a></div>
+<p class="note">Reference only — always confirm against the alarm text on your own control and the machine builder's manual before working on the machine.</p>
+</div></main>
+<footer class="site"><div class="wrap">
+<p>CNC Assist — free reference for CNC operators, programmers and setters.
+Also available as a free Android app with a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<p><a href="../../">Home</a> · <a href="../../alarms/">Alarm codes</a> ·
+<a href="../../gcode/">G &amp; M-codes</a> · <a href="../../privacy-policy.html">Privacy</a></p>
+<p>Reference information only. Always verify against your machine's own documentation before acting on it.
+Brand names are trademarks of their respective owners and are used here for identification only.</p>
+</div></footer>
+</body>
+</html>

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/review/review_prompter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -251,6 +252,7 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
       'dialect': dialect,
       'lines':   lines,
     });
+    ReviewPrompter.recordSuccess();
   }
 
   @override

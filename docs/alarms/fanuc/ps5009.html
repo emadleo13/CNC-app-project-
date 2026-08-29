@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fanuc Alarm PS5009 — ILLEGAL OFFSET NUMBER | CNC Assist</title>
+<meta name="description" content="A program block specifies a tool offset number (H or D) that is greater than the number of offsets supported by the control, or is negative.">
+<link rel="canonical" href="https://emadleo13.github.io/CNC-app-project-/alarms/fanuc/ps5009.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fanuc Alarm PS5009 — ILLEGAL OFFSET NUMBER | CNC Assist">
+<meta property="og:description" content="A program block specifies a tool offset number (H or D) that is greater than the number of offsets supported by the control, or is negative.">
+<meta property="og:url" content="https://emadleo13.github.io/CNC-app-project-/alarms/fanuc/ps5009.html">
+<meta name="robots" content="index,follow">
+<link rel="stylesheet" href="../../assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What causes Fanuc alarm PS5009?", "acceptedAnswer": {"@type": "Answer", "text": "H or D number in the program exceeds the configured offset memory size Typo produced an offset number such as H0 used where it is not permitted, or a 3-digit number on a control limited to 2-digit offsets Offset memory size parameter set lower than the program expects"}}, {"@type": "Question", "name": "How do you clear Fanuc alarm PS5009?", "acceptedAnswer": {"@type": "Answer", "text": "Check the H/D number in the alarm block against the offset table size (Setting/Parameter for number of offsets) Correct the offset number in the program to a valid, existing entry Increase the offset memory parameter if the machine supports more offsets and the program legitimately needs them"}}]}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../">CNC Assist</a>
+<nav>
+  <a href="../../alarms/">Alarm Codes</a>
+  <a href="../../gcode/">G &amp; M-Codes</a>
+  <a href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=nav&utm_campaign=seo">Get the App</a>
+</nav>
+</div></header>
+<main><div class="wrap">
+<p class="crumbs"><a href="../">Alarm codes</a> › <a href="./">Fanuc</a> › PS5009</p>
+<h1>Fanuc Alarm PS5009 — ILLEGAL OFFSET NUMBER</h1>
+<p class="sub"><span class="badge b-warning">warning</span></p>
+<div class="card"><p>A program block specifies a tool offset number (H or D) that is greater than the number of offsets supported by the control, or is negative.</p></div>
+<h2>Likely causes of Fanuc alarm PS5009</h2>
+<ul class="clean"><li>H or D number in the program exceeds the configured offset memory size</li><li>Typo produced an offset number such as H0 used where it is not permitted, or a 3-digit number on a control limited to 2-digit offsets</li><li>Offset memory size parameter set lower than the program expects</li></ul>
+<h2>How to clear alarm PS5009</h2>
+<ol class="clean"><li>Check the H/D number in the alarm block against the offset table size (Setting/Parameter for number of offsets)</li><li>Correct the offset number in the program to a valid, existing entry</li><li>Increase the offset memory parameter if the machine supports more offsets and the program legitimately needs them</li></ol>
+<div class="cta">
+<p>All 66 Fanuc alarms — offline, in your pocket, next to a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<a class="btn" href="https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist&utm_source=reference-site&utm_medium=alarm-page&utm_campaign=seo">Get CNC Assist — free on Google Play</a>
+</div>
+<div class="pager"><a href="ps1098.html">← Fanuc alarm PS1098</a><a href="sv0411.html">Fanuc alarm SV0411 →</a></div>
+<p class="note">Reference only — always confirm against the alarm text on your own control and the machine builder's manual before working on the machine.</p>
+</div></main>
+<footer class="site"><div class="wrap">
+<p>CNC Assist — free reference for CNC operators, programmers and setters.
+Also available as a free Android app with a speeds &amp; feeds calculator and a G-code analyzer.</p>
+<p><a href="../../">Home</a> · <a href="../../alarms/">Alarm codes</a> ·
+<a href="../../gcode/">G &amp; M-codes</a> · <a href="../../privacy-policy.html">Privacy</a></p>
+<p>Reference information only. Always verify against your machine's own documentation before acting on it.
+Brand names are trademarks of their respective owners and are used here for identification only.</p>
+</div></footer>
+</body>
+</html>
