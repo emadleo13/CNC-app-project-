@@ -9,16 +9,22 @@ Links:
 
 Your profiles (canonical URLs — share links and `?_t=` / `utm_` tails stripped, because these
 are also used as schema.org `sameAs` on every page of the reference site):
-- Facebook: `https://www.facebook.com/people/Emad-Leo/100094017911170/`
+- Facebook Page: `https://www.facebook.com/people/CNC-Assistant/61593884013697/`
+- Facebook personal profile (for posting inside groups): `https://www.facebook.com/people/Emad-Leo/100094017911170/`
 - TikTok: `https://www.tiktok.com/@emadleo3`
 - LinkedIn: `https://www.linkedin.com/in/emadleo13-b42882236`
 - YouTube: `https://www.youtube.com/@emadleo13`
 
-> **The Facebook link is a personal profile, not a Page.** That is fine for posting inside groups —
-> which is the channel that actually works here — but a profile has no insights, no scheduling, a
-> 5,000-friend ceiling, and cannot be linked from Play Console as an official presence. Creating a
-> free Page named **CNC Assist** costs ten minutes and gives the app a home that is not your
-> personal account. Keep posting in groups as yourself; use the Page as the destination.
+> **Two Facebook identities, and that is correct.** Post *inside groups* as your personal
+> profile — a Page posting in a group reads as advertising and gets removed; a person answering a
+> question does not. The Page is the destination you link to, and the one Play Console and the
+> reference site point at.
+>
+> **Two things still to fix on the Page:** it has no username, so its URL is an unmemorable numeric
+> string — set one (Page → Settings → Username, e.g. `cncassist`) and it becomes
+> `facebook.com/cncassist`. And it is called **CNC Assistant** while the app is **CNC Assist**;
+> rename the Page to match, since a Page with no followers renames freely and the Play listing
+> cannot.
 
 Add `&utm_source=…&utm_medium=…&utm_campaign=…` to the Play link so you can see in Play Console
 which channel actually installs. Play Console → **Acquisition reports → Traffic source**.
