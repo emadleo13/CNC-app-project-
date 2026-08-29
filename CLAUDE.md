@@ -80,3 +80,29 @@ Static data lives in `assets/data/`:
 - `gcode_reference.json` — G/M-code descriptions for the knowledge base
 
 Font family `JetBrainsMono` is used for all monospaced G-code display (app bar titles and code views).
+
+## Growth tooling (`tools/`, `docs/`, `marketing/`)
+
+These sit outside the Flutter app and never ship in the APK, but they read the same
+`assets/data/*.json`, so changing that data changes them too.
+
+- **`tools/build_site.py`** → regenerates `docs/`, the public reference site on GitHub Pages
+  (~540 pages, one per controller alarm and per G/M-code, plus sitemap and robots.txt).
+  It **wipes `docs/` first**, keeping only the names in `PROTECTED` and the patterns in
+  `PROTECTED_GLOBS` — `privacy-policy.html` (Play Console points at that exact URL),
+  `store-assets/`, and the search-engine verification files. Add anything else that must
+  survive to those lists, or a rebuild will delete it. Re-run after editing `errors.json`
+  or `gcode_reference.json`.
+- **`tools/daily_promo.py`** → writes `marketing/daily/<date>.md`, a day's social copy for
+  Facebook, TikTok, LinkedIn and YouTube in English and Romanian. It **skips a day whose file
+  already exists** so it cannot clobber copy the daily agent rewrote; `--force` overrides.
+- **`tools/post_social.py`** → posts the Facebook and LinkedIn blocks via API, run by
+  `.github/workflows/daily-post.yml`. Credentials come from GitHub repository secrets and must
+  never be committed. See `marketing/automation-setup.md`.
+- **`tools/listing.py`** → prints one language's Play Console fields with live character counts
+  against the 30 / 80 / 4000 limits. Source of truth is `docs/store-listing.md`.
+
+A scheduled cloud agent runs `daily_promo.py` every morning, rewrites the draft into natural
+prose, and pushes. It is told never to alter technical content — alarm codes, causes, fixes,
+syntax and warnings are machine-safety information and are copied verbatim from the JSON.
+Keep that constraint in any prompt that touches this content.
