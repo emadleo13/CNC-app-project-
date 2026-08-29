@@ -31,7 +31,7 @@ PLAY_ID = "com.cncassist.cnc_assist"
 # these feed schema.org sameAs, where a redirect or a tracking tail weakens the
 # signal that the site, the app and these profiles are one entity.
 SOCIAL = {
-    "Facebook": "https://www.facebook.com/people/CNC-Assistant/61593884013697/",
+    "Facebook": "https://www.facebook.com/cncassist13/",
     "TikTok":   "https://www.tiktok.com/@emadleo3",
     "LinkedIn": "https://www.linkedin.com/in/emadleo13-b42882236",
     "YouTube":  "https://www.youtube.com/@emadleo13",

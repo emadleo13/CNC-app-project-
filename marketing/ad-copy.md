@@ -9,7 +9,7 @@ Links:
 
 Your profiles (canonical URLs — share links and `?_t=` / `utm_` tails stripped, because these
 are also used as schema.org `sameAs` on every page of the reference site):
-- Facebook Page: `https://www.facebook.com/people/CNC-Assistant/61593884013697/`
+- Facebook Page: `https://www.facebook.com/cncassist13/`
 - Facebook personal profile (for posting inside groups): `https://www.facebook.com/people/Emad-Leo/100094017911170/`
 - TikTok: `https://www.tiktok.com/@emadleo3`
 - LinkedIn: `https://www.linkedin.com/in/emadleo13-b42882236`
@@ -20,11 +20,10 @@ are also used as schema.org `sameAs` on every page of the reference site):
 > question does not. The Page is the destination you link to, and the one Play Console and the
 > reference site point at.
 >
-> **Two things still to fix on the Page:** it has no username, so its URL is an unmemorable numeric
-> string — set one (Page → Settings → Username, e.g. `cncassist`) and it becomes
-> `facebook.com/cncassist`. And it is called **CNC Assistant** while the app is **CNC Assist**;
-> rename the Page to match, since a Page with no followers renames freely and the Play listing
-> cannot.
+> The Page is named **CNC Assist**, matching the app and the Play listing, and lives at the
+> speakable `facebook.com/cncassist13`. Use that URL everywhere — on the site, in Play Console,
+> and in your TikTok, YouTube and LinkedIn bios. Consistency across all of them is part of what
+> tells Google these are one entity.
 
 Add `&utm_source=…&utm_medium=…&utm_campaign=…` to the Play link so you can see in Play Console
 which channel actually installs. Play Console → **Acquisition reports → Traffic source**.
