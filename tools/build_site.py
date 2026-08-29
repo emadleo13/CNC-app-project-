@@ -26,6 +26,18 @@ OUT = ROOT / "docs"
 
 BASE_URL = "https://emadleo13.github.io/CNC-app-project-"
 PLAY_ID = "com.cncassist.cnc_assist"
+
+# Canonical profile URLs. Share links and utm/_t tails are stripped on purpose:
+# these feed schema.org sameAs, where a redirect or a tracking tail weakens the
+# signal that the site, the app and these profiles are one entity.
+SOCIAL = {
+    "Facebook": "https://www.facebook.com/people/Emad-Leo/100094017911170/",
+    "TikTok":   "https://www.tiktok.com/@emadleo3",
+    "LinkedIn": "https://www.linkedin.com/in/emadleo13-b42882236",
+}
+SOCIAL_LINKS = " · ".join(
+    f'<a href="{u}" rel="me" target="_blank">{n}</a>' for n, u in SOCIAL.items()
+)
 TODAY = date.today().isoformat()
 
 # Files in docs/ that this generator must never delete or overwrite.
@@ -158,6 +170,7 @@ def page(*, title, description, canonical, body, jsonld=None, depth=1) -> str:
 Also available as a free Android app with a speeds &amp; feeds calculator and a G-code analyzer.</p>
 <p><a href="{up}">Home</a> · <a href="{up}alarms/">Alarm codes</a> ·
 <a href="{up}gcode/">G &amp; M-codes</a> · <a href="{up}privacy-policy.html">Privacy</a></p>
+<p>{SOCIAL_LINKS}</p>
 <p>Reference information only. Always verify against your machine's own documentation before acting on it.
 Brand names are trademarks of their respective owners and are used here for identification only.</p>
 </div></footer>
@@ -394,7 +407,21 @@ def main() -> None:
 
     # homepage
     url = f"{BASE_URL}/"
+    home_ld = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "CNC Assist",
+        "operatingSystem": "Android",
+        "applicationCategory": "UtilitiesApplication",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "url": f"{BASE_URL}/",
+        "downloadUrl": f"https://play.google.com/store/apps/details?id={PLAY_ID}",
+        "description": ("Free CNC reference and Android app: speeds and feeds calculator, "
+                        "G-code analyzer, controller alarm codes and a G/M-code reference."),
+        "sameAs": list(SOCIAL.values()),
+    }
     write("index.html", page(
+        jsonld=home_ld,
         title="CNC Assist — Alarm Codes, G-Code Reference & Speeds and Feeds",
         description=clip(f"Free CNC reference: {total_alarms} alarm codes for Haas, Fanuc, Sinumerik, "
                          f"Heidenhain and Mazak, plus {total_codes} G/M-codes. And a free Android app."),

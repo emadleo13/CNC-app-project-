@@ -54,37 +54,76 @@ def pick(seq, n):
     return seq[n % len(seq)] if seq else None
 
 
-def alarm_block(alarms, day_index, brand_offset=0):
-    bslug, key, bname = BRANDS[(day_index + brand_offset) % len(BRANDS)]
+# Both alarm days (Mon, Thu) and both code days (Tue, Sat) advance on a WEEKLY
+# counter, and are separated by an offset into the brand/group list. Driving them
+# off the raw day number instead made the two code days collide every week --
+# Tuesday's index and Saturday's index landed on the same entry.
+def alarm_block(alarms, cycle, brand_offset=0):
+    bslug, key, bname = BRANDS[(cycle + brand_offset) % len(BRANDS)]
     items = alarms.get(key) or []
-    a = pick(items, day_index // len(BRANDS) + brand_offset * 7)
+    a = pick(items, cycle)
     url = f"{SITE}/alarms/{bslug}/{slug(a['code'])}.html"
     return bname, a, url
 
 
-def code_block(codes, day_index):
-    groups = [("g_codes", "g-codes"), ("m_codes", "m-codes"),
-              ("sinumerik_cycles", "sinumerik-cycles"), ("fanuc_codes", "fanuc-codes")]
-    key, gslug = groups[day_index % len(groups)]
+CODE_SETS = [("g_codes", "g-codes"), ("m_codes", "m-codes"),
+             ("sinumerik_cycles", "sinumerik-cycles"), ("fanuc_codes", "fanuc-codes")]
+
+
+def code_block(codes, cycle, group_offset=0):
+    key, gslug = CODE_SETS[(cycle + group_offset) % len(CODE_SETS)]
     items = codes.get(key) or []
-    c = pick(items, day_index // len(groups))
+    c = pick(items, cycle)
     url = f"{SITE}/gcode/{gslug}/{slug(c['code'])}.html"
     return c, url
 
 
+
+def linkedin_block(*, headline, lead_en, bullets_en, close_en,
+                   lead_ro, bullets_ro, close_ro, link):
+    """LinkedIn is a different room from Facebook and TikTok.
+
+    The audience there is shop owners, production engineers, quality people and
+    instructors — not an operator scrolling next to the machine. So: no hashtag
+    wall, no hook-bait, longer sentences, and the value framed as what it saves
+    a shop rather than what it does. One link, at the end.
+    """
+    def block(lead, bullets, close):
+        return ["```", headline, "", lead, ""] + \
+               [f"— {b}" for b in bullets] + \
+               ["", close, "", link, "", "#cnc #manufacturing #machining #prelucrare", "```", ""]
+    return (["## LinkedIn — English", ""] + block(lead_en, bullets_en, close_en) +
+            ["## LinkedIn — Română", ""] + block(lead_ro, bullets_ro, close_ro))
+
 def build(day: date, alarms, codes) -> str:
     n = (day - date(2026, 1, 1)).days
     angle = n % 7
+    cycle = n // 7   # advances once per week
     play_fb = PLAY.format(medium="facebook")
     play_tt = PLAY.format(medium="tiktok")
     out = [f"# Promo — {day.isoformat()}", ""]
 
     if angle in (0, 3):                      # Mon & Thu — alarm of the day
-        bname, a, url = alarm_block(alarms, n, brand_offset=(0 if angle == 0 else 2))
+        bname, a, url = alarm_block(alarms, cycle, brand_offset=(0 if angle == 0 else 2))
         code, title = a["code"], a["title"]
         causes = a.get("possible_causes") or []
         fixes = a.get("solutions") or []
         top_fix = fixes[0] if fixes else "Check the machine documentation."
+        li = linkedin_block(
+            headline=f"{bname} alarm {code}: {title}",
+            lead_en=("Unplanned downtime is rarely the alarm itself — it is the twenty minutes "
+                     "spent working out what the alarm means."),
+            bullets_en=causes[:3],
+            close_en=(f"First check: {top_fix} "
+                      "We keep the full write-up free, no signup, because a machine down at "
+                      "2am should not require a forum login."),
+            lead_ro=("Timpul de oprire nu vine din alarmă, ci din cele douăzeci de minute în care "
+                     "afli ce înseamnă alarma."),
+            bullets_ro=causes[:3],
+            close_ro=(f"Primul lucru de verificat: {top_fix} "
+                      "Explicația completă e gratuită și fără cont — o mașină oprită noaptea "
+                      "nu ar trebui să ceară login pe un forum."),
+            link=url)
         out += [
             f"**Angle:** Alarm of the day — {bname} {code}", "",
             "## Facebook — English", "",
@@ -139,8 +178,21 @@ def build(day: date, alarms, codes) -> str:
         ]
 
     elif angle in (1, 5):                    # Tue & Sat — code of the day
-        c, url = code_block(codes, n if angle == 1 else n + 3)
+        c, url = code_block(codes, cycle, group_offset=(0 if angle == 1 else 2))
         warn = c.get("warning")
+        li = linkedin_block(
+            headline=f"{c['code']} — {c.get('name','')}",
+            lead_en="A code most programmers use daily and few could define precisely.",
+            bullets_en=[c.get("description", "")] + ([f"Syntax: {c['syntax']}"] if c.get("syntax") else [])
+                       + ([f"Watch out: {warn}"] if warn else []),
+            close_en=("Small gaps like this are where scrap comes from. The full reference is "
+                      "free and works offline."),
+            lead_ro="Un cod folosit zilnic de aproape toți programatorii și definit corect de puțini.",
+            bullets_ro=[c.get("description", "")] + ([f"Sintaxă: {c['syntax']}"] if c.get("syntax") else [])
+                       + ([f"Atenție: {warn}"] if warn else []),
+            close_ro=("Din astfel de goluri mici apare rebutul. Referința completă e gratuită "
+                      "și funcționează offline."),
+            link=url)
         out += [
             f"**Angle:** Code of the day — {c['code']}", "",
             "## Facebook — English", "",
@@ -185,8 +237,27 @@ def build(day: date, alarms, codes) -> str:
 
     elif angle == 2:                         # Wed — speeds & feeds
         mats = json.loads((DATA / "materials.json").read_text(encoding="utf-8")).get("materials", [])
-        m = pick(mats, n // 7)
+        m = pick(mats, cycle)
         name = m.get("name") or m.get("code", "")
+        li = linkedin_block(
+            headline=f"Four numbers decide whether a tool survives {name}",
+            lead_en=("Tool cost is visible on the invoice. The unplanned stop when a cutter lets "
+                     "go mid-cycle is not, and it is the larger number."),
+            bullets_en=["Vc — surface speed, which sets RPM for the diameter actually in the spindle",
+                        "fz — chip load per tooth; too low rubs and work-hardens, too high snaps the tool",
+                        "ap / ae — depth and width, the pair that decides what the tool can take",
+                        "MRR — what the machine is genuinely removing, not what the post says"],
+            close_en=("Getting an apprentice to those four numbers in ten seconds is worth more "
+                      "than another shelf of carbide."),
+            lead_ro=("Costul sculei se vede pe factură. Oprirea neplanificată când o freză cedează "
+                     "în mijlocul ciclului nu se vede — și e numărul mai mare."),
+            bullets_ro=["Vc — viteza de așchiere, care dă turația pentru diametrul real din arbore",
+                        "fz — avansul pe dinte; prea mic freacă și ecruisează, prea mare rupe scula",
+                        "ap / ae — adâncimea și lățimea, perechea care decide cât duce scula",
+                        "MRR — cât material scoți de fapt, nu cât spune postprocesorul"],
+            close_ro=("Un ucenic care ajunge la aceste patru numere în zece secunde valorează mai "
+                      "mult decât încă un raft de carbură."),
+            link=PLAY.format(medium="linkedin"))
         out += [
             f"**Angle:** Speeds & feeds — {name}", "",
             "## Facebook — English", "",
@@ -237,8 +308,19 @@ def build(day: date, alarms, codes) -> str:
 
     elif angle == 4:                         # Fri — the trap / gotcha
         gs = [c for c in (codes.get("g_codes") or []) if c.get("warning")]
-        c = pick(gs, n // 7)
+        c = pick(gs, cycle)
         url = f"{SITE}/gcode/g-codes/{slug(c['code'])}.html"
+        li = linkedin_block(
+            headline=f"The {c['code']} mistake that costs a part",
+            lead_en=f"{c['code']} — {c.get('name','')}: {c.get('description','')}",
+            bullets_en=[c["warning"]],
+            close_en=("Most crashes are not exotic. They are a known trap meeting someone who "
+                      "had not met it yet. Worth ten minutes in a toolbox talk."),
+            lead_ro=f"{c['code']} — {c.get('name','')}: {c.get('description','')}",
+            bullets_ro=[c["warning"]],
+            close_ro=("Majoritatea coliziunilor nu sunt exotice. Sunt o capcană cunoscută care "
+                      "întâlnește pe cineva care nu o știa încă. Merită zece minute de instructaj."),
+            link=url)
         out += [
             f"**Angle:** The trap — {c['code']}", "",
             "## Facebook — English", "",
@@ -285,11 +367,22 @@ def build(day: date, alarms, codes) -> str:
 
     else:                                    # Sun — quiz
         qs = json.loads((DATA / "quiz.json").read_text(encoding="utf-8")).get("questions", [])
-        q = pick(qs, n // 7)
+        q = pick(qs, cycle)
         opts = q.get("options") or []
         qtext = q.get("q") or q.get("question") or ""
         ans = q.get("answer")
         ans_letter = chr(65 + ans) if isinstance(ans, int) and 0 <= ans < len(opts) else "?"
+        li = linkedin_block(
+            headline="A question worth asking your team on Monday",
+            lead_en=qtext,
+            bullets_en=[f"{chr(65+i)}) {o}" for i, o in enumerate(opts)],
+            close_en=(f"Answer: {ans_letter}. If a majority of a shop gets this wrong, that is a "
+                      "training gap, not a people problem."),
+            lead_ro=qtext,
+            bullets_ro=[f"{chr(65+i)}) {o}" for i, o in enumerate(opts)],
+            close_ro=(f"Răspuns: {ans_letter}. Dacă majoritatea dintr-un atelier greșește, e o "
+                      "problemă de instruire, nu de oameni."),
+            link=PLAY.format(medium="linkedin"))
         out += [
             "**Angle:** Sunday quiz", "",
             "## Facebook — English", "",
@@ -332,10 +425,12 @@ def build(day: date, alarms, codes) -> str:
             "```",
         ]
 
+    out += [""] + li
     out += ["", "---", "",
             "**Posting checklist**",
             "- [ ] Facebook — post in the shop/machining groups you belong to (EN groups get EN, RO groups get RO)",
             "- [ ] TikTok — record the screen beats, keep it under 30s, put the link in bio (TikTok kills in-caption links)",
+            "- [ ] LinkedIn — post as yourself, not as a page; tag no one; reply to every comment",
             "- [ ] Reply to every comment in the first hour — it is the single biggest reach multiplier",
             "- [ ] Never drop a bare link in a group. Answer the question first, link second.",
             ""]

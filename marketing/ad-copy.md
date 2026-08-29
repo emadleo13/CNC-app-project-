@@ -7,6 +7,18 @@ Links:
 - App: `https://play.google.com/store/apps/details?id=com.cncassist.cnc_assist`
 - Reference site: `https://emadleo13.github.io/CNC-app-project-`
 
+Your profiles (canonical URLs — share links and `?_t=` / `utm_` tails stripped, because these
+are also used as schema.org `sameAs` on every page of the reference site):
+- Facebook: `https://www.facebook.com/people/Emad-Leo/100094017911170/`
+- TikTok: `https://www.tiktok.com/@emadleo3`
+- LinkedIn: `https://www.linkedin.com/in/emadleo13-b42882236`
+
+> **The Facebook link is a personal profile, not a Page.** That is fine for posting inside groups —
+> which is the channel that actually works here — but a profile has no insights, no scheduling, a
+> 5,000-friend ceiling, and cannot be linked from Play Console as an official presence. Creating a
+> free Page named **CNC Assist** costs ten minutes and gives the app a home that is not your
+> personal account. Keep posting in groups as yourself; use the Page as the destination.
+
 Add `&utm_source=…&utm_medium=…&utm_campaign=…` to the Play link so you can see in Play Console
 which channel actually installs. Play Console → **Acquisition reports → Traffic source**.
 
@@ -107,6 +119,7 @@ The first 2 seconds decide everything. Rotate these; never reuse one within a mo
 
 **Format that works:** vertical, big on-screen text, real machine or real screen footage, under
 30 seconds, no music talking over you. Link in bio — TikTok suppresses captions with links.
+Put the Play link in the bio of `@emadleo3` once and leave it there.
 
 ---
 
