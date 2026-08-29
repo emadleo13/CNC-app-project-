@@ -537,15 +537,23 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("day", nargs="?", help="YYYY-MM-DD (default: today)")
     ap.add_argument("--days", type=int, default=1, help="how many consecutive days to generate")
+    ap.add_argument("--force", action="store_true",
+                    help="overwrite a day that already exists (default: skip it)")
     args = ap.parse_args()
 
     start = date.fromisoformat(args.day) if args.day else date.today()
     alarms, codes = load()
     OUT.mkdir(parents=True, exist_ok=True)
 
+    # An existing file has usually been rewritten by the daily agent into natural
+    # prose. Regenerating would silently replace that with the raw template again,
+    # so a day that exists is skipped unless --force says otherwise.
     for i in range(args.days):
         d = start + timedelta(days=i)
         path = OUT / f"{d.isoformat()}.md"
+        if path.exists() and not args.force:
+            print(f"skipped {path.relative_to(ROOT)} (already exists; --force to overwrite)")
+            continue
         path.write_text(build(d, alarms, codes), encoding="utf-8")
         print(f"wrote {path.relative_to(ROOT)}")
 
