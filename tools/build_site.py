@@ -44,6 +44,12 @@ TODAY = date.today().isoformat()
 # Files in docs/ that this generator must never delete or overwrite.
 PROTECTED = {"privacy-policy.html", "store-listing.md", "store-assets", "CNAME", ".nojekyll"}
 
+# Search-engine ownership proofs live at the site root and are re-checked
+# periodically -- delete one and the property silently loses verification, taking
+# the sitemap reporting with it. Matched by pattern because Google names the file
+# after a token it generates.
+PROTECTED_GLOBS = ("google*.html", "BingSiteAuth.xml", "yandex_*.html")
+
 ALARM_BRANDS = [
     ("haas",       "haas_alarms",       "Haas"),
     ("fanuc",      "fanuc_alarms",      "Fanuc"),
@@ -357,7 +363,7 @@ def main() -> None:
 
     # Clean only what we generate — never the privacy policy or store assets.
     for child in OUT.iterdir():
-        if child.name in PROTECTED:
+        if child.name in PROTECTED or any(child.match(g) for g in PROTECTED_GLOBS):
             continue
         shutil.rmtree(child) if child.is_dir() else child.unlink()
 
