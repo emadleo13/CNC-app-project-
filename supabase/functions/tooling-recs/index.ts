@@ -88,7 +88,10 @@ Be specific with product codes where possible. Keep it practical for a shop floo
 
   } catch (error) {
     console.error("tooling-recs error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    return new Response(JSON.stringify({
+      error:  "Internal server error",
+      detail: error instanceof Error ? error.message : String(error),
+    }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

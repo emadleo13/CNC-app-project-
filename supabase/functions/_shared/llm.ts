@@ -29,17 +29,26 @@ const OR_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const OR_DEFAULT_MODEL = "google/gemma-4-31b-it:free";
 
 // Fallback chains of free models — tried in order when a model is rate-limited
-// (429) or returns an empty/failed response. Vision models must be multimodal.
+// (429), missing (404) or returns an empty/failed response. Vision models must
+// be multimodal.
+//
+// NOTE: OpenRouter rotates its free tier constantly; model IDs disappear without
+// warning and a dead ID returns 404. Re-verify this list against
+// https://openrouter.ai/api/v1/models whenever the AI features start failing.
+// Last verified: 2026-08-27.
 const OR_TEXT_MODELS = [
   "google/gemma-4-31b-it:free",
-  "openai/gpt-oss-120b:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "qwen/qwen3-next-80b-a3b-instruct:free",
+  "z-ai/glm-5.2:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "minimax/minimax-m2.7:free",
+  "nvidia/nemotron-3.5-lightning:free",
 ];
 const OR_VISION_MODELS = [
   "google/gemma-4-31b-it:free",
   "google/gemma-4-26b-a4b-it:free",
-  "nvidia/nemotron-nano-12b-v2-vl:free",
+  "minimax/minimax-m3:free",
+  "thinkingmachines/inkling-small:free",
+  "dots-studio/dots-3-note-preview:free",
 ];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -85,7 +94,7 @@ async function viaOpenRouter(req: LLMRequest, key: string): Promise<LLMResult> {
   const chain = (hasImage || hasPdf) ? OR_VISION_MODELS : OR_TEXT_MODELS;
   const candidates = [configured, ...chain.filter((m) => m !== configured)];
 
-  let lastErr = "";
+  const failures: string[] = [];
   for (const model of candidates) {
     for (let attempt = 0; attempt < 2; attempt++) {
       const payload: Record<string, unknown> = { model, max_tokens: req.maxTokens, messages };
@@ -103,23 +112,26 @@ async function viaOpenRouter(req: LLMRequest, key: string): Promise<LLMResult> {
       });
 
       if (resp.status === 429 || resp.status >= 500) {
-        lastErr = `OpenRouter ${resp.status} on ${model}: ${(await resp.text()).slice(0, 200)}`;
+        failures.push(`${model} -> HTTP ${resp.status}: ${(await resp.text()).slice(0, 160)}`);
         if (attempt === 0) { await sleep(1500); continue; } // quick retry, then next model
         break;
       }
       if (!resp.ok) {
-        lastErr = `OpenRouter ${resp.status} on ${model}: ${(await resp.text()).slice(0, 200)}`;
+        failures.push(`${model} -> HTTP ${resp.status}: ${(await resp.text()).slice(0, 160)}`);
         break; // non-retryable (e.g. 400/404) — try next model
       }
 
       const data = await resp.json();
       const raw = data.choices?.[0]?.message?.content;
       const text = typeof raw === "string" ? raw : "";
-      if (!text.trim()) { lastErr = `Empty response from ${model}`; break; }
+      if (!text.trim()) { failures.push(`${model} -> empty response`); break; }
       const tokens = data.usage?.total_tokens ??
         ((data.usage?.prompt_tokens ?? 0) + (data.usage?.completion_tokens ?? 0));
       return { text, tokens };
     }
   }
-  throw new Error(lastErr || "OpenRouter: all candidate models failed");
+  throw new Error(
+    `OpenRouter: all ${candidates.length} candidate models failed -- ` +
+    (failures.join(" | ") || "no detail")
+  );
 }
