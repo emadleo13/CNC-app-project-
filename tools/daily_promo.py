@@ -79,7 +79,17 @@ def code_block(codes, cycle, group_offset=0):
 
 
 
-def linkedin_block(*, headline, lead_en, bullets_en, close_en,
+def sentence(text: str) -> str:
+    """Guarantee terminal punctuation before another sentence is appended.
+
+    The alarm/fix strings come from the app data and mostly have no full stop,
+    so concatenating one straight onto the next line produced run-on sentences.
+    """
+    text = str(text or "").strip()
+    return text if not text or text[-1] in ".!?:" else text + "."
+
+
+def linkedin_block(*, headline_en, headline_ro, lead_en, bullets_en, close_en,
                    lead_ro, bullets_ro, close_ro, link):
     """LinkedIn is a different room from Facebook and TikTok.
 
@@ -88,12 +98,12 @@ def linkedin_block(*, headline, lead_en, bullets_en, close_en,
     wall, no hook-bait, longer sentences, and the value framed as what it saves
     a shop rather than what it does. One link, at the end.
     """
-    def block(lead, bullets, close):
+    def block(headline, lead, bullets, close):
         return ["```", headline, "", lead, ""] + \
                [f"— {b}" for b in bullets] + \
                ["", close, "", link, "", "#cnc #manufacturing #machining #prelucrare", "```", ""]
-    return (["## LinkedIn — English", ""] + block(lead_en, bullets_en, close_en) +
-            ["## LinkedIn — Română", ""] + block(lead_ro, bullets_ro, close_ro))
+    return (["## LinkedIn — English", ""] + block(headline_en, lead_en, bullets_en, close_en) +
+            ["## LinkedIn — Română", ""] + block(headline_ro, lead_ro, bullets_ro, close_ro))
 
 
 def youtube_block(*, title, summary, chapters, link, tags):
@@ -140,17 +150,18 @@ def build(day: date, alarms, codes) -> str:
         fixes = a.get("solutions") or []
         top_fix = fixes[0] if fixes else "Check the machine documentation."
         li = linkedin_block(
-            headline=f"{bname} alarm {code}: {title}",
+            headline_en=f"{bname} alarm {code}: {title}",
+            headline_ro=f"Alarma {bname} {code}: {title}",
             lead_en=("Unplanned downtime is rarely the alarm itself — it is the twenty minutes "
                      "spent working out what the alarm means."),
             bullets_en=causes[:3],
-            close_en=(f"First check: {top_fix} "
+            close_en=(f"First check: {sentence(top_fix)} "
                       "We keep the full write-up free, no signup, because a machine down at "
                       "2am should not require a forum login."),
             lead_ro=("Timpul de oprire nu vine din alarmă, ci din cele douăzeci de minute în care "
                      "afli ce înseamnă alarma."),
             bullets_ro=causes[:3],
-            close_ro=(f"Primul lucru de verificat: {top_fix} "
+            close_ro=(f"Primul lucru de verificat: {sentence(top_fix)} "
                       "Explicația completă e gratuită și fără cont — o mașină oprită noaptea "
                       "nu ar trebui să ceară login pe un forum."),
             link=url)
@@ -221,7 +232,8 @@ def build(day: date, alarms, codes) -> str:
         c, url = code_block(codes, cycle, group_offset=(0 if angle == 1 else 2))
         warn = c.get("warning")
         li = linkedin_block(
-            headline=f"{c['code']} — {c.get('name','')}",
+            headline_en=f"{c['code']} — {c.get('name','')}",
+            headline_ro=f"{c['code']} — {c.get('name','')}",
             lead_en="A code most programmers use daily and few could define precisely.",
             bullets_en=[c.get("description", "")] + ([f"Syntax: {c['syntax']}"] if c.get("syntax") else [])
                        + ([f"Watch out: {warn}"] if warn else []),
@@ -291,7 +303,8 @@ def build(day: date, alarms, codes) -> str:
         m = pick(mats, cycle)
         name = m.get("name") or m.get("code", "")
         li = linkedin_block(
-            headline=f"Four numbers decide whether a tool survives {name}",
+            headline_en=f"Four numbers decide whether a tool survives {name}",
+            headline_ro=f"Patru numere decid dacă scula supraviețuiește la {name}",
             lead_en=("Tool cost is visible on the invoice. The unplanned stop when a cutter lets "
                      "go mid-cycle is not, and it is the larger number."),
             bullets_en=["Vc — surface speed, which sets RPM for the diameter actually in the spindle",
@@ -372,7 +385,8 @@ def build(day: date, alarms, codes) -> str:
         c = pick(gs, cycle)
         url = f"{SITE}/gcode/g-codes/{slug(c['code'])}.html"
         li = linkedin_block(
-            headline=f"The {c['code']} mistake that costs a part",
+            headline_en=f"The {c['code']} mistake that costs a part",
+            headline_ro=f"Greșeala cu {c['code']} care te costă o piesă",
             lead_en=f"{c['code']} — {c.get('name','')}: {c.get('description','')}",
             bullets_en=[c["warning"]],
             close_en=("Most crashes are not exotic. They are a known trap meeting someone who "
@@ -443,7 +457,8 @@ def build(day: date, alarms, codes) -> str:
         ans = q.get("answer")
         ans_letter = chr(65 + ans) if isinstance(ans, int) and 0 <= ans < len(opts) else "?"
         li = linkedin_block(
-            headline="A question worth asking your team on Monday",
+            headline_en="A question worth asking your team on Monday",
+            headline_ro="O întrebare de pus echipei luni dimineață",
             lead_en=qtext,
             bullets_en=[f"{chr(65+i)}) {o}" for i, o in enumerate(opts)],
             close_en=(f"Answer: {ans_letter}. If a majority of a shop gets this wrong, that is a "
