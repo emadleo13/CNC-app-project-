@@ -11,6 +11,7 @@ import '../domain/calculators/milling_helpers.dart';
 import '../domain/cut_parameters.dart';
 import '../domain/material_spec.dart';
 import '../../../core/widgets/help_card.dart';
+import '../../../core/widgets/decimal_input_formatter.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/domain/saved_calculation.dart';
 import '../../subscription/data/subscription_repository.dart';
@@ -389,6 +390,7 @@ class _NumericField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: const [DecimalInputFormatter()],
       decoration: InputDecoration(labelText: label),
       onChanged: onChanged,
     );

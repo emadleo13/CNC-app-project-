@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import 'decimal_input_formatter.dart';
 import '../calc/units.dart';
 
 /// Reusable building blocks for calculator screens.
@@ -62,11 +62,7 @@ class CalcNumberField extends StatelessWidget {
         decimal: true,
         signed: allowNegative,
       ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(
-          RegExp(allowNegative ? r'[0-9.\-]' : r'[0-9.]'),
-        ),
-      ],
+      inputFormatters: [DecimalInputFormatter(allowNegative: allowNegative)],
       decoration: InputDecoration(labelText: label),
       onChanged: onChanged,
     );
