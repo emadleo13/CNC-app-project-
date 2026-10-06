@@ -31,7 +31,7 @@ dependencies:
   connectivity_plus: ^6.1.4
 
   # File operations
-  file_picker: ^8.3.7
+  file_picker: ^10.3.6
   image_picker: ^1.1.2
 
   # PDF generation & print / share (Phase 3 — Setup Sheet Generator)
