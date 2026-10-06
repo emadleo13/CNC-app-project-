@@ -25,114 +25,138 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/subscription/presentation/subscription_screen.dart';
 import '../widgets/main_scaffold.dart';
 
+/// Each bottom-nav tab is a [StatefulShellBranch] with its own navigator,
+/// kept alive in an IndexedStack. Switching tabs keeps what is on them: the
+/// G-code in the editor, the AI conversation, a half-filled calculator.
+///
+/// Settings and Subscription are reached with `context.push` from several
+/// tabs. They sit outside the shell, so they open full-screen over it.
 final appRouter = GoRouter(
   initialLocation: RouteNames.calculator,
   routes: [
-    ShellRoute(
-      builder: (context, state, child) => MainScaffold(child: child),
-      routes: [
-        GoRoute(
-          path: RouteNames.calculator,
-          builder: (context, state) => const ToolsHubScreen(),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          MainScaffold(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
           routes: [
             GoRoute(
-              path: 'milling',
-              builder: (context, state) => const CalculatorScreen(),
-            ),
-            GoRoute(
-              path: 'turning',
-              builder: (context, state) => const TurningScreen(),
-            ),
-            GoRoute(
-              path: 'drilling',
-              builder: (context, state) => const DrillingScreen(),
-            ),
-            GoRoute(
-              path: 'converters',
-              builder: (context, state) => const ConvertersScreen(),
-            ),
-            GoRoute(
-              path: 'hardness',
-              builder: (context, state) => const HardnessScreen(),
-            ),
-            GoRoute(
-              path: 'taper',
-              builder: (context, state) => const TaperScreen(),
-            ),
-            GoRoute(
-              path: 'arc',
-              builder: (context, state) => const ArcScreen(),
-            ),
-            GoRoute(
-              path: 'gcode-gen',
-              builder: (context, state) => const GcodeGenScreen(),
-            ),
-            GoRoute(
-              path: 'true-position',
-              builder: (context, state) => const TruePositionScreen(),
-            ),
-            GoRoute(
-              path: 'weight',
-              builder: (context, state) => const PartWeightScreen(),
-            ),
-            GoRoute(
-              path: 'quiz',
-              builder: (context, state) => const QuizScreen(),
-            ),
-            GoRoute(
-              path: 'tool-wear',
-              builder: (context, state) => const ToolWearScreen(),
+              path: RouteNames.calculator,
+              builder: (context, state) => const ToolsHubScreen(),
+              routes: [
+                GoRoute(
+                  path: 'milling',
+                  builder: (context, state) => const CalculatorScreen(),
+                ),
+                GoRoute(
+                  path: 'turning',
+                  builder: (context, state) => const TurningScreen(),
+                ),
+                GoRoute(
+                  path: 'drilling',
+                  builder: (context, state) => const DrillingScreen(),
+                ),
+                GoRoute(
+                  path: 'converters',
+                  builder: (context, state) => const ConvertersScreen(),
+                ),
+                GoRoute(
+                  path: 'hardness',
+                  builder: (context, state) => const HardnessScreen(),
+                ),
+                GoRoute(
+                  path: 'taper',
+                  builder: (context, state) => const TaperScreen(),
+                ),
+                GoRoute(
+                  path: 'arc',
+                  builder: (context, state) => const ArcScreen(),
+                ),
+                GoRoute(
+                  path: 'gcode-gen',
+                  builder: (context, state) => const GcodeGenScreen(),
+                ),
+                GoRoute(
+                  path: 'true-position',
+                  builder: (context, state) => const TruePositionScreen(),
+                ),
+                GoRoute(
+                  path: 'weight',
+                  builder: (context, state) => const PartWeightScreen(),
+                ),
+                GoRoute(
+                  path: 'quiz',
+                  builder: (context, state) => const QuizScreen(),
+                ),
+                GoRoute(
+                  path: 'tool-wear',
+                  builder: (context, state) => const ToolWearScreen(),
+                ),
+              ],
             ),
           ],
         ),
-        GoRoute(
-          path: RouteNames.gcodeAnalyzer,
-          builder: (context, state) => const GcodeInputScreen(),
+        StatefulShellBranch(
           routes: [
             GoRoute(
-              path: 'result',
-              builder: (context, state) {
-                final extra = state.extra as Map<String, dynamic>?;
-                return AnalysisResultScreen(analysisData: extra);
-              },
+              path: RouteNames.gcodeAnalyzer,
+              builder: (context, state) => const GcodeInputScreen(),
+              routes: [
+                GoRoute(
+                  path: 'result',
+                  builder: (context, state) {
+                    final extra = state.extra as Map<String, dynamic>?;
+                    return AnalysisResultScreen(analysisData: extra);
+                  },
+                ),
+              ],
             ),
           ],
         ),
-        GoRoute(
-          path: RouteNames.knowledgeBase,
-          builder: (context, state) => const QaScreen(),
+        StatefulShellBranch(
           routes: [
             GoRoute(
-              path: 'errors',
-              builder: (context, state) => const ErrorReferenceScreen(),
-            ),
-            GoRoute(
-              path: 'gcodes',
-              builder: (context, state) => const GcodeReferenceScreen(),
-            ),
-            GoRoute(
-              path: 'programs',
-              builder: (context, state) => const GcodeProgramLibraryScreen(),
-            ),
-            GoRoute(
-              path: 'guides',
-              builder: (context, state) => const CncGuidesScreen(),
+              path: RouteNames.knowledgeBase,
+              builder: (context, state) => const QaScreen(),
+              routes: [
+                GoRoute(
+                  path: 'errors',
+                  builder: (context, state) => const ErrorReferenceScreen(),
+                ),
+                GoRoute(
+                  path: 'gcodes',
+                  builder: (context, state) => const GcodeReferenceScreen(),
+                ),
+                GoRoute(
+                  path: 'programs',
+                  builder: (context, state) =>
+                      const GcodeProgramLibraryScreen(),
+                ),
+                GoRoute(
+                  path: 'guides',
+                  builder: (context, state) => const CncGuidesScreen(),
+                ),
+              ],
             ),
           ],
         ),
-        GoRoute(
-          path: RouteNames.history,
-          builder: (context, state) => const HistoryScreen(),
-        ),
-        GoRoute(
-          path: RouteNames.settings,
-          builder: (context, state) => const SettingsScreen(),
-        ),
-        GoRoute(
-          path: RouteNames.subscription,
-          builder: (context, state) => const SubscriptionScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: RouteNames.history,
+              builder: (context, state) => const HistoryScreen(),
+            ),
+          ],
         ),
       ],
+    ),
+    GoRoute(
+      path: RouteNames.settings,
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: RouteNames.subscription,
+      builder: (context, state) => const SubscriptionScreen(),
     ),
   ],
 );
