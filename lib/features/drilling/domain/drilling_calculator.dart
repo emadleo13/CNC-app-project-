@@ -78,12 +78,14 @@ class DrillingCalculator {
   ///
   /// metric:   pitch in mm.
   /// imperial: pass pitch = 1/TPI (inches).
-  /// tapDrill = D − (%/100) × pitch × 1.0825
+  /// tapDrill = D − (%/100) × pitch × 1.299   (Machinery's Handbook:
+  /// D − 0.01299 × % / TPI). 75% gives the standard sizes: M6×1 → 5.0,
+  /// M10×1.5 → 8.5, 1/4-20 → #7 (0.201").
   static double tapDrill({
     required double majorDiameter,
     required double pitch,
     required double threadPercent,
   }) {
-    return majorDiameter - (threadPercent / 100) * pitch * 1.0825;
+    return majorDiameter - (threadPercent / 100) * pitch * 1.299;
   }
 }

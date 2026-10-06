@@ -35,10 +35,26 @@ void main() {
       expect(r.pointLength, closeTo(2.403, 0.01));
       expect(r.cutTimeMin, closeTo(0.2714, 0.005));
     });
-    test('tap drill for M6x1 at 75%', () {
+    test('tap drill at 75% matches the standard drill sizes', () {
+      // M6×1 → 5.0 mm, M10×1.5 → 8.5 mm, 1/4-20 → #7 (0.201").
+      expect(
+          DrillingCalculator.tapDrill(
+              majorDiameter: 6, pitch: 1, threadPercent: 75),
+          closeTo(5.026, 0.001));
+      expect(
+          DrillingCalculator.tapDrill(
+              majorDiameter: 10, pitch: 1.5, threadPercent: 75),
+          closeTo(8.539, 0.001));
+      expect(
+          DrillingCalculator.tapDrill(
+              majorDiameter: 0.25, pitch: 1 / 20, threadPercent: 75),
+          closeTo(0.2013, 0.0001));
+    });
+    test('tap drill for M6x1 at 75% stays inside the 6H minor diameter', () {
+      // ISO 965-1, M6×1 6H: D1 min 4.917, max 5.153.
       final d = DrillingCalculator.tapDrill(
           majorDiameter: 6, pitch: 1, threadPercent: 75);
-      expect(d, closeTo(5.19, 0.01));
+      expect(d, inInclusiveRange(4.917, 5.153));
     });
   });
 
