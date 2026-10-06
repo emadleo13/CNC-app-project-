@@ -1,10 +1,8 @@
 import { llmComplete } from "../_shared/llm.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { adminClient, requireUser } from "../_shared/auth.ts";
+import { isPro } from "../_shared/entitlement.ts";
+import { error, internalError, json, preflight } from "../_shared/http.ts";
+import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
 
 interface AnalyzeRequest {
   gcode:    string;
@@ -13,47 +11,31 @@ interface AnalyzeRequest {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
-    // Validate JWT
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const user = await requireUser(req);
+    if (user instanceof Response) return user;
 
     const body: AnalyzeRequest = await req.json();
-    const { gcode, dialect = "haas" } = body;
+    const { gcode } = body;
+    const dialect = body.dialect === "sinumerik" ? "sinumerik" : body.dialect === "generic" ? "generic" : "haas";
 
     if (!gcode || gcode.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "No G-code provided" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return error(400, "bad_request", "No G-code provided");
     }
-
     // Limit input size to prevent abuse (max 50KB of G-code)
     if (gcode.length > 50000) {
-      return new Response(JSON.stringify({ error: "G-code too large. Max 50KB per request." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return error(400, "too_large", "G-code too large. Max 50KB per request.");
     }
+
+    // Each analysis counts toward the free monthly limit like any AI question.
+    const admin = adminClient();
+    const reservation = await reserveUsage(admin, user.id, await isPro(admin, user.id), {
+      question_excerpt: `[gcode:${dialect}] ${gcode.substring(0, 100)}`,
+    });
+    if (reservation instanceof Response) return reservation;
 
     const dialectGuide = dialect === "sinumerik"
       ? `You are analyzing Siemens Sinumerik 840D/828D G-code.
@@ -100,12 +82,21 @@ Rules:
 - Flag suboptimal feeds, missing G-codes as warnings
 - DO NOT include markdown or text outside the JSON`;
 
-    const { text: responseText, tokens } = await llmComplete({
-      system: systemPrompt,
-      parts:  [{ kind: "text", text: `Analyze this ${dialect.toUpperCase()} G-code program:\n\n${gcode}` }],
-      maxTokens:      8192,
-      anthropicModel: "claude-sonnet-4-6",
-    });
+    let responseText: string;
+    let tokens: number;
+    try {
+      ({ text: responseText, tokens } = await llmComplete({
+        system: systemPrompt,
+        parts:  [{ kind: "text", text: `Analyze this ${dialect.toUpperCase()} G-code program:\n\n${gcode}` }],
+        maxTokens:      8192,
+        anthropicModel: "claude-sonnet-4-6",
+      }));
+    } catch (e) {
+      await releaseUsage(admin, reservation.logId);
+      console.error("analyze-gcode LLM failure:", e);
+      return error(503, "ai_unavailable", "AI service temporarily unavailable");
+    }
+    await settleUsage(admin, reservation.logId, tokens);
 
     // Extract JSON from response
     let analysisJson: Record<string, unknown>;
@@ -117,35 +108,25 @@ Rules:
       const jsonStr = jsonMatch ? jsonMatch[1] : responseText;
       analysisJson = JSON.parse(jsonStr);
     } catch {
-      return new Response(JSON.stringify({
-        error:    "Failed to parse AI response",
-        raw:      responseText.substring(0, 500),
-      }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      console.error("analyze-gcode unparseable reply:", responseText.substring(0, 500));
+      return error(502, "ai_bad_response", "Failed to parse AI response");
     }
 
-    // Log token usage for cost tracking (async, don't await)
-    supabase.from("gcode_analyses").insert({
+    const lines = Array.isArray(analysisJson.lines) ? analysisJson.lines as Array<{ severity?: string }> : [];
+    const { error: saveError } = await admin.from("gcode_analyses").insert({
       user_id:       user.id,
       gcode_content: gcode,
       dialect:       dialect,
       analysis_json: analysisJson,
-      error_count:   (analysisJson.lines as Array<{severity: string}>)?.filter(l => l.severity === "error").length ?? 0,
-      warning_count: (analysisJson.lines as Array<{severity: string}>)?.filter(l => l.severity === "warning").length ?? 0,
-      line_count:    (analysisJson.lines as unknown[])?.length ?? 0,
+      error_count:   lines.filter((l) => l.severity === "error").length,
+      warning_count: lines.filter((l) => l.severity === "warning").length,
+      line_count:    lines.length,
       token_count:   tokens,
-    }).then(() => {}).catch(console.error);
-
-    return new Response(JSON.stringify(analysisJson), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+    if (saveError) console.error("analyze-gcode save failed:", saveError);
 
-  } catch (error) {
-    console.error("Edge function error:", error);
-    return new Response(JSON.stringify({
-      error:  "Internal server error",
-      detail: error instanceof Error ? error.message : String(error),
-    }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json(analysisJson);
+  } catch (e) {
+    return internalError("analyze-gcode", e);
   }
 });

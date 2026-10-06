@@ -1,10 +1,8 @@
 import { llmComplete } from "../_shared/llm.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { adminClient, requireUser } from "../_shared/auth.ts";
+import { isPro } from "../_shared/entitlement.ts";
+import { error, internalError, json, preflight } from "../_shared/http.ts";
+import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
 
 interface ToolingRequest {
   material:      string;
@@ -17,47 +15,27 @@ interface ToolingRequest {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const user = await requireUser(req);
+    if (user instanceof Response) return user;
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")      ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Pro feature — check subscription
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_tier")
-      .eq("id", user.id)
-      .single();
-
-    const isPro = profile?.subscription_tier === "pro" || profile?.subscription_tier === "team";
-    if (!isPro) {
-      return new Response(JSON.stringify({ error: "Pro subscription required", pro_required: true }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const admin = adminClient();
+    const pro = await isPro(admin, user.id);
+    if (!pro) {
+      return error(403, "pro_required", "Pro subscription required", { pro_required: true });
     }
 
     const body: ToolingRequest = await req.json();
-    const { material, operation, diameter, units, toolMaterial, depthOfCut, widthOfCut } = body;
+    const material  = String(body.material ?? "").substring(0, 100);
+    const operation = String(body.operation ?? "").substring(0, 40);
+    const diameter  = Number(body.diameter);
+    const { units, toolMaterial, depthOfCut, widthOfCut } = body;
+    if (!material || !operation || !(diameter > 0)) {
+      return error(400, "bad_request", "Missing material, operation or diameter");
+    }
 
     const unitStr = units === "imperial" ? "inches" : "mm";
     const prompt  = `I need tooling recommendations for this CNC milling operation:
@@ -76,23 +54,27 @@ Please recommend:
 
 Be specific with product codes where possible. Keep it practical for a shop floor operator.`;
 
-    const { text: answer } = await llmComplete({
-      parts:          [{ kind: "text", text: prompt }],
-      maxTokens:      1200,
-      anthropicModel: "claude-haiku-4-5-20251001",
+    const reservation = await reserveUsage(admin, user.id, pro, {
+      question_excerpt: `[tooling] ${material} ${operation} D${diameter}`,
     });
+    if (reservation instanceof Response) return reservation;
 
-    return new Response(JSON.stringify({ answer }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    let result;
+    try {
+      result = await llmComplete({
+        parts:          [{ kind: "text", text: prompt }],
+        maxTokens:      1200,
+        anthropicModel: "claude-haiku-4-5-20251001",
+      });
+    } catch (e) {
+      await releaseUsage(admin, reservation.logId);
+      console.error("tooling-recs LLM failure:", e);
+      return error(503, "ai_unavailable", "AI service temporarily unavailable");
+    }
+    await settleUsage(admin, reservation.logId, result.tokens);
 
-  } catch (error) {
-    console.error("tooling-recs error:", error);
-    return new Response(JSON.stringify({
-      error:  "Internal server error",
-      detail: error instanceof Error ? error.message : String(error),
-    }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ answer: result.text });
+  } catch (e) {
+    return internalError("tooling-recs", e);
   }
 });

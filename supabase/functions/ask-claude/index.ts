@@ -1,12 +1,8 @@
 import { llmComplete } from "../_shared/llm.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const FREE_LIMIT = 10;
+import { adminClient, requireUser } from "../_shared/auth.ts";
+import { isPro } from "../_shared/entitlement.ts";
+import { error, internalError, json, preflight } from "../_shared/http.ts";
+import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
 
 interface AskRequest {
   question:      string;
@@ -14,75 +10,32 @@ interface AskRequest {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")      ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check subscription tier and enforce quota
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_tier")
-      .eq("id", user.id)
-      .single();
-
-    const isPro = profile?.subscription_tier === "pro" || profile?.subscription_tier === "team";
-
-    if (!isPro) {
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const { count }  = await supabase
-        .from("qa_logs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .gte("created_at", monthStart);
-
-      if ((count ?? 0) >= FREE_LIMIT) {
-        return new Response(JSON.stringify({
-          error:          "Monthly quota exceeded",
-          quota_exceeded: true,
-          used:           count ?? FREE_LIMIT,
-          limit:          FREE_LIMIT,
-          remaining:      0,
-        }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
+    const user = await requireUser(req);
+    if (user instanceof Response) return user;
 
     const body: AskRequest = await req.json();
-    const { question, alarmContext } = body;
+    const { question } = body;
+    // The app builds this from its bundled alarm database; cap it rather than
+    // reject, so a question naming several codes still gets an answer.
+    const alarmContext = body.alarmContext?.substring(0, 6000);
 
     if (!question || question.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "No question provided" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return error(400, "bad_request", "No question provided");
+    }
+    if (question.length > 2000) {
+      return error(400, "too_large", "Question too long. Max 2000 characters.");
     }
 
-    if (question.length > 2000) {
-      return new Response(JSON.stringify({ error: "Question too long. Max 2000 characters." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const admin = adminClient();
+    const reservation = await reserveUsage(admin, user.id, await isPro(admin, user.id), {
+      question_excerpt:  question,
+      had_alarm_context: !!alarmContext,
+    });
+    if (reservation instanceof Response) return reservation;
 
     const contextBlock = alarmContext
       ? `\n\nThe app has found the following alarm data from its local database relevant to this question:\n${alarmContext}Use this data to provide a specific, accurate answer about this alarm code.`
@@ -107,33 +60,23 @@ Deno.serve(async (req) => {
       "- When uncertain, say so — do not guess critical safety or machine-specific information\n" +
       contextBlock;
 
-    const { text: answer, tokens } = await llmComplete({
-      system:         systemPrompt,
-      parts:          [{ kind: "text", text: question }],
-      maxTokens:      1024,
-      anthropicModel: "claude-haiku-4-5-20251001",
-    });
+    let result;
+    try {
+      result = await llmComplete({
+        system:         systemPrompt,
+        parts:          [{ kind: "text", text: question }],
+        maxTokens:      1024,
+        anthropicModel: "claude-haiku-4-5-20251001",
+      });
+    } catch (e) {
+      await releaseUsage(admin, reservation.logId);
+      console.error("ask-claude LLM failure:", e);
+      return error(503, "ai_unavailable", "AI service temporarily unavailable");
+    }
+    await settleUsage(admin, reservation.logId, result.tokens);
 
-    // Log usage (async — non-blocking)
-    supabase.from("qa_logs").insert({
-      user_id:            user.id,
-      question_excerpt:   question.substring(0, 300),
-      had_alarm_context:  !!alarmContext,
-      token_count:        tokens,
-      is_image:           false,
-    }).then(() => {}).catch(console.error);
-
-    return new Response(JSON.stringify({ answer }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-
-  } catch (error) {
-    console.error("Edge function error:", error);
-    return new Response(JSON.stringify({
-      error:  "Internal server error",
-      detail: error instanceof Error ? error.message : String(error),
-    }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ answer: result.text });
+  } catch (e) {
+    return internalError("ask-claude", e);
   }
 });

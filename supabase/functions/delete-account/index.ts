@@ -1,62 +1,37 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { adminClient, requireUser } from "../_shared/auth.ts";
+import { error, internalError, json, preflight } from "../_shared/http.ts";
 
 // Permanently deletes the calling user's account and all owned data.
 // Google Play requires apps with account creation to offer in-app deletion.
+//
+// This does not cancel a Google Play subscription; billing stays with Google
+// and the user cancels it in the Play Store.
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const user = await requireUser(req);
+    if (user instanceof Response) return user;
 
-    // 1. Identify the caller from their JWT (anon client + their token).
-    const authClient = createClient(
-      Deno.env.get("SUPABASE_URL")      ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const admin = adminClient();
 
-    // 2. Service-role client can delete rows and the auth user itself.
-    const admin = createClient(
-      Deno.env.get("SUPABASE_URL")              ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
-
-    // Delete owned data. Add any future user-scoped tables here.
+    // Delete owned data. Tables that reference auth.users or profiles with
+    // ON DELETE CASCADE (profiles, gcode_analyses, saved_calculations,
+    // qa_sessions, purchases) go with the auth user; qa_logs has no foreign
+    // key, so it is cleared explicitly. Add any future user-scoped table here.
     await admin.from("qa_logs").delete().eq("user_id", user.id);
     await admin.from("profiles").delete().eq("id", user.id);
 
-    // 3. Delete the auth user. This is irreversible.
+    // Delete the auth user. This is irreversible.
     const { error: delError } = await admin.auth.admin.deleteUser(user.id);
     if (delError) {
-      return new Response(JSON.stringify({ error: delError.message }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("delete-account deleteUser failed:", delError);
+      return error(500, "internal", "Account deletion failed");
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ success: true });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return internalError("delete-account", e);
   }
 });

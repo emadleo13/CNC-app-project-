@@ -59,3 +59,7 @@ supabase/.temp/
 # Android signing (NEVER commit)
 android/key.jks
 android/key.properties
+
+# Database test tooling (supabase/tests)
+supabase/tests/node_modules/
+supabase/tests/package-lock.json
