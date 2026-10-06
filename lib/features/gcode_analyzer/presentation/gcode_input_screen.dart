@@ -8,10 +8,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/review/review_prompter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/net/edge_functions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/help_card.dart';
+import '../../../core/widgets/quota_dialog.dart';
 import '../domain/cnc_dialect.dart';
 import '../domain/gcode_line.dart';
 import '../parsers/gcode_parser.dart';
@@ -165,9 +166,9 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
       );
       if (file == null) return;
       final bytes = await file.readAsBytes();
+      if (!mounted) return;
       setState(() => _drawingBytes = bytes);
-      final s = ref.read(appStringsProvider);
-      await _generateFromDrawing(s);
+      await _generateFromDrawing(ref.read(appStringsProvider));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -182,36 +183,41 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     final bytes = _drawingBytes;
     if (bytes == null) return;
     setState(() => _isGenerating = true);
+    // With auto-detect on there is no code to detect from yet, so use the
+    // controller chosen in Settings.
+    final dialect = _autoDetect ? ref.read(defaultDialectProvider) : _dialect.name;
     try {
-      final supabase = Supabase.instance.client;
-      if (supabase.auth.currentUser == null) {
-        await supabase.auth.signInAnonymously();
-      }
-      final dialect = _autoDetect ? 'haas' : _dialect.name;
-      final body = <String, dynamic>{
+      final data = await invokeEdgeFunction('analyze-image', body: {
         'imageBase64': base64Encode(bytes),
         'mediaType':   'image/jpeg',
         'mode':        'drawing_to_gcode',
         'dialect':     dialect,
-      };
-      final response = await supabase.functions.invoke('analyze-image', body: body);
-      if (response.status != 200) {
-        throw Exception((response.data as Map<String, dynamic>?)?['error'] ?? 'Error ${response.status}');
+      });
+      final gcode = data['answer'];
+      if (gcode is! String || gcode.trim().isEmpty) {
+        throw const EdgeFunctionError(EdgeErrorKind.aiUnavailable);
       }
-      final gcode = (response.data as Map<String, dynamic>)['answer'] as String;
+      if (!mounted) return;
       setState(() {
         _controller.text = gcode;
-        _drawingBytes    = null;
-        _isGenerating    = false;
+        _fullGcode       = null;
+        _fullLineCount   = 0;
+        if (_autoDetect) _detected = GcodeParser.autoDetect(gcode);
       });
-    } catch (e) {
-      if (mounted) {
+    } on EdgeFunctionError catch (e) {
+      if (!mounted) return;
+      if (e.kind == EdgeErrorKind.quotaExceeded) {
+        showQuotaDialog(context, s);
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${s.gcodeFromDrawingError}: $e'),
+          content: Text('${s.gcodeFromDrawingError}: ${e.message(s)}'),
           backgroundColor: AppColors.errorRed,
         ));
       }
-      setState(() { _drawingBytes = null; _isGenerating = false; });
+    } finally {
+      if (mounted) {
+        setState(() { _drawingBytes = null; _isGenerating = false; });
+      }
     }
   }
 

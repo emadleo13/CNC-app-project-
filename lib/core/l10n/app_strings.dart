@@ -395,6 +395,19 @@ abstract class AppStrings {
   // Settings — display name
   String get settingsName;
   String get settingsNameHint;
+
+  // Server / network errors (Edge Functions)
+  String get errNetwork;
+  String get errAiBusy;
+  String get errServer;
+  String get errTooLarge;
+
+  // Purchase flow
+  String get subCanceled;
+  String get subPending;
+  String get subNothingToRestore;
+  String get subRestored;
+  String get subVerifyRetry;
 }
 
 // Locale provider

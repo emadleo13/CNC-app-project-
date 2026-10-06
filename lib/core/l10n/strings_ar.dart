@@ -431,4 +431,23 @@ class AppStringsAr implements AppStrings {
   ];
   @override String get settingsName     => 'اسمك';
   @override String get settingsNameHint => 'للترحيب في الشاشة الرئيسية';
+
+  @override String get errNetwork          =>
+      'تعذّر الاتصال بالخادم. تحقّق من اتصال الإنترنت وحاول مرة أخرى.';
+  @override String get errAiBusy           =>
+      'خدمة الذكاء الاصطناعي مشغولة الآن. حاول مرة أخرى بعد دقيقة.';
+  @override String get errServer           =>
+      'حدث خطأ من جهتنا. يرجى المحاولة مرة أخرى.';
+  @override String get errTooLarge         =>
+      'الحجم كبير جدًا للإرسال. جرّب ملفًا أو صورة أصغر.';
+  @override String get subCanceled         =>
+      'تم إلغاء عملية الشراء.';
+  @override String get subPending          =>
+      'الدفع قيد الانتظار. سيتم تفعيل Pro فور تأكيد Google Play.';
+  @override String get subNothingToRestore =>
+      'لم يتم العثور على اشتراك نشط لحساب Google هذا.';
+  @override String get subRestored         =>
+      'تمت استعادة اشتراكك.';
+  @override String get subVerifyRetry      =>
+      'لم نتمكن بعد من تأكيد الشراء مع Google. دفعتك آمنة، وسيحاول التطبيق مرة أخرى تلقائيًا عند فتحه في المرة القادمة.';
 }

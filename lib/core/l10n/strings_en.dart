@@ -433,4 +433,23 @@ class AppStringsEn implements AppStrings {
   ];
   @override String get settingsName     => 'Your name';
   @override String get settingsNameHint => 'For the home greeting';
+
+  @override String get errNetwork          =>
+      'Can\'t reach the server. Check your internet connection and try again.';
+  @override String get errAiBusy           =>
+      'The AI service is busy right now. Please try again in a minute.';
+  @override String get errServer           =>
+      'Something went wrong on our side. Please try again.';
+  @override String get errTooLarge         =>
+      'This is too large to send. Try a smaller file or photo.';
+  @override String get subCanceled         =>
+      'Purchase canceled.';
+  @override String get subPending          =>
+      'Payment is pending. Pro unlocks as soon as Google Play confirms it.';
+  @override String get subNothingToRestore =>
+      'No active subscription was found for this Google account.';
+  @override String get subRestored         =>
+      'Your subscription has been restored.';
+  @override String get subVerifyRetry      =>
+      'We couldn\'t confirm the purchase with Google yet. Your payment is safe — the app tries again automatically the next time it opens.';
 }

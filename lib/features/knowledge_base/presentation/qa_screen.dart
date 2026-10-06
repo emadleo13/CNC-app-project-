@@ -5,11 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/net/edge_functions.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/help_card.dart';
+import '../../../core/widgets/quota_dialog.dart';
 import '../data/errors_repository.dart';
 import '../data/usage_repository.dart';
 
@@ -59,6 +60,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
       );
       if (file == null) return;
       final bytes = await file.readAsBytes();
+      if (!mounted) return;
       setState(() => _attachedBytes = bytes);
     } catch (_) {
       if (mounted) {
@@ -108,74 +110,38 @@ class _QaScreenState extends ConsumerState<QaScreen> {
 
   Future<void> _pickAndSendPdf() async {
     final s = ref.read(appStringsProvider);
+    FilePickerResult? result;
     try {
-      final result = await FilePicker.platform.pickFiles(
+      result = await FilePicker.platform.pickFiles(
         type:          FileType.custom,
         allowedExtensions: ['pdf'],
         withData:      true,
       );
-      if (result == null || result.files.single.bytes == null) return;
-
-      final bytes = result.files.single.bytes!;
-      if (bytes.length > 10 * 1024 * 1024) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(s.pdfTooLarge),
-            backgroundColor: AppColors.errorRed,
-          ));
-        }
-        return;
-      }
-
-      setState(() {
-        _messages.add(_Message(text: '📄 ${result.files.single.name}', isUser: true));
-        _isLoading = true;
-      });
-      _scrollToBottom();
-
-      final answer = await _sendPdfToClaude(base64Encode(bytes));
-      setState(() {
-        _messages.add(_Message(text: answer, isUser: false));
-        _isLoading = false;
-      });
-      ref.invalidate(usageProvider);
-    } catch (e) {
-      final errS = ref.read(appStringsProvider);
-      setState(() {
-        _messages.add(_Message(
-          text: '${errS.pdfError}: $e',
-          isUser: false, isPending: true,
-        ));
-        _isLoading = false;
-      });
+    } catch (_) {
+      _showError(s.pdfError);
+      return;
     }
+    final bytes = result?.files.single.bytes;
+    if (result == null || bytes == null || !mounted) return;
+    if (bytes.length > 10 * 1024 * 1024) {
+      _showError(s.pdfTooLarge);
+      return;
+    }
+
+    setState(() {
+      _messages.add(_Message(text: '📄 ${result!.files.single.name}', isUser: true));
+      _isLoading = true;
+    });
     _scrollToBottom();
+    await _runAiCall(() => _answerOf('analyze-pdf', {'pdfBase64': base64Encode(bytes)}));
   }
 
-  Future<String> _sendPdfToClaude(String pdfBase64) async {
-    final supabase = Supabase.instance.client;
-    if (supabase.auth.currentUser == null) {
-      await supabase.auth.signInAnonymously();
-    }
-    final response = await supabase.functions.invoke('analyze-pdf', body: {
-      'pdfBase64': pdfBase64,
-    });
-
-    if (response.status == 403) {
-      final data = response.data as Map<String, dynamic>?;
-      if (data?['pro_required'] == true && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          context.push(RouteNames.subscription);
-        });
-        return ref.read(appStringsProvider).pdfProOnly;
-      }
-    }
-
-    if (response.status != 200) {
-      final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Error ${response.status}';
-      throw Exception(msg);
-    }
-    return (response.data as Map<String, dynamic>)['answer'] as String;
+  void _showError(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(text),
+      backgroundColor: AppColors.errorRed,
+    ));
   }
 
   // ─── alarm lookup ──────────────────────────────────────────────────────────
@@ -223,111 +189,71 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     });
     _scrollToBottom();
 
-    final s = ref.read(appStringsProvider);
-    try {
-      String answer;
-      if (bytes != null) {
-        answer = await _askClaudeWithImage(text.trim(), bytes);
-      } else {
+    if (bytes != null) {
+      await _runAiCall(() => _answerOf('analyze-image', {
+            'imageBase64': base64Encode(bytes),
+            'mediaType':   'image/jpeg',
+            'mode':        'error_diagnosis',
+            if (text.trim().isNotEmpty) 'question': text.trim(),
+          }));
+    } else {
+      await _runAiCall(() async {
         final alarmCtx = await _lookupAlarmContext(text);
-        answer = await _askClaude(text, alarmCtx);
-      }
-      setState(() {
-        _messages.add(_Message(text: answer, isUser: false));
-        _isLoading = false;
-      });
-      // Refresh quota counter after successful call
-      ref.invalidate(usageProvider);
-    } catch (e) {
-      final errText = e.toString();
-      // 429 = quota exceeded
-      if (errText.contains('quota_exceeded') || errText.contains('429')) {
-        setState(() { _isLoading = false; });
-        _showQuotaDialog();
-        return;
-      }
-      setState(() {
-        _messages.add(_Message(
-          text: '${s.commonError}: $errText',
-          isUser: false, isPending: true,
-        ));
-        _isLoading = false;
+        return _answerOf('ask-claude', {
+          'question': text,
+          'alarmContext': ?alarmCtx,
+        });
       });
     }
-    _scrollToBottom();
   }
 
-  void _showQuotaDialog() {
+  /// Calls an AI Edge Function and returns its `answer` text.
+  Future<String> _answerOf(String function, Map<String, dynamic> body) async {
+    final data = await invokeEdgeFunction(function, body: body);
+    final answer = data['answer'];
+    if (answer is! String || answer.trim().isEmpty) {
+      throw const EdgeFunctionError(EdgeErrorKind.aiUnavailable);
+    }
+    return answer;
+  }
+
+  /// Runs one AI request and puts its answer, or a readable error, in the
+  /// chat. Quota and Pro limits open the upgrade paths instead.
+  Future<void> _runAiCall(Future<String> Function() call) async {
     final s = ref.read(appStringsProvider);
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(children: [
-          const Icon(Icons.lock_outline, color: AppColors.warningYellow, size: 22),
-          const SizedBox(width: 8),
-          Text(s.proLimitTitle),
-        ]),
-        content: Text(s.proLimitMsg,
-          style: const TextStyle(color: AppColors.textSecondary, height: 1.5)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(s.proLaterBtn,
-              style: const TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.push(RouteNames.subscription);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: Text(s.proUpgradeBtn),
-          ),
-        ],
-      ),
-    );
-  }
+    String? answer;
+    EdgeFunctionError? failure;
+    try {
+      answer = await call();
+    } on EdgeFunctionError catch (e) {
+      failure = e;
+    } catch (_) {
+      failure = const EdgeFunctionError(EdgeErrorKind.server);
+    }
+    if (!mounted) return;
 
-  Future<String> _askClaudeWithImage(String question, Uint8List imageBytes) async {
-    final supabase = Supabase.instance.client;
-    if (supabase.auth.currentUser == null) {
-      await supabase.auth.signInAnonymously();
-    }
-    final body = <String, dynamic>{
-      'imageBase64': base64Encode(imageBytes),
-      'mediaType':   'image/jpeg',
-      'mode':        'error_diagnosis',
-      if (question.isNotEmpty) 'question': question,
-    };
-    final response = await supabase.functions.invoke('analyze-image', body: body);
-    if (response.status == 429) {
-      throw Exception('quota_exceeded');
-    }
-    if (response.status != 200) {
-      final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Server error ${response.status}';
-      throw Exception(msg);
-    }
-    return (response.data as Map<String, dynamic>)['answer'] as String;
-  }
+    setState(() {
+      _isLoading = false;
+      if (answer != null) {
+        _messages.add(_Message(text: answer, isUser: false));
+      } else if (failure!.kind == EdgeErrorKind.proRequired) {
+        _messages.add(_Message(text: s.pdfProOnly, isUser: false, isPending: true));
+      } else if (failure.kind != EdgeErrorKind.quotaExceeded) {
+        _messages.add(_Message(text: failure.message(s), isUser: false, isPending: true));
+      }
+    });
+    _scrollToBottom();
+    // The server counts every call, answered or refused.
+    ref.invalidate(usageProvider);
 
-  Future<String> _askClaude(String question, String? alarmContext) async {
-    final supabase = Supabase.instance.client;
-    if (supabase.auth.currentUser == null) {
-      await supabase.auth.signInAnonymously();
+    switch (failure?.kind) {
+      case EdgeErrorKind.quotaExceeded:
+        showQuotaDialog(context, s);
+      case EdgeErrorKind.proRequired:
+        context.push(RouteNames.subscription);
+      default:
+        break;
     }
-    final body = <String, dynamic>{'question': question};
-    if (alarmContext != null) body['alarmContext'] = alarmContext;
-    final response = await supabase.functions.invoke('ask-claude', body: body);
-    if (response.status == 429) {
-      throw Exception('quota_exceeded');
-    }
-    if (response.status != 200) {
-      final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Server error ${response.status}';
-      throw Exception(msg);
-    }
-    return (response.data as Map<String, dynamic>)['answer'] as String;
   }
 
   void _scrollToBottom() {

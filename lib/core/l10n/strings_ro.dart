@@ -433,4 +433,23 @@ class AppStringsRo implements AppStrings {
   ];
   @override String get settingsName     => 'Numele tău';
   @override String get settingsNameHint => 'Pentru salutul de pe ecranul principal';
+
+  @override String get errNetwork          =>
+      'Serverul nu poate fi accesat. Verifică conexiunea la internet și încearcă din nou.';
+  @override String get errAiBusy           =>
+      'Serviciul AI este ocupat acum. Încearcă din nou peste un minut.';
+  @override String get errServer           =>
+      'A apărut o problemă la noi. Te rugăm să încerci din nou.';
+  @override String get errTooLarge         =>
+      'Este prea mare pentru a fi trimis. Încearcă un fișier sau o fotografie mai mică.';
+  @override String get subCanceled         =>
+      'Achiziția a fost anulată.';
+  @override String get subPending          =>
+      'Plata este în așteptare. Pro se activează imediat ce Google Play o confirmă.';
+  @override String get subNothingToRestore =>
+      'Nu a fost găsit niciun abonament activ pentru acest cont Google.';
+  @override String get subRestored         =>
+      'Abonamentul tău a fost restaurat.';
+  @override String get subVerifyRetry      =>
+      'Nu am putut încă confirma achiziția cu Google. Plata ta este în siguranță — aplicația încearcă din nou automat data viitoare când o deschizi.';
 }

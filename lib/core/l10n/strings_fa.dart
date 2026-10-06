@@ -431,4 +431,23 @@ class AppStringsFa implements AppStrings {
   ];
   @override String get settingsName     => 'نام شما';
   @override String get settingsNameHint => 'برای خوش‌آمدگویی در صفحهٔ اصلی';
+
+  @override String get errNetwork          =>
+      'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید و دوباره امتحان کنید.';
+  @override String get errAiBusy           =>
+      'سرویس هوش مصنوعی الان شلوغ است. یک دقیقهٔ دیگر دوباره امتحان کنید.';
+  @override String get errServer           =>
+      'مشکلی در سمت ما پیش آمد. لطفاً دوباره امتحان کنید.';
+  @override String get errTooLarge         =>
+      'حجم این مورد برای ارسال زیاد است. فایل یا عکس کوچک‌تری امتحان کنید.';
+  @override String get subCanceled         =>
+      'خرید لغو شد.';
+  @override String get subPending          =>
+      'پرداخت در انتظار تأیید است. به محض تأیید Google Play، نسخهٔ Pro فعال می‌شود.';
+  @override String get subNothingToRestore =>
+      'اشتراک فعالی برای این حساب Google پیدا نشد.';
+  @override String get subRestored         =>
+      'اشتراک شما بازیابی شد.';
+  @override String get subVerifyRetry      =>
+      'هنوز نتوانستیم خرید را با Google تأیید کنیم. پرداخت شما محفوظ است و اپ دفعهٔ بعد که باز شود خودکار دوباره تلاش می‌کند.';
 }
