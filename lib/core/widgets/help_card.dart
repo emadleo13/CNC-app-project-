@@ -29,8 +29,11 @@ class HelpCard extends StatelessWidget {
           children: [
             const Icon(Icons.help_outline, size: 16, color: AppColors.primary),
             const SizedBox(width: 8),
-            Text(btnLabel,
-              style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
+            Flexible(
+              child: Text(btnLabel,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
+            ),
             const Spacer(),
             const Icon(Icons.chevron_right, size: 16, color: AppColors.primary),
           ],

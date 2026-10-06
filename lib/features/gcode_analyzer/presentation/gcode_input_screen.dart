@@ -273,18 +273,33 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(s.gcodeTitle),
-        actions: [
-          TextButton.icon(
-            onPressed: (_isLoading || _isGenerating) ? null : () => _pickDrawing(s),
-            icon: const Icon(Icons.camera_alt_outlined, size: 18),
-            label: Text(s.gcodeFromDrawing),
-          ),
-          TextButton.icon(
-            onPressed: (_isLoading || _isGenerating) ? null : () => _pickFile(s),
-            icon: const Icon(Icons.upload_file, size: 18),
-            label: Text(s.gcodeUpload),
-          ),
-        ],
+        // Narrow phones get icon-only actions (label as tooltip) so the title
+        // and both buttons always fit.
+        actions: MediaQuery.sizeOf(context).width < 400
+            ? [
+                IconButton(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickDrawing(s),
+                  icon: const Icon(Icons.camera_alt_outlined, size: 20),
+                  tooltip: s.gcodeFromDrawing,
+                ),
+                IconButton(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickFile(s),
+                  icon: const Icon(Icons.upload_file, size: 20),
+                  tooltip: s.gcodeUpload,
+                ),
+              ]
+            : [
+                TextButton.icon(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickDrawing(s),
+                  icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                  label: Text(s.gcodeFromDrawing),
+                ),
+                TextButton.icon(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickFile(s),
+                  icon: const Icon(Icons.upload_file, size: 18),
+                  label: Text(s.gcodeUpload),
+                ),
+              ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -423,54 +438,58 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                       ]),
                     ),
                     Expanded(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _LineNumberGutter(
-                            scroll:     _gutterScroll,
-                            lineCount:  lineCount < 1 ? 1 : lineCount,
-                            lineHeight: _lineHeight,
-                            topPad:     _editorTopPad,
-                            fontSize:   _editorFontSize,
-                          ),
-                          const VerticalDivider(width: 1, thickness: 1),
-                          Expanded(
-                            child: TextField(
-                              controller:      _controller,
-                              scrollController: _editorScroll,
-                              maxLines:   null,
-                              expands:    true,
-                              cursorColor: AppColors.primary,
-                              style: const TextStyle(
-                                fontFamily: 'JetBrainsMono',
-                                fontSize:   _editorFontSize,
-                                color:      AppColors.textPrimary,
-                                height:     _editorLineHt,
-                              ),
-                              decoration: const InputDecoration(
-                                hintText:
-                                    '% \nO1000 (PROGRAM NAME)\nT1 M6\nG54 G90\nG43 H1 Z50.\nM3 S1000\nG0 X0 Y0\n...',
-                                hintStyle: TextStyle(
+                      // G-code reads left-to-right even in Persian/Arabic.
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _LineNumberGutter(
+                              scroll:     _gutterScroll,
+                              lineCount:  lineCount < 1 ? 1 : lineCount,
+                              lineHeight: _lineHeight,
+                              topPad:     _editorTopPad,
+                              fontSize:   _editorFontSize,
+                            ),
+                            const VerticalDivider(width: 1, thickness: 1),
+                            Expanded(
+                              child: TextField(
+                                controller:      _controller,
+                                scrollController: _editorScroll,
+                                maxLines:   null,
+                                expands:    true,
+                                cursorColor: AppColors.primary,
+                                style: const TextStyle(
                                   fontFamily: 'JetBrainsMono',
                                   fontSize:   _editorFontSize,
+                                  color:      AppColors.textPrimary,
                                   height:     _editorLineHt,
-                                  color:      AppColors.textMuted,
                                 ),
-                                border:         InputBorder.none,
-                                enabledBorder:  InputBorder.none,
-                                focusedBorder:  InputBorder.none,
-                                contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
+                                decoration: const InputDecoration(
+                                  hintText:
+                                      '% \nO1000 (PROGRAM NAME)\nT1 M6\nG54 G90\nG43 H1 Z50.\nM3 S1000\nG0 X0 Y0\n...',
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'JetBrainsMono',
+                                    fontSize:   _editorFontSize,
+                                    height:     _editorLineHt,
+                                    color:      AppColors.textMuted,
+                                  ),
+                                  border:         InputBorder.none,
+                                  enabledBorder:  InputBorder.none,
+                                  focusedBorder:  InputBorder.none,
+                                  contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
+                                ),
+                                onChanged: (v) => setState(() {
+                                  // Editing by hand replaces the preview — from now
+                                  // on the visible text is the source of truth.
+                                  _fullGcode     = null;
+                                  _fullLineCount = 0;
+                                  if (_autoDetect) _detected = GcodeParser.autoDetect(v);
+                                }),
                               ),
-                              onChanged: (v) => setState(() {
-                                // Editing by hand replaces the preview — from now
-                                // on the visible text is the source of truth.
-                                _fullGcode     = null;
-                                _fullLineCount = 0;
-                                if (_autoDetect) _detected = GcodeParser.autoDetect(v);
-                              }),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -494,8 +513,11 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                         children: [
                           const Icon(Icons.search, size: 18),
                           const SizedBox(width: 8),
-                          Text(s.gcodeAnalyzeBtn,
-                              style: const TextStyle(fontSize: 16)),
+                          Flexible(
+                            child: Text(s.gcodeAnalyzeBtn,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 16)),
+                          ),
                         ],
                       ),
                     ),

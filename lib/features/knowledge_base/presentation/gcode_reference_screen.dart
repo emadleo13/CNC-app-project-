@@ -231,6 +231,7 @@ class _GcodeReferenceScreenState extends ConsumerState<GcodeReferenceScreen> {
                 ),
                 child: Text(
                   entry.syntax!,
+                  textDirection: TextDirection.ltr,
                   style: const TextStyle(
                     fontFamily: 'JetBrainsMono',
                     fontSize: 12,

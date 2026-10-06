@@ -176,9 +176,13 @@ class _GcodeListView extends ConsumerWidget {
     if (lines.isEmpty) {
       return Center(child: Text(s.gcodeNoIssues, style: const TextStyle(color: AppColors.successGreen)));
     }
-    return ListView.builder(
-      itemCount: lines.length,
-      itemBuilder: (context, i) => _GcodeLineTile(line: lines[i]),
+    // Code lines keep left-to-right layout even in Persian/Arabic.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: ListView.builder(
+        itemCount: lines.length,
+        itemBuilder: (context, i) => _GcodeLineTile(line: lines[i]),
+      ),
     );
   }
 }

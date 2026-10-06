@@ -250,6 +250,7 @@ class _ProgramView extends ConsumerWidget {
           ]),
           const SizedBox(height: 8),
           SelectableText(program,
+              textDirection: TextDirection.ltr,
               style: const TextStyle(
                   fontFamily: 'JetBrainsMono',
                   fontSize: 13,
