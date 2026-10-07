@@ -411,6 +411,34 @@ abstract class AppStrings {
   String get gcodeAiSuggestions;
   String get gcodeAiProgram;
 
+  // G-code generator
+  String get genVerifyWarning;
+  String get genThreadTab;
+  String get genDrillTab;
+  String get genMajorDia;
+  String get genPitch;
+  String get genZEnd;
+  String get genTool;
+  String get genRpm;
+  String get genHoles;
+  String get genBcd;
+  String get genDepth;
+  String get genFeed;
+  String get genPeck;
+  String get genRPlane;
+  String get genClearance;
+  String get genStartAngle;
+  String get genErrPitch;
+  String get genErrDiameter;
+  String get genErrZEnd;
+  String get genErrHoles;
+  String get genErrBcd;
+  String get genErrPlanes;
+  String get genErrFeed;
+  String get genErrRpm;
+  String get genErrPeck;
+  String get genErrTool;
+
   // Purchase flow
   String get subCanceled;
   String get subPending;

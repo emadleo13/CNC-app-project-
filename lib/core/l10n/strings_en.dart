@@ -467,4 +467,57 @@ class AppStringsEn implements AppStrings {
       'Suggestions';
   @override String get gcodeAiProgram     =>
       'Program';
+
+  @override String get genVerifyWarning =>
+      'Sample program. Prove it out before cutting: check it in graphics, then run it with dry run and single block, feed override low.';
+  @override String get genThreadTab     =>
+      'G76 thread';
+  @override String get genDrillTab      =>
+      'Bolt circle';
+  @override String get genMajorDia      =>
+      'Major Ø (mm)';
+  @override String get genPitch         =>
+      'Pitch (mm)';
+  @override String get genZEnd          =>
+      'Z end';
+  @override String get genTool          =>
+      'Tool';
+  @override String get genRpm           =>
+      'Spindle RPM';
+  @override String get genHoles         =>
+      'Holes';
+  @override String get genBcd           =>
+      'Bolt circle Ø';
+  @override String get genDepth         =>
+      'Depth Z';
+  @override String get genFeed          =>
+      'Feed (mm/min)';
+  @override String get genPeck          =>
+      'Peck Q';
+  @override String get genRPlane        =>
+      'R plane';
+  @override String get genClearance     =>
+      'Clearance Z';
+  @override String get genStartAngle    =>
+      'Start angle (°)';
+  @override String get genErrPitch      =>
+      'Pitch must be greater than 0.';
+  @override String get genErrDiameter   =>
+      'The diameter is too small for this pitch.';
+  @override String get genErrZEnd       =>
+      'Z end must be below the start point (Z5).';
+  @override String get genErrHoles      =>
+      'Number of holes must be 1 to 360.';
+  @override String get genErrBcd        =>
+      'Bolt circle diameter must be greater than 0.';
+  @override String get genErrPlanes     =>
+      'Depth must be below R, and R below the clearance plane.';
+  @override String get genErrFeed       =>
+      'Feed must be greater than 0.';
+  @override String get genErrRpm        =>
+      'Spindle speed must be between 1 and 30000.';
+  @override String get genErrPeck       =>
+      'Peck depth must be greater than 0.';
+  @override String get genErrTool       =>
+      'Tool number must be 1 to 99.';
 }

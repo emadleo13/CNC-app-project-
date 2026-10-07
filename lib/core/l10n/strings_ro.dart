@@ -467,4 +467,57 @@ class AppStringsRo implements AppStrings {
       'Sugestii';
   @override String get gcodeAiProgram     =>
       'Program';
+
+  @override String get genVerifyWarning =>
+      'Program exemplu. Verifică-l înainte de așchiere: întâi în grafică, apoi cu rulare în gol (dry run) și bloc cu bloc, cu override-ul de avans redus.';
+  @override String get genThreadTab     =>
+      'Filet G76';
+  @override String get genDrillTab      =>
+      'Cerc de găuri';
+  @override String get genMajorDia      =>
+      'Ø nominal (mm)';
+  @override String get genPitch         =>
+      'Pas (mm)';
+  @override String get genZEnd          =>
+      'Z final';
+  @override String get genTool          =>
+      'Sculă';
+  @override String get genRpm           =>
+      'Turație (RPM)';
+  @override String get genHoles         =>
+      'Găuri';
+  @override String get genBcd           =>
+      'Ø cerc de găuri';
+  @override String get genDepth         =>
+      'Adâncime Z';
+  @override String get genFeed          =>
+      'Avans (mm/min)';
+  @override String get genPeck          =>
+      'Pas de găurire Q';
+  @override String get genRPlane        =>
+      'Plan R';
+  @override String get genClearance     =>
+      'Z de siguranță';
+  @override String get genStartAngle    =>
+      'Unghi de start (°)';
+  @override String get genErrPitch      =>
+      'Pasul trebuie să fie mai mare decât 0.';
+  @override String get genErrDiameter   =>
+      'Diametrul este prea mic pentru acest pas.';
+  @override String get genErrZEnd       =>
+      'Z final trebuie să fie sub punctul de start (Z5).';
+  @override String get genErrHoles      =>
+      'Numărul de găuri trebuie să fie între 1 și 360.';
+  @override String get genErrBcd        =>
+      'Diametrul cercului de găuri trebuie să fie mai mare decât 0.';
+  @override String get genErrPlanes     =>
+      'Adâncimea trebuie să fie sub R, iar R sub planul de siguranță.';
+  @override String get genErrFeed       =>
+      'Avansul trebuie să fie mai mare decât 0.';
+  @override String get genErrRpm        =>
+      'Turația trebuie să fie între 1 și 30000.';
+  @override String get genErrPeck       =>
+      'Pasul de găurire trebuie să fie mai mare decât 0.';
+  @override String get genErrTool       =>
+      'Numărul sculei trebuie să fie între 1 și 99.';
 }

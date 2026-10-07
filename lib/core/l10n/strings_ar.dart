@@ -465,4 +465,57 @@ class AppStringsAr implements AppStrings {
       'اقتراحات';
   @override String get gcodeAiProgram     =>
       'البرنامج كله';
+
+  @override String get genVerifyWarning =>
+      'هذا برنامج نموذجي. اختبره قبل القطع: راجعه أولاً في الرسوميات، ثم شغّله بالتشغيل الجاف وبلوك بلوك مع تخفيض نسبة التغذية.';
+  @override String get genThreadTab     =>
+      'لولبة G76';
+  @override String get genDrillTab      =>
+      'دائرة ثقوب';
+  @override String get genMajorDia      =>
+      'القطر الاسمي Ø (مم)';
+  @override String get genPitch         =>
+      'الخطوة (مم)';
+  @override String get genZEnd          =>
+      'Z النهاية';
+  @override String get genTool          =>
+      'الأداة';
+  @override String get genRpm           =>
+      'سرعة المغزل (RPM)';
+  @override String get genHoles         =>
+      'عدد الثقوب';
+  @override String get genBcd           =>
+      'قطر دائرة الثقوب Ø';
+  @override String get genDepth         =>
+      'العمق Z';
+  @override String get genFeed          =>
+      'التغذية (مم/دقيقة)';
+  @override String get genPeck          =>
+      'عمق النقرة Q';
+  @override String get genRPlane        =>
+      'المستوى R';
+  @override String get genClearance     =>
+      'Z الآمن';
+  @override String get genStartAngle    =>
+      'زاوية البداية (°)';
+  @override String get genErrPitch      =>
+      'يجب أن تكون الخطوة أكبر من 0.';
+  @override String get genErrDiameter   =>
+      'القطر صغير جداً لهذه الخطوة.';
+  @override String get genErrZEnd       =>
+      'يجب أن يكون Z النهاية أسفل نقطة البداية (Z5).';
+  @override String get genErrHoles      =>
+      'يجب أن يكون عدد الثقوب من 1 إلى 360.';
+  @override String get genErrBcd        =>
+      'يجب أن يكون قطر دائرة الثقوب أكبر من 0.';
+  @override String get genErrPlanes     =>
+      'يجب أن يكون العمق أسفل R، وR أسفل المستوى الآمن.';
+  @override String get genErrFeed       =>
+      'يجب أن تكون التغذية أكبر من 0.';
+  @override String get genErrRpm        =>
+      'يجب أن تكون سرعة المغزل بين 1 و30000.';
+  @override String get genErrPeck       =>
+      'يجب أن يكون عمق النقرة أكبر من 0.';
+  @override String get genErrTool       =>
+      'يجب أن يكون رقم الأداة من 1 إلى 99.';
 }
