@@ -452,4 +452,19 @@ class AppStringsEn implements AppStrings {
       'Your subscription has been restored.';
   @override String get subVerifyRetry      =>
       'We couldn\'t confirm the purchase with Google yet. Your payment is safe — the app tries again automatically the next time it opens.';
+
+  @override String get gcodeAiTitle       =>
+      'AI review';
+  @override String get gcodeAiButton      =>
+      'Review with AI';
+  @override String get gcodeAiRunning     =>
+      'The AI is reviewing the program…';
+  @override String get gcodeAiDisclaimer  =>
+      'AI can be wrong. Use it as a second opinion and still prove out the program on the machine (graphics, dry run, single block).';
+  @override String get gcodeAiNoFindings  =>
+      'The AI found no further problems.';
+  @override String get gcodeAiSuggestions =>
+      'Suggestions';
+  @override String get gcodeAiProgram     =>
+      'Program';
 }

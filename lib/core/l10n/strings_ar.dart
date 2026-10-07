@@ -450,4 +450,19 @@ class AppStringsAr implements AppStrings {
       'تمت استعادة اشتراكك.';
   @override String get subVerifyRetry      =>
       'لم نتمكن بعد من تأكيد الشراء مع Google. دفعتك آمنة، وسيحاول التطبيق مرة أخرى تلقائيًا عند فتحه في المرة القادمة.';
+
+  @override String get gcodeAiTitle       =>
+      'مراجعة الذكاء الاصطناعي';
+  @override String get gcodeAiButton      =>
+      'راجع بالذكاء الاصطناعي';
+  @override String get gcodeAiRunning     =>
+      'الذكاء الاصطناعي يراجع البرنامج…';
+  @override String get gcodeAiDisclaimer  =>
+      'قد يخطئ الذكاء الاصطناعي. استخدمه كرأي ثانٍ واستمر في تجربة البرنامج على الماكينة (الرسوميات، التشغيل الجاف، بلوك بلوك).';
+  @override String get gcodeAiNoFindings  =>
+      'لم يجد الذكاء الاصطناعي مشكلات أخرى.';
+  @override String get gcodeAiSuggestions =>
+      'اقتراحات';
+  @override String get gcodeAiProgram     =>
+      'البرنامج كله';
 }

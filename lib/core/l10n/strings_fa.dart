@@ -450,4 +450,19 @@ class AppStringsFa implements AppStrings {
       'اشتراک شما بازیابی شد.';
   @override String get subVerifyRetry      =>
       'هنوز نتوانستیم خرید را با Google تأیید کنیم. پرداخت شما محفوظ است و اپ دفعهٔ بعد که باز شود خودکار دوباره تلاش می‌کند.';
+
+  @override String get gcodeAiTitle       =>
+      'بررسی هوش مصنوعی';
+  @override String get gcodeAiButton      =>
+      'بررسی با هوش مصنوعی';
+  @override String get gcodeAiRunning     =>
+      'هوش مصنوعی در حال بررسی برنامه است…';
+  @override String get gcodeAiDisclaimer  =>
+      'هوش مصنوعی ممکن است اشتباه کند. آن را نظر دوم بدانید و برنامه را همچنان روی ماشین امتحان کنید (گرافیک، Dry run، Single block).';
+  @override String get gcodeAiNoFindings  =>
+      'هوش مصنوعی مشکل دیگری پیدا نکرد.';
+  @override String get gcodeAiSuggestions =>
+      'پیشنهادها';
+  @override String get gcodeAiProgram     =>
+      'کل برنامه';
 }

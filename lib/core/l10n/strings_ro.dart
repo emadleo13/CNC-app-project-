@@ -452,4 +452,19 @@ class AppStringsRo implements AppStrings {
       'Abonamentul tău a fost restaurat.';
   @override String get subVerifyRetry      =>
       'Nu am putut încă confirma achiziția cu Google. Plata ta este în siguranță — aplicația încearcă din nou automat data viitoare când o deschizi.';
+
+  @override String get gcodeAiTitle       =>
+      'Verificare AI';
+  @override String get gcodeAiButton      =>
+      'Verifică cu AI';
+  @override String get gcodeAiRunning     =>
+      'AI verifică programul…';
+  @override String get gcodeAiDisclaimer  =>
+      'AI poate greși. Folosește-l ca a doua opinie și verifică totuși programul pe mașină (grafică, rulare în gol, bloc cu bloc).';
+  @override String get gcodeAiNoFindings  =>
+      'AI nu a găsit alte probleme.';
+  @override String get gcodeAiSuggestions =>
+      'Sugestii';
+  @override String get gcodeAiProgram     =>
+      'Program';
 }

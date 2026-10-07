@@ -3,13 +3,31 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
+import { MAX_FINDINGS, normalise, parseReply } from "../_shared/gcode_review.ts";
 
 interface AnalyzeRequest {
-  gcode:    string;
-  dialect:  "haas" | "sinumerik" | "generic";
-  context?: string;
+  gcode:     string;
+  dialect?:  string;
+  /// App language for the review text: en | fa | ro | ar.
+  language?: string;
+  /// What the app's own rule checker already reported, "L12: message" lines.
+  localFindings?: string[];
 }
 
+const LANGUAGES: Record<string, string> = {
+  en: "English",
+  fa: "Persian (Farsi)",
+  ro: "Romanian",
+  ar: "Arabic",
+};
+
+// AI second opinion on a program. The app checks every line itself; this
+// returns only what an experienced programmer would flag, with line numbers
+// that refer to the numbered program sent to the model.
+//
+// Response: { summary, operation_type, findings: [{line, severity, issue,
+// suggestion}], suggestions: [] }. Asking for an entry per line (the previous
+// design) overflowed the output limit on any real program.
 Deno.serve(async (req) => {
   const pre = preflight(req);
   if (pre) return pre;
@@ -19,8 +37,9 @@ Deno.serve(async (req) => {
     if (user instanceof Response) return user;
 
     const body: AnalyzeRequest = await req.json();
-    const { gcode } = body;
+    const gcode = body.gcode;
     const dialect = body.dialect === "sinumerik" ? "sinumerik" : body.dialect === "generic" ? "generic" : "haas";
+    const language = LANGUAGES[body.language ?? "en"] ?? LANGUAGES.en;
 
     if (!gcode || gcode.trim().length === 0) {
       return error(400, "bad_request", "No G-code provided");
@@ -38,57 +57,51 @@ Deno.serve(async (req) => {
     if (reservation instanceof Response) return reservation;
 
     const dialectGuide = dialect === "sinumerik"
-      ? `You are analyzing Siemens Sinumerik 840D/828D G-code.
-Key Sinumerik specifics:
-- Cycles: CYCLE81 (drilling), CYCLE82 (drilling+dwell), CYCLE83 (deep hole peck), CYCLE84 (rigid tapping), CYCLE840 (flexible tapping)
-- Variables: DEF REAL/INT/BOOL/STRING, accessed via variable name
-- Transformations: TRANS, ATRANS, ROT, AROT, SCALE, MIRROR
-- Jumps: GOTOB (backward), GOTOF (forward), labels end with ':'
-- Tool change: T1 D1 (T=tool, D=cutting edge)
-- Subroutines: PROC name / ENDPROC`
-      : `You are analyzing Haas CNC G-code (compatible with Fanuc ISO standard).
-Key Haas specifics:
-- Tool change: T1 M6 (M6 executes the change)
-- Tool length: G43 H# (H matches tool number)
-- Subprograms: M98 P#### (call), M99 (return)
-- Macro variables: #1-#33 (local), #100-#199 (global retained), #500-#999 (global saved)
-- Haas-specific: M136 (inch per rev tapping), M154/M155 (pallet control)`;
+      ? `The program is Siemens Sinumerik 840D/828D code.
+- Comments start with ';'. Parentheses belong to the code: CYCLE83(...), X=IC(5).
+- Cycles: CYCLE81/82/83/84/840/85/86; MCALL makes a cycle modal.
+- Tool: T... D... (D applies the tool offsets), M6 changes the tool.
+- Units are usually set by machine data; G70/G71/G700/G710 change them.`
+      : `The program is ${dialect === "haas" ? "Haas" : "Fanuc / ISO"} code.
+- Comments are in parentheses.
+- Tool change T.. M06 stops the spindle; length offset G43 H.. normally matches the tool.
+- Canned cycles G73/G81-G89 need Z and R; G80 or a G00/G01 cancels them.
+- G28 G91 Z0. is the safe home move; G28 in G90 passes through the given point first.`;
 
-    const systemPrompt = `${dialectGuide}
+    const localBlock = body.localFindings?.length
+      ? `\n\nThe app's rule checker already reported these, so do not repeat them unless you can add something important:\n${body.localFindings.slice(0, 60).join("\n").substring(0, 4000)}`
+      : "";
 
-Analyze the G-code and respond with a valid JSON object using EXACTLY this structure:
+    const systemPrompt = `You are a senior CNC programmer reviewing a program before it runs on a real machine.
+${dialectGuide}
+
+Reply with ONE JSON object and nothing else:
 {
-  "summary": "One paragraph describing what this CNC program does",
+  "summary": "2-4 sentences: what the program does (operations, tools, approximate stock or features)",
   "operation_type": "milling|turning|drilling|tapping|multi",
-  "estimated_runtime_minutes": null,
-  "lines": [
-    {
-      "line_number": 1,
-      "original": "exact line text",
-      "explanation": "What this line does in plain language",
-      "severity": "ok|warning|error",
-      "issue": "Description of the problem (only if warning/error, else omit)",
-      "suggestion": "How to fix it (only if error, else omit)"
-    }
+  "findings": [
+    { "line": 12, "severity": "error|warning", "issue": "what is wrong", "suggestion": "how to fix it" }
   ],
-  "overall_issues": ["list of significant issues found"],
-  "suggestions": ["list of optimization recommendations"]
+  "suggestions": ["general improvements, at most 5"]
 }
 
 Rules:
-- Every line in the program must appear in "lines" array, including empty lines and comments
-- Be thorough but concise in explanations
-- Flag potential crashes, wrong tool calls, missing retracts as errors
-- Flag suboptimal feeds, missing G-codes as warnings
-- DO NOT include markdown or text outside the JSON`;
+- Line numbers refer to the numbered program in the user message.
+- Report only real problems that could crash the machine, scrap the part, raise an alarm, or that clearly deviate from good practice. At most ${MAX_FINDINGS} findings, most serious first. An empty list is fine.
+- "error" = will alarm, crash or cut wrong. "warning" = risky or bad practice.
+- If something depends on machine settings you cannot see, say so instead of guessing.
+- Never state that the program is safe to run.
+- Write summary, issue, suggestion and suggestions in ${language}. Keep G-code words exactly as written (G43, H01, M03).${localBlock}`;
+
+    const numbered = gcode.split(/\r?\n/).map((l, i) => `${i + 1}: ${l}`).join("\n");
 
     let responseText: string;
     let tokens: number;
     try {
       ({ text: responseText, tokens } = await llmComplete({
         system: systemPrompt,
-        parts:  [{ kind: "text", text: `Analyze this ${dialect.toUpperCase()} G-code program:\n\n${gcode}` }],
-        maxTokens:      8192,
+        parts:  [{ kind: "text", text: `Review this ${dialect.toUpperCase()} program:\n\n${numbered}` }],
+        maxTokens:      3000,
         anthropicModel: "claude-sonnet-4-6",
       }));
     } catch (e) {
@@ -98,23 +111,16 @@ Rules:
     }
     await settleUsage(admin, reservation.logId, tokens);
 
-    // Extract JSON from response
-    let analysisJson: Record<string, unknown>;
-
-    try {
-      // Handle case where Claude wraps JSON in markdown code blocks
-      const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]+?)\s*```/) ||
-                        responseText.match(/(\{[\s\S]+\})/);
-      const jsonStr = jsonMatch ? jsonMatch[1] : responseText;
-      analysisJson = JSON.parse(jsonStr);
-    } catch {
+    const parsed = parseReply(responseText);
+    if (!parsed) {
       console.error("analyze-gcode unparseable reply:", responseText.substring(0, 500));
       return error(502, "ai_bad_response", "Failed to parse AI response");
     }
+    const lineCount = gcode.split(/\r?\n/).length;
 
     // The program itself is not stored: usage and token cost are already in
     // qa_logs, and users' G-code stays theirs.
-    return json(analysisJson);
+    return json(normalise(parsed, lineCount));
   } catch (e) {
     return internalError("analyze-gcode", e);
   }

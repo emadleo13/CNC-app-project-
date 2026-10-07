@@ -402,6 +402,15 @@ abstract class AppStrings {
   String get errServer;
   String get errTooLarge;
 
+  // G-code AI review
+  String get gcodeAiTitle;
+  String get gcodeAiButton;
+  String get gcodeAiRunning;
+  String get gcodeAiDisclaimer;
+  String get gcodeAiNoFindings;
+  String get gcodeAiSuggestions;
+  String get gcodeAiProgram;
+
   // Purchase flow
   String get subCanceled;
   String get subPending;

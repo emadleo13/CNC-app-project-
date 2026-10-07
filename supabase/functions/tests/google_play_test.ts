@@ -191,3 +191,35 @@ Deno.test("isPro: user with no entitlement row and no purchases is free", async 
   });
   assertEquals(await isPro(admin, "u1"), false);
 });
+
+// ── AI G-code review parsing (analyze-gcode) ────────────────────────────────
+
+import { normalise, parseReply } from "../_shared/gcode_review.ts";
+
+Deno.test("review: JSON is found with or without a ```json fence", () => {
+  assertEquals(parseReply('Here you go:\n```json\n{"summary":"s"}\n```')?.summary, "s");
+  assertEquals(parseReply('noise {"summary":"t","findings":[]} noise')?.summary, "t");
+  assertEquals(parseReply("no json at all"), null);
+  assertEquals(parseReply("[1,2]"), null);
+});
+
+Deno.test("review: normalise bounds line numbers, severities and counts", () => {
+  const r = normalise({
+    summary: "  ok  ",
+    findings: [
+      { line: 3, severity: "error", issue: "bad", suggestion: "fix" },
+      { line: 999, severity: "critical", issue: "outside" },
+      { line: "2", severity: "warning", issue: "" },
+      "not an object",
+      ...Array.from({ length: 40 }, (_, i) => ({ line: 1, severity: "warning", issue: `w${i}` })),
+    ],
+    suggestions: ["a", "", 5, "b", "c", "d", "e", "f"],
+  }, 10);
+  assertEquals(r.summary, "ok");
+  assertEquals(r.findings[0], { line: 3, severity: "error", issue: "bad", suggestion: "fix" });
+  assertEquals(r.findings[1].line, null);          // 999 is past the end of the program
+  assertEquals(r.findings[1].severity, "warning"); // unknown severity
+  assertEquals(r.findings.length, 30);             // capped
+  assertEquals(r.suggestions, ["a", "b", "c", "d", "e"]);
+  assertEquals(r.operation_type, "unknown");
+});
