@@ -395,6 +395,69 @@ abstract class AppStrings {
   // Settings — display name
   String get settingsName;
   String get settingsNameHint;
+
+  // Server / network errors (Edge Functions)
+  String get errNetwork;
+  String get errAiBusy;
+  String get errServer;
+  String get errTooLarge;
+
+  // G-code AI review
+  String get gcodeAiTitle;
+  String get gcodeAiButton;
+  String get gcodeAiRunning;
+  String get gcodeAiDisclaimer;
+  String get gcodeAiNoFindings;
+  String get gcodeAiSuggestions;
+  String get gcodeAiProgram;
+
+  // G-code generator
+  String get genVerifyWarning;
+  String get genThreadTab;
+  String get genDrillTab;
+  String get genMajorDia;
+  String get genPitch;
+  String get genZEnd;
+  String get genTool;
+  String get genRpm;
+  String get genHoles;
+  String get genBcd;
+  String get genDepth;
+  String get genFeed;
+  String get genPeck;
+  String get genRPlane;
+  String get genClearance;
+  String get genStartAngle;
+  String get genErrPitch;
+  String get genErrDiameter;
+  String get genErrZEnd;
+  String get genErrHoles;
+  String get genErrBcd;
+  String get genErrPlanes;
+  String get genErrFeed;
+  String get genErrRpm;
+  String get genErrPeck;
+  String get genErrTool;
+
+  // Machine spindle limit
+  String get settingsMaxRpm;
+  String get settingsMaxRpmHint;
+  String get resRpmLimited;
+
+  // Three-point arc
+  String get arcCenterX;
+  String get arcCenterZ;
+  String get arcRadius;
+  String get arcSweep;
+  String get arcCw;
+  String get arcCcw;
+
+  // Purchase flow
+  String get subCanceled;
+  String get subPending;
+  String get subNothingToRestore;
+  String get subRestored;
+  String get subVerifyRetry;
 }
 
 // Locale provider
@@ -402,6 +465,9 @@ final localeProvider = StateProvider<String>((ref) => 'en');
 
 // Default calculator units: 'metric' | 'imperial'
 final defaultUnitsProvider = StateProvider<String>((ref) => 'metric');
+
+// Machine's maximum spindle RPM; calculators cap their RPM at it. 0 = none.
+final maxRpmProvider = StateProvider<int>((ref) => 0);
 
 // Default G-code dialect: 'haas' | 'sinumerik' | 'generic'
 final defaultDialectProvider = StateProvider<String>((ref) => 'haas');

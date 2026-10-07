@@ -26,12 +26,20 @@ class DrillingResult {
   final double cutTimeMin;
   final UnitSystem units;
 
+  /// Surface speed actually reached (lower than asked when RPM is capped).
+  final double cuttingSpeed;
+
+  /// Requested RPM when the machine limit capped it, else null.
+  final int? limitedFromRpm;
+
   const DrillingResult({
     required this.rpm,
     required this.feedPerMin,
     required this.pointLength,
     required this.cutTimeMin,
     required this.units,
+    required this.cuttingSpeed,
+    this.limitedFromRpm,
   });
 
   String get rpmFormatted => rpm.toString();
@@ -48,13 +56,19 @@ class DrillingResult {
 class DrillingCalculator {
   /// Drilling speeds/feeds + cycle time (drill must travel through the point
   /// length to fully break through).
-  static DrillingResult? drilling(DrillingInput input) {
+  /// [maxRpm] is the machine's spindle limit (0 = none).
+  static DrillingResult? drilling(DrillingInput input, {int maxRpm = 0}) {
     if (input.diameter <= 0 || input.cuttingSpeed <= 0) return null;
-    final rpm = SpeedFormulas.rpm(
+    final requestedRpm = SpeedFormulas.rpm(
       cuttingSpeed: input.cuttingSpeed,
       diameter: input.diameter,
       isMetric: input.units.isMetric,
     );
+    final limited = maxRpm > 0 && requestedRpm > maxRpm;
+    final rpm = limited ? maxRpm : requestedRpm;
+    final vc = limited
+        ? SpeedFormulas.cuttingSpeed(rpm: rpm, diameter: input.diameter, isMetric: input.units.isMetric)
+        : input.cuttingSpeed;
     final feedPerMin =
         SpeedFormulas.feedPerMin(rpm: rpm, feedPerRev: input.feedPerRev);
 
@@ -71,6 +85,8 @@ class DrillingCalculator {
       pointLength: pointLength,
       cutTimeMin: cutTimeMin,
       units: input.units,
+      cuttingSpeed: vc,
+      limitedFromRpm: limited ? requestedRpm : null,
     );
   }
 
@@ -78,12 +94,14 @@ class DrillingCalculator {
   ///
   /// metric:   pitch in mm.
   /// imperial: pass pitch = 1/TPI (inches).
-  /// tapDrill = D − (%/100) × pitch × 1.0825
+  /// tapDrill = D − (%/100) × pitch × 1.299   (Machinery's Handbook:
+  /// D − 0.01299 × % / TPI). 75% gives the standard sizes: M6×1 → 5.0,
+  /// M10×1.5 → 8.5, 1/4-20 → #7 (0.201").
   static double tapDrill({
     required double majorDiameter,
     required double pitch,
     required double threadPercent,
   }) {
-    return majorDiameter - (threadPercent / 100) * pitch * 1.0825;
+    return majorDiameter - (threadPercent / 100) * pitch * 1.299;
   }
 }

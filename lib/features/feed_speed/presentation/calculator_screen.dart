@@ -11,6 +11,8 @@ import '../domain/calculators/milling_helpers.dart';
 import '../domain/cut_parameters.dart';
 import '../domain/material_spec.dart';
 import '../../../core/widgets/help_card.dart';
+import '../../../core/widgets/calc_widgets.dart';
+import '../../../core/widgets/decimal_input_formatter.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/domain/saved_calculation.dart';
 import '../../subscription/data/subscription_repository.dart';
@@ -93,7 +95,8 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       depthOfCut:    _doc,
       widthOfCut:    _woc,
     );
-    final result = MillingCalculator.calculate(input: input, material: material);
+    final result = MillingCalculator.calculate(
+        input: input, material: material, maxRpm: ref.read(maxRpmProvider));
     if (result == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Diameter must be greater than 0')),
@@ -389,6 +392,7 @@ class _NumericField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: const [DecimalInputFormatter()],
       decoration: InputDecoration(labelText: label),
       onChanged: onChanged,
     );
@@ -501,6 +505,13 @@ class _ResultCard extends ConsumerWidget {
                 valueColor: result.coolantRequired ? AppColors.infoBlue : AppColors.textSecondary,
               )),
             ]),
+            if (result.limitedFromRpm != null)
+              RpmLimitNote(
+                template: s.resRpmLimited,
+                cappedRpm: result.rpm,
+                requestedRpm: result.limitedFromRpm!,
+                cuttingSpeed: result.cuttingSpeedFormatted,
+              ),
             if (result.materialNotes.isNotEmpty) ...[
               const SizedBox(height: 12),
               const Divider(color: AppColors.border),

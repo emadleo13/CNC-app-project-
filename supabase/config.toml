@@ -1,0 +1,8 @@
+# Supabase CLI settings for this project. Only the keys that differ from the
+# CLI defaults are set here.
+project_id = "colahcvziorjkqckqdlt"
+
+# Google Cloud Pub/Sub pushes Play notifications without a Supabase JWT; the
+# function checks its own PLAY_RTDN_SECRET instead.
+[functions.play-rtdn]
+verify_jwt = false

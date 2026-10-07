@@ -1,3 +1,7 @@
+-- HISTORICAL. The original CNC Assist design; it does not match the live
+-- project, which is shared with another app (see 003_security_hardening.sql).
+-- Do not apply this to colahcvziorjkqckqdlt, and never `supabase db push`.
+
 -- CNC Assist - Initial Schema
 -- Run this in your Supabase project SQL editor
 

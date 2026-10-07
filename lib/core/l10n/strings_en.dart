@@ -133,7 +133,7 @@ class AppStringsEn implements AppStrings {
       'It is used only for the Knowledge Base feature.';
   @override String get settingsSaved        => 'Settings saved';
   @override String get settingsAbout        => 'About';
-  @override String get settingsVersion      => 'Version 1.0.0';
+  @override String get settingsVersion      => 'Version';
   @override String get settingsTheme        => 'Theme';
   @override String get settingsThemeDark    => 'Dark (Industrial)';
 
@@ -433,4 +433,105 @@ class AppStringsEn implements AppStrings {
   ];
   @override String get settingsName     => 'Your name';
   @override String get settingsNameHint => 'For the home greeting';
+
+  @override String get errNetwork          =>
+      'Can\'t reach the server. Check your internet connection and try again.';
+  @override String get errAiBusy           =>
+      'The AI service is busy right now. Please try again in a minute.';
+  @override String get errServer           =>
+      'Something went wrong on our side. Please try again.';
+  @override String get errTooLarge         =>
+      'This is too large to send. Try a smaller file or photo.';
+  @override String get subCanceled         =>
+      'Purchase canceled.';
+  @override String get subPending          =>
+      'Payment is pending. Pro unlocks as soon as Google Play confirms it.';
+  @override String get subNothingToRestore =>
+      'No active subscription was found for this Google account.';
+  @override String get subRestored         =>
+      'Your subscription has been restored.';
+  @override String get subVerifyRetry      =>
+      'We couldn\'t confirm the purchase with Google yet. Your payment is safe — the app tries again automatically the next time it opens.';
+
+  @override String get gcodeAiTitle       =>
+      'AI review';
+  @override String get gcodeAiButton      =>
+      'Review with AI';
+  @override String get gcodeAiRunning     =>
+      'The AI is reviewing the program…';
+  @override String get gcodeAiDisclaimer  =>
+      'AI can be wrong. Use it as a second opinion and still prove out the program on the machine (graphics, dry run, single block).';
+  @override String get gcodeAiNoFindings  =>
+      'The AI found no further problems.';
+  @override String get gcodeAiSuggestions =>
+      'Suggestions';
+  @override String get gcodeAiProgram     =>
+      'Program';
+
+  @override String get genVerifyWarning =>
+      'Sample program. Prove it out before cutting: check it in graphics, then run it with dry run and single block, feed override low.';
+  @override String get genThreadTab     =>
+      'G76 thread';
+  @override String get genDrillTab      =>
+      'Bolt circle';
+  @override String get genMajorDia      =>
+      'Major Ø (mm)';
+  @override String get genPitch         =>
+      'Pitch (mm)';
+  @override String get genZEnd          =>
+      'Z end';
+  @override String get genTool          =>
+      'Tool';
+  @override String get genRpm           =>
+      'Spindle RPM';
+  @override String get genHoles         =>
+      'Holes';
+  @override String get genBcd           =>
+      'Bolt circle Ø';
+  @override String get genDepth         =>
+      'Depth Z';
+  @override String get genFeed          =>
+      'Feed (mm/min)';
+  @override String get genPeck          =>
+      'Peck Q';
+  @override String get genRPlane        =>
+      'R plane';
+  @override String get genClearance     =>
+      'Clearance Z';
+  @override String get genStartAngle    =>
+      'Start angle (°)';
+  @override String get genErrPitch      =>
+      'Pitch must be greater than 0.';
+  @override String get genErrDiameter   =>
+      'The diameter is too small for this pitch.';
+  @override String get genErrZEnd       =>
+      'Z end must be below the start point (Z5).';
+  @override String get genErrHoles      =>
+      'Number of holes must be 1 to 360.';
+  @override String get genErrBcd        =>
+      'Bolt circle diameter must be greater than 0.';
+  @override String get genErrPlanes     =>
+      'Depth must be below R, and R below the clearance plane.';
+  @override String get genErrFeed       =>
+      'Feed must be greater than 0.';
+  @override String get genErrRpm        =>
+      'Spindle speed must be between 1 and 30000.';
+  @override String get genErrPeck       =>
+      'Peck depth must be greater than 0.';
+  @override String get genErrTool       =>
+      'Tool number must be 1 to 99.';
+
+  @override String get settingsMaxRpm     =>
+      'Machine max spindle RPM';
+  @override String get settingsMaxRpmHint =>
+      'Calculated speeds are capped at this. Leave empty or 0 for no limit.';
+  @override String get resRpmLimited      =>
+      'Capped at the machine maximum of {max} RPM (calculated: {rpm} RPM). Cutting speed at the cap: {vc}.';
+
+  @override String get arcCenterX => 'Centre X';
+  @override String get arcCenterZ => 'Centre Z';
+  @override String get arcRadius  => 'Radius';
+  @override String get arcSweep   => 'Sweep';
+  @override String get arcCw      => 'clockwise';
+  @override String get arcCcw     => 'counter-clockwise';
 }

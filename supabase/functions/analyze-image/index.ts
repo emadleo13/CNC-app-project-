@@ -1,12 +1,10 @@
 import { llmComplete } from "../_shared/llm.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { adminClient, requireUser } from "../_shared/auth.ts";
+import { isPro } from "../_shared/entitlement.ts";
+import { error, internalError, json, preflight } from "../_shared/http.ts";
+import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const FREE_LIMIT = 10;
+const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface AnalyzeImageRequest {
   imageBase64: string;
@@ -35,129 +33,84 @@ The user will show you a technical drawing, engineering sketch, or photo of a ma
 
 Your task:
 1. Analyze visible dimensions, tolerances, surface finish requirements, and features
-2. Generate a complete, ready-to-run CNC G-code program for machining this part
+2. Write a complete draft CNC G-code program for machining this part. It is a
+   starting point that a programmer will check, never a program to run as is.
 3. Use the dialect specified by the user (Haas or Sinumerik)
 4. Include:
-   - Program header with setup notes
+   - First line after the program number: (VERIFY BEFORE RUNNING: GRAPHICS, DRY RUN, SINGLE BLOCK)
+   - Program header with setup notes and every assumption you made
+   - A full safe-start line (units G21 or G20, plane, G40, G49, G80, G90)
    - Tool list with recommended types (endmill, drill, etc.)
-   - Work offset setup (G54)
-   - Spindle speeds and feed rates (suggest based on steel/aluminum)
+   - Work offset setup (G54), and tool length compensation (G43 H) on Haas
+   - Spindle start before every cutting move; speeds and feeds stated as estimates
    - Operations in logical order (roughing → finishing → holes)
-   - Program footer with tool retract and spindle stop
+   - Program footer: G80/G40, retract to a safe height or G28 G91 Z0., spindle and coolant off, M30
 
-Format the G-code cleanly with inline comments on each line.
-State assumptions if dimensions are not fully visible.
+Format the G-code cleanly with comments.
+If a dimension is not visible, say what you assumed instead of guessing silently.
 If the image is not a technical drawing or part photo, ask the user to provide one.`;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")      ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check subscription + quota (image calls count toward free limit)
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_tier")
-      .eq("id", user.id)
-      .single();
-
-    const isPro = profile?.subscription_tier === "pro" || profile?.subscription_tier === "team";
-
-    if (!isPro) {
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const { count }  = await supabase
-        .from("qa_logs")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .gte("created_at", monthStart);
-
-      if ((count ?? 0) >= FREE_LIMIT) {
-        return new Response(JSON.stringify({
-          error:          "Monthly quota exceeded",
-          quota_exceeded: true,
-          used:           count ?? FREE_LIMIT,
-          limit:          FREE_LIMIT,
-          remaining:      0,
-        }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
+    const user = await requireUser(req);
+    if (user instanceof Response) return user;
 
     const body: AnalyzeImageRequest = await req.json();
     const { imageBase64, mediaType = "image/jpeg", mode, question, dialect = "haas" } = body;
 
     if (!imageBase64 || imageBase64.length === 0) {
-      return new Response(JSON.stringify({ error: "No image provided" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return error(400, "bad_request", "No image provided");
     }
-
     if (imageBase64.length > 7_000_000) {
-      return new Response(JSON.stringify({ error: "Image too large. Please use a smaller photo." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return error(400, "too_large", "Image too large. Please use a smaller photo.");
+    }
+    if (!MEDIA_TYPES.includes(mediaType)) {
+      return error(400, "bad_request", "Unsupported image type");
+    }
+    if (mode !== "error_diagnosis" && mode !== "drawing_to_gcode") {
+      return error(400, "bad_request", "Unknown mode");
     }
 
     const isError   = mode === "error_diagnosis";
     const maxTokens = isError ? 1024 : 4096;
     const system    = isError ? ERROR_SYSTEM : DRAWING_SYSTEM;
+    const safeDialect = dialect === "sinumerik" ? "SINUMERIK" : "HAAS";
 
     const userText = isError
-      ? (question?.trim() || "What CNC alarm or error is shown in this image? Diagnose it and provide solutions.")
-      : `Generate ${dialect.toUpperCase()} G-code for the part shown in this technical drawing.`;
+      ? (question?.trim().substring(0, 2000) || "What CNC alarm or error is shown in this image? Diagnose it and provide solutions.")
+      : `Generate ${safeDialect} G-code for the part shown in this technical drawing.`;
 
-    const { text: answer, tokens } = await llmComplete({
-      system,
-      parts: [
-        { kind: "image", mediaType, data: imageBase64 },
-        { kind: "text",  text: userText },
-      ],
-      maxTokens,
-      anthropicModel: "claude-sonnet-4-6",
+    // Image calls count toward the free monthly limit.
+    const admin = adminClient();
+    const reservation = await reserveUsage(admin, user.id, await isPro(admin, user.id), {
+      question_excerpt: `[image:${mode}] ${userText.substring(0, 100)}`,
+      is_image:         true,
     });
+    if (reservation instanceof Response) return reservation;
 
-    // Log usage
-    supabase.from("qa_logs").insert({
-      user_id:           user.id,
-      question_excerpt:  `[image:${mode}] ${userText.substring(0, 100)}`,
-      had_alarm_context: false,
-      is_image:          true,
-      token_count:       tokens,
-    }).then(() => {}).catch(console.error);
+    let result;
+    try {
+      result = await llmComplete({
+        system,
+        parts: [
+          { kind: "image", mediaType, data: imageBase64 },
+          { kind: "text",  text: userText },
+        ],
+        maxTokens,
+        anthropicModel: "claude-sonnet-4-6",
+      });
+    } catch (e) {
+      await releaseUsage(admin, reservation.logId);
+      console.error("analyze-image LLM failure:", e);
+      return error(503, "ai_unavailable", "AI service temporarily unavailable");
+    }
+    await settleUsage(admin, reservation.logId, result.tokens);
 
-    return new Response(JSON.stringify({ answer }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-
-  } catch (error) {
-    console.error("analyze-image error:", error);
-    return new Response(JSON.stringify({
-      error:  "Internal server error",
-      detail: error instanceof Error ? error.message : String(error),
-    }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ answer: result.text });
+  } catch (e) {
+    return internalError("analyze-image", e);
   }
 });

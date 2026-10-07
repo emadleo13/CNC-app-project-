@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:country_flags/country_flags.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/decimal_input_formatter.dart';
 import '../data/settings_repository.dart';
 import '../data/account_repository.dart';
 import '../../subscription/data/subscription_repository.dart';
 
 final _settingsRepoProvider = Provider((_) => SettingsRepository());
+
+/// "1.1.7 (9)": version name and build number of the installed app.
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  return '${info.version} (${info.buildNumber})';
+});
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -21,17 +29,27 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late final TextEditingController _nameCtrl;
+  late final TextEditingController _maxRpmCtrl;
 
   @override
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: ref.read(userNameProvider));
+    final maxRpm = ref.read(maxRpmProvider);
+    _maxRpmCtrl = TextEditingController(text: maxRpm > 0 ? '$maxRpm' : '');
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _maxRpmCtrl.dispose();
     super.dispose();
+  }
+
+  void _setMaxRpm(String text) {
+    final rpm = (double.tryParse(text) ?? 0).round().clamp(0, 100000);
+    ref.read(maxRpmProvider.notifier).state = rpm;
+    ref.read(_settingsRepoProvider).saveMaxRpm(rpm);
   }
 
   void _setName(String name) {
@@ -200,6 +218,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 20),
 
+          // ── Machine spindle limit ─────────────────────────────────────────
+          _SectionHeader(s.settingsMaxRpm),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: TextField(
+                controller: _maxRpmCtrl,
+                keyboardType: TextInputType.number,
+                inputFormatters: const [DecimalInputFormatter()],
+                decoration: InputDecoration(
+                  labelText: 'RPM',
+                  helperText: s.settingsMaxRpmHint,
+                  helperMaxLines: 3,
+                ),
+                onChanged: _setMaxRpm,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
           // ── Default CNC Dialect ───────────────────────────────────────────
           _SectionHeader(s.settingsDialect),
           Card(
@@ -308,7 +346,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: ListTile(
               leading: const Icon(Icons.info_outline, color: AppColors.textSecondary),
               title:   const Text('CNC Assist'),
-              subtitle: Text(s.settingsVersion),
+              // Read from the installed package, so a test build on the
+              // phone shows exactly which version it is.
+              subtitle: Text(ref.watch(appVersionProvider).maybeWhen(
+                    data:   (v) => '${s.settingsVersion} $v',
+                    orElse: () => s.settingsVersion,
+                  )),
             ),
           ),
           const SizedBox(height: 20),

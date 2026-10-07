@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
+import 'decimal_input_formatter.dart';
 import '../calc/units.dart';
 
 /// Reusable building blocks for calculator screens.
@@ -62,11 +62,7 @@ class CalcNumberField extends StatelessWidget {
         decimal: true,
         signed: allowNegative,
       ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(
-          RegExp(allowNegative ? r'[0-9.\-]' : r'[0-9.]'),
-        ),
-      ],
+      inputFormatters: [DecimalInputFormatter(allowNegative: allowNegative)],
       decoration: InputDecoration(labelText: label),
       onChanged: onChanged,
     );
@@ -270,6 +266,44 @@ class CalcResultCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Shown under a result when the machine's max spindle RPM capped it.
+/// [template] is AppStrings.resRpmLimited with {max}, {rpm} and {vc}.
+class RpmLimitNote extends StatelessWidget {
+  final String template;
+  final int cappedRpm;
+  final int requestedRpm;
+  final String cuttingSpeed;
+  const RpmLimitNote({
+    super.key,
+    required this.template,
+    required this.cappedRpm,
+    required this.requestedRpm,
+    required this.cuttingSpeed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final text = template
+        .replaceAll('{max}', '$cappedRpm')
+        .replaceAll('{rpm}', '$requestedRpm')
+        .replaceAll('{vc}', cuttingSpeed);
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.infoBlue.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.infoBlue.withValues(alpha: 0.3)),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Icon(Icons.speed, size: 18, color: AppColors.infoBlue),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 12.5, height: 1.45))),
+      ]),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/app_strings.dart';
@@ -111,21 +112,21 @@ class _ArcScreenState extends ConsumerState<ArcScreen> {
           else
             CalcResultCard(title: s.resCoordinates, tiles: [
               CalcResultTile(
-                  label: 'Center X',
+                  label: s.arcCenterX,
                   value: r.center.x.toStringAsFixed(4),
                   icon: Icons.gps_fixed),
               CalcResultTile(
-                  label: 'Center Z',
+                  label: s.arcCenterZ,
                   value: r.center.z.toStringAsFixed(4),
                   icon: Icons.gps_fixed),
               CalcResultTile(
-                  label: 'Radius',
+                  label: s.arcRadius,
                   value: r.radius.toStringAsFixed(4),
                   icon: Icons.radio_button_unchecked),
               CalcResultTile(
-                  label: 'Sweep',
-                  value: '${r.sweepAngle.toStringAsFixed(2)}°',
-                  icon: Icons.rotate_left),
+                  label: s.arcSweep,
+                  value: '${r.sweepAngle.toStringAsFixed(2)}° · ${r.clockwise ? s.arcCw : s.arcCcw}',
+                  icon: r.clockwise ? Icons.rotate_right : Icons.rotate_left),
             ]),
         ],
       ),
@@ -159,12 +160,26 @@ class _ArcPainter extends CustomPainter {
     Offset map(double x, double z) =>
         Offset(pad + (x - minX) * scale, size.height - pad - (z - minZ) * scale);
 
+    // Faint full circle, with the actual arc p1 → p2 → p3 drawn over it.
     final circlePaint = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final centre = map(result.center.x, result.center.z);
+    canvas.drawCircle(centre, result.radius * scale, circlePaint);
+    final arcPaint = Paint()
       ..color = AppColors.primary
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawCircle(
-        map(result.center.x, result.center.z), result.radius * scale, circlePaint);
+      ..strokeWidth = 2.5;
+    // Canvas y points down, so angles flip sign relative to the X/Z frame.
+    final sweepRad = result.sweepAngle * math.pi / 180;
+    canvas.drawArc(
+      Rect.fromCircle(center: centre, radius: result.radius * scale),
+      -result.startAngle,
+      result.clockwise ? sweepRad : -sweepRad,
+      false,
+      arcPaint,
+    );
 
     final ptPaint = Paint()..color = AppColors.warningYellow;
     for (final p in pts) {

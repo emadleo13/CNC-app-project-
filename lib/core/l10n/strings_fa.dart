@@ -135,7 +135,7 @@ class AppStringsFa implements AppStrings {
       'فقط برای ویژگی پایگاه دانش استفاده می‌شود.';
   @override String get settingsSaved        => 'تنظیمات ذخیره شد';
   @override String get settingsAbout        => 'درباره';
-  @override String get settingsVersion      => 'نسخه ۱.۰.۰';
+  @override String get settingsVersion      => 'نسخه';
   @override String get settingsTheme        => 'پوسته';
   @override String get settingsThemeDark    => 'تیره (صنعتی)';
 
@@ -431,4 +431,105 @@ class AppStringsFa implements AppStrings {
   ];
   @override String get settingsName     => 'نام شما';
   @override String get settingsNameHint => 'برای خوش‌آمدگویی در صفحهٔ اصلی';
+
+  @override String get errNetwork          =>
+      'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید و دوباره امتحان کنید.';
+  @override String get errAiBusy           =>
+      'سرویس هوش مصنوعی الان شلوغ است. یک دقیقهٔ دیگر دوباره امتحان کنید.';
+  @override String get errServer           =>
+      'مشکلی در سمت ما پیش آمد. لطفاً دوباره امتحان کنید.';
+  @override String get errTooLarge         =>
+      'حجم این مورد برای ارسال زیاد است. فایل یا عکس کوچک‌تری امتحان کنید.';
+  @override String get subCanceled         =>
+      'خرید لغو شد.';
+  @override String get subPending          =>
+      'پرداخت در انتظار تأیید است. به محض تأیید Google Play، نسخهٔ Pro فعال می‌شود.';
+  @override String get subNothingToRestore =>
+      'اشتراک فعالی برای این حساب Google پیدا نشد.';
+  @override String get subRestored         =>
+      'اشتراک شما بازیابی شد.';
+  @override String get subVerifyRetry      =>
+      'هنوز نتوانستیم خرید را با Google تأیید کنیم. پرداخت شما محفوظ است و اپ دفعهٔ بعد که باز شود خودکار دوباره تلاش می‌کند.';
+
+  @override String get gcodeAiTitle       =>
+      'بررسی هوش مصنوعی';
+  @override String get gcodeAiButton      =>
+      'بررسی با هوش مصنوعی';
+  @override String get gcodeAiRunning     =>
+      'هوش مصنوعی در حال بررسی برنامه است…';
+  @override String get gcodeAiDisclaimer  =>
+      'هوش مصنوعی ممکن است اشتباه کند. آن را نظر دوم بدانید و برنامه را همچنان روی ماشین امتحان کنید (گرافیک، Dry run، Single block).';
+  @override String get gcodeAiNoFindings  =>
+      'هوش مصنوعی مشکل دیگری پیدا نکرد.';
+  @override String get gcodeAiSuggestions =>
+      'پیشنهادها';
+  @override String get gcodeAiProgram     =>
+      'کل برنامه';
+
+  @override String get genVerifyWarning =>
+      'این یک برنامهٔ نمونه است. قبل از برش آن را امتحان کنید: اول در گرافیک ببینید، بعد با Dry run و Single block و Feed override پایین اجرا کنید.';
+  @override String get genThreadTab     =>
+      'رزوه G76';
+  @override String get genDrillTab      =>
+      'دایرهٔ سوراخ';
+  @override String get genMajorDia      =>
+      'قطر اسمی Ø (mm)';
+  @override String get genPitch         =>
+      'گام (mm)';
+  @override String get genZEnd          =>
+      'Z انتها';
+  @override String get genTool          =>
+      'ابزار';
+  @override String get genRpm           =>
+      'دور اسپیندل (RPM)';
+  @override String get genHoles         =>
+      'تعداد سوراخ';
+  @override String get genBcd           =>
+      'قطر دایرهٔ سوراخ Ø';
+  @override String get genDepth         =>
+      'عمق Z';
+  @override String get genFeed          =>
+      'پیشروی (mm/min)';
+  @override String get genPeck          =>
+      'عمق هر مرحله Q';
+  @override String get genRPlane        =>
+      'صفحهٔ R';
+  @override String get genClearance     =>
+      'Z ایمن';
+  @override String get genStartAngle    =>
+      'زاویهٔ شروع (°)';
+  @override String get genErrPitch      =>
+      'گام باید بزرگ‌تر از ۰ باشد.';
+  @override String get genErrDiameter   =>
+      'قطر برای این گام خیلی کوچک است.';
+  @override String get genErrZEnd       =>
+      'Z انتها باید پایین‌تر از نقطهٔ شروع (Z5) باشد.';
+  @override String get genErrHoles      =>
+      'تعداد سوراخ باید بین ۱ تا ۳۶۰ باشد.';
+  @override String get genErrBcd        =>
+      'قطر دایرهٔ سوراخ باید بزرگ‌تر از ۰ باشد.';
+  @override String get genErrPlanes     =>
+      'عمق باید پایین‌تر از R و R پایین‌تر از صفحهٔ ایمن باشد.';
+  @override String get genErrFeed       =>
+      'پیشروی باید بزرگ‌تر از ۰ باشد.';
+  @override String get genErrRpm        =>
+      'دور اسپیندل باید بین ۱ تا ۳۰۰۰۰ باشد.';
+  @override String get genErrPeck       =>
+      'عمق هر مرحله باید بزرگ‌تر از ۰ باشد.';
+  @override String get genErrTool       =>
+      'شمارهٔ ابزار باید بین ۱ تا ۹۹ باشد.';
+
+  @override String get settingsMaxRpm     =>
+      'حداکثر دور اسپیندل ماشین';
+  @override String get settingsMaxRpmHint =>
+      'دورهای محاسبه‌شده به این مقدار محدود می‌شوند. برای بدون محدودیت، خالی یا ۰ بگذارید.';
+  @override String get resRpmLimited      =>
+      'به حداکثر دور ماشین ({max} RPM) محدود شد (محاسبه‌شده: {rpm} RPM). سرعت برش در این دور: {vc}.';
+
+  @override String get arcCenterX => 'مرکز X';
+  @override String get arcCenterZ => 'مرکز Z';
+  @override String get arcRadius  => 'شعاع';
+  @override String get arcSweep   => 'زاویهٔ کمان';
+  @override String get arcCw      => 'ساعتگرد';
+  @override String get arcCcw     => 'پادساعتگرد';
 }

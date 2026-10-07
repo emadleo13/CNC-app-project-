@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/net/edge_functions.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/cut_parameters.dart';
@@ -41,12 +42,7 @@ class _ToolingRecsScreenState extends ConsumerState<ToolingRecsScreen> {
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final supabase = Supabase.instance.client;
-      if (supabase.auth.currentUser == null) {
-        await supabase.auth.signInAnonymously();
-      }
-
-      final response = await supabase.functions.invoke('tooling-recs', body: {
+      final data = await invokeEdgeFunction('tooling-recs', body: {
         'material':    widget.material.name,
         'operation':   widget.operation == OperationType.roughing ? 'roughing' : 'finishing',
         'diameter':    widget.diameter,
@@ -54,30 +50,27 @@ class _ToolingRecsScreenState extends ConsumerState<ToolingRecsScreen> {
         'toolMaterial': 'carbide',
         'flutes':      widget.flutes,
       });
-
-      if (response.status == 403) {
-        final data = response.data as Map<String, dynamic>?;
-        if (data?['pro_required'] == true) {
-          if (mounted) {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, RouteNames.subscription);
-          }
-          return;
+      if (!mounted) return;
+      final answer = data['answer'];
+      setState(() {
+        _loading = false;
+        if (answer is String && answer.trim().isNotEmpty) {
+          _answer = answer;
+        } else {
+          _error = ref.read(appStringsProvider).errAiBusy;
         }
-      }
-
-      if (response.status != 200) {
-        final msg = (response.data as Map<String, dynamic>?)?['error'] ?? 'Error ${response.status}';
-        setState(() { _error = msg; _loading = false; });
+      });
+    } on EdgeFunctionError catch (e) {
+      if (!mounted) return;
+      if (e.kind == EdgeErrorKind.proRequired) {
+        // The calculator only opens this screen for Pro users, so this means
+        // the subscription lapsed. Swap this screen for the paywall.
+        final router = GoRouter.of(context);
+        Navigator.pop(context);
+        router.push(RouteNames.subscription);
         return;
       }
-
-      setState(() {
-        _answer  = (response.data as Map<String, dynamic>)['answer'] as String;
-        _loading = false;
-      });
-    } catch (e) {
-      setState(() { _error = e.toString(); _loading = false; });
+      setState(() { _error = e.message(ref.read(appStringsProvider)); _loading = false; });
     }
   }
 
@@ -104,7 +97,7 @@ class _ToolingRecsScreenState extends ConsumerState<ToolingRecsScreen> {
                       style: const TextStyle(color: AppColors.textSecondary)),
                     const SizedBox(height: 16),
                     ElevatedButton(onPressed: _load,
-                      child: const Text('Retry')),
+                      child: Text(s.commonRetry)),
                   ])
                 : SingleChildScrollView(
                     child: Column(

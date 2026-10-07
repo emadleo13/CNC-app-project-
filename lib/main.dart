@@ -35,6 +35,7 @@ void main() async {
   String? savedUnits;
   String? savedDialect;
   String? savedName;
+  int     savedMaxRpm = 0;
   bool    onboardingSeen = false;
   try {
     const storage = FlutterSecureStorage();
@@ -42,6 +43,7 @@ void main() async {
     savedUnits     = await storage.read(key: 'units');
     savedDialect   = await storage.read(key: 'dialect');
     savedName      = await storage.read(key: 'user_name');
+    savedMaxRpm    = int.tryParse(await storage.read(key: 'max_rpm') ?? '') ?? 0;
     onboardingSeen = (await storage.read(key: 'onboarding_seen')) == 'true';
   } catch (_) {}
 
@@ -53,6 +55,7 @@ void main() async {
         if (savedDialect  != null) defaultDialectProvider.overrideWith((ref)  => savedDialect!),
         if (savedName     != null) userNameProvider.overrideWith((ref)        => savedName!),
         if (onboardingSeen)        onboardingSeenProvider.overrideWith((ref)  => true),
+        if (savedMaxRpm > 0)       maxRpmProvider.overrideWith((ref)          => savedMaxRpm),
       ],
       child: const CncAssistApp(),
     ),

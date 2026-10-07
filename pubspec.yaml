@@ -1,13 +1,16 @@
 name: cnc_assist
 description: "CNC Operator Assistant - AI-powered G-code analyzer and machining calculator"
 publish_to: 'none'
-version: 1.1.6+8
+version: 1.2.0+10
 
 environment:
   sdk: ^3.12.0
 
 dependencies:
   flutter:
+    sdk: flutter
+  # Material/Cupertino strings and RTL layout for fa / ar / ro
+  flutter_localizations:
     sdk: flutter
 
   # State management
@@ -31,7 +34,7 @@ dependencies:
   connectivity_plus: ^6.1.4
 
   # File operations
-  file_picker: ^8.3.7
+  file_picker: ^10.3.6
   image_picker: ^1.1.2
 
   # PDF generation & print / share (Phase 3 — Setup Sheet Generator)
@@ -55,6 +58,8 @@ dependencies:
   json_annotation: ^4.9.0
   intl: ^0.20.2
   path_provider: ^2.1.5
+  # Real version/build number on the Settings screen
+  package_info_plus: ^9.0.1
 
   # Icons
   cupertino_icons: ^1.0.8

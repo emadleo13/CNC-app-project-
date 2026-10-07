@@ -1,9 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../data/purchase_controller.dart';
 import '../data/subscription_repository.dart';
 
 class SubscriptionScreen extends ConsumerStatefulWidget {
@@ -16,22 +17,13 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   ProductDetails? _product;
   bool            _loading    = true;
-  bool            _purchasing = false;
   String?         _errorMsg;   // red — a real failure (e.g. purchase failed)
   String?         _infoMsg;    // amber — a benign notice (store/price unavailable)
-  StreamSubscription<List<PurchaseDetails>>? _purchaseSub;
 
   @override
   void initState() {
     super.initState();
     _loadProduct();
-    _listenPurchases();
-  }
-
-  @override
-  void dispose() {
-    _purchaseSub?.cancel();
-    super.dispose();
   }
 
   Future<void> _loadProduct() async {
@@ -65,31 +57,33 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     }
   }
 
-  void _listenPurchases() {
-    final repo = ref.read(subscriptionRepoProvider);
-    _purchaseSub = repo.purchaseStream.listen((purchases) async {
-      for (final details in purchases) {
-        if (details.status == PurchaseStatus.purchased ||
-            details.status == PurchaseStatus.restored) {
-          setState(() => _purchasing = true);
-          final ok = await repo.verifyAndActivate(details);
-          if (mounted) {
-            setState(() => _purchasing = false);
-            if (ok) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(ref.read(appStringsProvider).subSuccess),
-                backgroundColor: AppColors.successGreen,
-              ));
-              Navigator.pop(context, true);
-            } else {
-              setState(() => _errorMsg = ref.read(appStringsProvider).subError);
-            }
-          }
-        } else if (details.status == PurchaseStatus.error) {
-          setState(() { _purchasing = false; _errorMsg = ref.read(appStringsProvider).subError; });
-        }
-      }
-    });
+  /// Shows the outcome of a purchase or restore the user started. Every user
+  /// action passes through [PurchaseFlow.busy], so each outcome is a fresh
+  /// transition even when it repeats the previous one.
+  void _onFlow(PurchaseFlow flow) {
+    final s = ref.read(appStringsProvider);
+    void snack(String text, Color color) => ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(text), backgroundColor: color));
+    switch (flow) {
+      case PurchaseFlow.purchased:
+      case PurchaseFlow.restored:
+        snack(flow == PurchaseFlow.purchased ? s.subSuccess : s.subRestored,
+            AppColors.successGreen);
+        Navigator.pop(context, true);
+      case PurchaseFlow.pending:
+        setState(() { _errorMsg = null; _infoMsg = s.subPending; });
+      case PurchaseFlow.canceled:
+        setState(() { _errorMsg = null; _infoMsg = s.subCanceled; });
+      case PurchaseFlow.nothingToRestore:
+        setState(() { _errorMsg = null; _infoMsg = s.subNothingToRestore; });
+      case PurchaseFlow.verifyRetry:
+        setState(() { _errorMsg = null; _infoMsg = s.subVerifyRetry; });
+      case PurchaseFlow.error:
+        setState(() { _infoMsg = null; _errorMsg = s.subError; });
+      case PurchaseFlow.idle:
+      case PurchaseFlow.busy:
+        break;
+    }
   }
 
   Future<void> _subscribe() async {
@@ -105,20 +99,24 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       ));
       return;
     }
-    setState(() { _purchasing = true; _errorMsg = null; _infoMsg = null; });
-    try {
-      await ref.read(subscriptionRepoProvider).buySubscription(_product!);
-    } catch (_) {
-      if (mounted) setState(() { _purchasing = false; _errorMsg = ref.read(appStringsProvider).subError; });
-    }
+    setState(() { _errorMsg = null; _infoMsg = null; });
+    await ref.read(purchaseControllerProvider.notifier).buy(_product!);
   }
 
   Future<void> _restore() async {
-    setState(() { _purchasing = true; _errorMsg = null; _infoMsg = null; });
+    setState(() { _errorMsg = null; _infoMsg = null; });
+    await ref.read(purchaseControllerProvider.notifier).restore();
+  }
+
+  Future<void> _manage() async {
     try {
-      await ref.read(subscriptionRepoProvider).restorePurchases();
+      await launchUrl(kManageSubscriptionUrl, mode: LaunchMode.externalApplication);
     } catch (_) {
-      if (mounted) setState(() { _purchasing = false; _errorMsg = ref.read(appStringsProvider).subError; });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(ref.read(appStringsProvider).subNeedsPlayStore),
+        backgroundColor: AppColors.warningYellow,
+      ));
     }
   }
 
@@ -126,6 +124,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   Widget build(BuildContext context) {
     final s    = ref.watch(appStringsProvider);
     final tier = ref.watch(currentTierProvider);
+    ref.listen<PurchaseFlow>(purchaseControllerProvider, (_, flow) => _onFlow(flow));
 
     // Never block the whole screen on the tier lookup — show content
     // immediately, treating an unknown tier as 'free'.
@@ -137,6 +136,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
   Widget _buildContent(AppStrings s, String tier) {
     final isPro = tier == 'pro' || tier == 'team';
+    final flow = ref.watch(purchaseControllerProvider);
+    final purchasing = flow == PurchaseFlow.busy || flow == PurchaseFlow.pending;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -249,12 +250,12 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ElevatedButton(
               // Always tappable (unless busy): when no product is loaded the tap
               // explains why purchases are unavailable rather than doing nothing.
-              onPressed: (_purchasing || _loading) ? null : _subscribe,
+              onPressed: (purchasing || _loading) ? null : _subscribe,
               style: ElevatedButton.styleFrom(
                 padding:  const EdgeInsets.symmetric(vertical: 14),
                 backgroundColor: AppColors.primary,
               ),
-              child: _purchasing
+              child: purchasing
                   ? const SizedBox(
                       width: 20, height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -284,7 +285,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
             const SizedBox(height: 12),
             TextButton(
-              onPressed: (_purchasing || _loading) ? null : _restore,
+              onPressed: (purchasing || _loading) ? null : _restore,
               child: Text(s.subRestoreBtn,
                 style: const TextStyle(color: AppColors.textSecondary)),
             ),
@@ -325,7 +326,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ),
           ] else
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: _manage,
               icon: const Icon(Icons.open_in_new, size: 16),
               label: Text(s.subManageBtn),
             ),

@@ -8,14 +8,26 @@ import 'package:go_router/go_router.dart';
 import '../../../core/review/review_prompter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/net/edge_functions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/help_card.dart';
+import '../../../core/widgets/quota_dialog.dart';
 import '../domain/cnc_dialect.dart';
 import '../domain/gcode_line.dart';
 import '../parsers/gcode_parser.dart';
 import 'gcode_syntax.dart';
+
+/// Text of a G-code file. Most are UTF-8 or plain ASCII, but files from older
+/// controls and CAM posts are often Latin-1 / Windows-1252 (Ø or ° in
+/// comments), which the UTF-8 decoder rejects outright.
+String decodeProgramFile(List<int> bytes) {
+  try {
+    return utf8.decode(bytes);
+  } on FormatException {
+    return latin1.decode(bytes);
+  }
+}
 
 /// Runs in a background isolate (via [compute]) so parsing a large program
 /// never blocks the UI thread.
@@ -85,7 +97,8 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
         allowedExtensions: ['nc', 'cnc', 'gcode', 'txt', 'mpf', 'spf'],
       );
       if (result != null && result.files.single.path != null) {
-        final content = await File(result.files.single.path!).readAsString();
+        final content = decodeProgramFile(await File(result.files.single.path!).readAsBytes());
+        if (!mounted) return;
         final detected = GcodeParser.autoDetect(content);
         setState(() {
           _detected = detected;
@@ -165,9 +178,9 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
       );
       if (file == null) return;
       final bytes = await file.readAsBytes();
+      if (!mounted) return;
       setState(() => _drawingBytes = bytes);
-      final s = ref.read(appStringsProvider);
-      await _generateFromDrawing(s);
+      await _generateFromDrawing(ref.read(appStringsProvider));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -182,36 +195,41 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     final bytes = _drawingBytes;
     if (bytes == null) return;
     setState(() => _isGenerating = true);
+    // With auto-detect on there is no code to detect from yet, so use the
+    // controller chosen in Settings.
+    final dialect = _autoDetect ? ref.read(defaultDialectProvider) : _dialect.name;
     try {
-      final supabase = Supabase.instance.client;
-      if (supabase.auth.currentUser == null) {
-        await supabase.auth.signInAnonymously();
-      }
-      final dialect = _autoDetect ? 'haas' : _dialect.name;
-      final body = <String, dynamic>{
+      final data = await invokeEdgeFunction('analyze-image', body: {
         'imageBase64': base64Encode(bytes),
         'mediaType':   'image/jpeg',
         'mode':        'drawing_to_gcode',
         'dialect':     dialect,
-      };
-      final response = await supabase.functions.invoke('analyze-image', body: body);
-      if (response.status != 200) {
-        throw Exception((response.data as Map<String, dynamic>?)?['error'] ?? 'Error ${response.status}');
+      });
+      final gcode = data['answer'];
+      if (gcode is! String || gcode.trim().isEmpty) {
+        throw const EdgeFunctionError(EdgeErrorKind.aiUnavailable);
       }
-      final gcode = (response.data as Map<String, dynamic>)['answer'] as String;
+      if (!mounted) return;
       setState(() {
         _controller.text = gcode;
-        _drawingBytes    = null;
-        _isGenerating    = false;
+        _fullGcode       = null;
+        _fullLineCount   = 0;
+        if (_autoDetect) _detected = GcodeParser.autoDetect(gcode);
       });
-    } catch (e) {
-      if (mounted) {
+    } on EdgeFunctionError catch (e) {
+      if (!mounted) return;
+      if (e.kind == EdgeErrorKind.quotaExceeded) {
+        showQuotaDialog(context, s);
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${s.gcodeFromDrawingError}: $e'),
+          content: Text('${s.gcodeFromDrawingError}: ${e.message(s)}'),
           backgroundColor: AppColors.errorRed,
         ));
       }
-      setState(() { _drawingBytes = null; _isGenerating = false; });
+    } finally {
+      if (mounted) {
+        setState(() { _drawingBytes = null; _isGenerating = false; });
+      }
     }
   }
 
@@ -273,18 +291,33 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(s.gcodeTitle),
-        actions: [
-          TextButton.icon(
-            onPressed: (_isLoading || _isGenerating) ? null : () => _pickDrawing(s),
-            icon: const Icon(Icons.camera_alt_outlined, size: 18),
-            label: Text(s.gcodeFromDrawing),
-          ),
-          TextButton.icon(
-            onPressed: (_isLoading || _isGenerating) ? null : () => _pickFile(s),
-            icon: const Icon(Icons.upload_file, size: 18),
-            label: Text(s.gcodeUpload),
-          ),
-        ],
+        // Narrow phones get icon-only actions (label as tooltip) so the title
+        // and both buttons always fit.
+        actions: MediaQuery.sizeOf(context).width < 400
+            ? [
+                IconButton(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickDrawing(s),
+                  icon: const Icon(Icons.camera_alt_outlined, size: 20),
+                  tooltip: s.gcodeFromDrawing,
+                ),
+                IconButton(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickFile(s),
+                  icon: const Icon(Icons.upload_file, size: 20),
+                  tooltip: s.gcodeUpload,
+                ),
+              ]
+            : [
+                TextButton.icon(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickDrawing(s),
+                  icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                  label: Text(s.gcodeFromDrawing),
+                ),
+                TextButton.icon(
+                  onPressed: (_isLoading || _isGenerating) ? null : () => _pickFile(s),
+                  icon: const Icon(Icons.upload_file, size: 18),
+                  label: Text(s.gcodeUpload),
+                ),
+              ],
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -423,54 +456,58 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                       ]),
                     ),
                     Expanded(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _LineNumberGutter(
-                            scroll:     _gutterScroll,
-                            lineCount:  lineCount < 1 ? 1 : lineCount,
-                            lineHeight: _lineHeight,
-                            topPad:     _editorTopPad,
-                            fontSize:   _editorFontSize,
-                          ),
-                          const VerticalDivider(width: 1, thickness: 1),
-                          Expanded(
-                            child: TextField(
-                              controller:      _controller,
-                              scrollController: _editorScroll,
-                              maxLines:   null,
-                              expands:    true,
-                              cursorColor: AppColors.primary,
-                              style: const TextStyle(
-                                fontFamily: 'JetBrainsMono',
-                                fontSize:   _editorFontSize,
-                                color:      AppColors.textPrimary,
-                                height:     _editorLineHt,
-                              ),
-                              decoration: const InputDecoration(
-                                hintText:
-                                    '% \nO1000 (PROGRAM NAME)\nT1 M6\nG54 G90\nG43 H1 Z50.\nM3 S1000\nG0 X0 Y0\n...',
-                                hintStyle: TextStyle(
+                      // G-code reads left-to-right even in Persian/Arabic.
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _LineNumberGutter(
+                              scroll:     _gutterScroll,
+                              lineCount:  lineCount < 1 ? 1 : lineCount,
+                              lineHeight: _lineHeight,
+                              topPad:     _editorTopPad,
+                              fontSize:   _editorFontSize,
+                            ),
+                            const VerticalDivider(width: 1, thickness: 1),
+                            Expanded(
+                              child: TextField(
+                                controller:      _controller,
+                                scrollController: _editorScroll,
+                                maxLines:   null,
+                                expands:    true,
+                                cursorColor: AppColors.primary,
+                                style: const TextStyle(
                                   fontFamily: 'JetBrainsMono',
                                   fontSize:   _editorFontSize,
+                                  color:      AppColors.textPrimary,
                                   height:     _editorLineHt,
-                                  color:      AppColors.textMuted,
                                 ),
-                                border:         InputBorder.none,
-                                enabledBorder:  InputBorder.none,
-                                focusedBorder:  InputBorder.none,
-                                contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
+                                decoration: const InputDecoration(
+                                  hintText:
+                                      '% \nO1000 (PROGRAM NAME)\nT1 M6\nG54 G90\nG43 H1 Z50.\nM3 S1000\nG0 X0 Y0\n...',
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'JetBrainsMono',
+                                    fontSize:   _editorFontSize,
+                                    height:     _editorLineHt,
+                                    color:      AppColors.textMuted,
+                                  ),
+                                  border:         InputBorder.none,
+                                  enabledBorder:  InputBorder.none,
+                                  focusedBorder:  InputBorder.none,
+                                  contentPadding: EdgeInsets.fromLTRB(12, _editorTopPad, 16, 12),
+                                ),
+                                onChanged: (v) => setState(() {
+                                  // Editing by hand replaces the preview — from now
+                                  // on the visible text is the source of truth.
+                                  _fullGcode     = null;
+                                  _fullLineCount = 0;
+                                  if (_autoDetect) _detected = GcodeParser.autoDetect(v);
+                                }),
                               ),
-                              onChanged: (v) => setState(() {
-                                // Editing by hand replaces the preview — from now
-                                // on the visible text is the source of truth.
-                                _fullGcode     = null;
-                                _fullLineCount = 0;
-                                if (_autoDetect) _detected = GcodeParser.autoDetect(v);
-                              }),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -494,8 +531,11 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
                         children: [
                           const Icon(Icons.search, size: 18),
                           const SizedBox(width: 8),
-                          Text(s.gcodeAnalyzeBtn,
-                              style: const TextStyle(fontSize: 16)),
+                          Flexible(
+                            child: Text(s.gcodeAnalyzeBtn,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 16)),
+                          ),
                         ],
                       ),
                     ),

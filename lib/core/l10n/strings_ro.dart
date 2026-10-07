@@ -133,7 +133,7 @@ class AppStringsRo implements AppStrings {
       'Este utilizată doar pentru funcția Baza de Cunoștințe.';
   @override String get settingsSaved        => 'Setări salvate';
   @override String get settingsAbout        => 'Despre';
-  @override String get settingsVersion      => 'Versiunea 1.0.0';
+  @override String get settingsVersion      => 'Versiunea';
   @override String get settingsTheme        => 'Temă';
   @override String get settingsThemeDark    => 'Întunecat (Industrial)';
 
@@ -433,4 +433,105 @@ class AppStringsRo implements AppStrings {
   ];
   @override String get settingsName     => 'Numele tău';
   @override String get settingsNameHint => 'Pentru salutul de pe ecranul principal';
+
+  @override String get errNetwork          =>
+      'Serverul nu poate fi accesat. Verifică conexiunea la internet și încearcă din nou.';
+  @override String get errAiBusy           =>
+      'Serviciul AI este ocupat acum. Încearcă din nou peste un minut.';
+  @override String get errServer           =>
+      'A apărut o problemă la noi. Te rugăm să încerci din nou.';
+  @override String get errTooLarge         =>
+      'Este prea mare pentru a fi trimis. Încearcă un fișier sau o fotografie mai mică.';
+  @override String get subCanceled         =>
+      'Achiziția a fost anulată.';
+  @override String get subPending          =>
+      'Plata este în așteptare. Pro se activează imediat ce Google Play o confirmă.';
+  @override String get subNothingToRestore =>
+      'Nu a fost găsit niciun abonament activ pentru acest cont Google.';
+  @override String get subRestored         =>
+      'Abonamentul tău a fost restaurat.';
+  @override String get subVerifyRetry      =>
+      'Nu am putut încă confirma achiziția cu Google. Plata ta este în siguranță — aplicația încearcă din nou automat data viitoare când o deschizi.';
+
+  @override String get gcodeAiTitle       =>
+      'Verificare AI';
+  @override String get gcodeAiButton      =>
+      'Verifică cu AI';
+  @override String get gcodeAiRunning     =>
+      'AI verifică programul…';
+  @override String get gcodeAiDisclaimer  =>
+      'AI poate greși. Folosește-l ca a doua opinie și verifică totuși programul pe mașină (grafică, rulare în gol, bloc cu bloc).';
+  @override String get gcodeAiNoFindings  =>
+      'AI nu a găsit alte probleme.';
+  @override String get gcodeAiSuggestions =>
+      'Sugestii';
+  @override String get gcodeAiProgram     =>
+      'Program';
+
+  @override String get genVerifyWarning =>
+      'Program exemplu. Verifică-l înainte de așchiere: întâi în grafică, apoi cu rulare în gol (dry run) și bloc cu bloc, cu override-ul de avans redus.';
+  @override String get genThreadTab     =>
+      'Filet G76';
+  @override String get genDrillTab      =>
+      'Cerc de găuri';
+  @override String get genMajorDia      =>
+      'Ø nominal (mm)';
+  @override String get genPitch         =>
+      'Pas (mm)';
+  @override String get genZEnd          =>
+      'Z final';
+  @override String get genTool          =>
+      'Sculă';
+  @override String get genRpm           =>
+      'Turație (RPM)';
+  @override String get genHoles         =>
+      'Găuri';
+  @override String get genBcd           =>
+      'Ø cerc de găuri';
+  @override String get genDepth         =>
+      'Adâncime Z';
+  @override String get genFeed          =>
+      'Avans (mm/min)';
+  @override String get genPeck          =>
+      'Pas de găurire Q';
+  @override String get genRPlane        =>
+      'Plan R';
+  @override String get genClearance     =>
+      'Z de siguranță';
+  @override String get genStartAngle    =>
+      'Unghi de start (°)';
+  @override String get genErrPitch      =>
+      'Pasul trebuie să fie mai mare decât 0.';
+  @override String get genErrDiameter   =>
+      'Diametrul este prea mic pentru acest pas.';
+  @override String get genErrZEnd       =>
+      'Z final trebuie să fie sub punctul de start (Z5).';
+  @override String get genErrHoles      =>
+      'Numărul de găuri trebuie să fie între 1 și 360.';
+  @override String get genErrBcd        =>
+      'Diametrul cercului de găuri trebuie să fie mai mare decât 0.';
+  @override String get genErrPlanes     =>
+      'Adâncimea trebuie să fie sub R, iar R sub planul de siguranță.';
+  @override String get genErrFeed       =>
+      'Avansul trebuie să fie mai mare decât 0.';
+  @override String get genErrRpm        =>
+      'Turația trebuie să fie între 1 și 30000.';
+  @override String get genErrPeck       =>
+      'Pasul de găurire trebuie să fie mai mare decât 0.';
+  @override String get genErrTool       =>
+      'Numărul sculei trebuie să fie între 1 și 99.';
+
+  @override String get settingsMaxRpm     =>
+      'Turația maximă a mașinii';
+  @override String get settingsMaxRpmHint =>
+      'Turațiile calculate sunt limitate la această valoare. Lasă gol sau 0 pentru fără limită.';
+  @override String get resRpmLimited      =>
+      'Limitat la maximul mașinii de {max} RPM (calculat: {rpm} RPM). Viteza de așchiere la limită: {vc}.';
+
+  @override String get arcCenterX => 'Centru X';
+  @override String get arcCenterZ => 'Centru Z';
+  @override String get arcRadius  => 'Rază';
+  @override String get arcSweep   => 'Unghi arc';
+  @override String get arcCw      => 'în sens orar';
+  @override String get arcCcw     => 'în sens antiorar';
 }

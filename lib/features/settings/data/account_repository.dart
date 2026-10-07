@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/net/edge_functions.dart';
 import '../../history/domain/saved_calculation.dart';
 import '../../history/domain/saved_analysis.dart';
 
@@ -19,11 +20,10 @@ class AccountRepository {
   final _supabase = Supabase.instance.client;
 
   Future<void> deleteAccount() async {
-    // 1. Server-side deletion (auth user + profile + owned data).
-    final response = await _supabase.functions.invoke('delete-account');
-    if (response.status != 200) {
-      throw Exception('Server deletion failed (${response.status})');
-    }
+    // 1. Server-side deletion (auth user + profile + owned data). Throws
+    //    EdgeFunctionError on any failure, so local data is only wiped once
+    //    the server has confirmed.
+    await invokeEdgeFunction('delete-account');
 
     // 2. Sign out the deleted user.
     try {

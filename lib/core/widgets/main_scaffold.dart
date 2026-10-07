@@ -2,47 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_strings.dart';
-import '../routing/route_names.dart';
 import '../theme/app_colors.dart';
 
 class MainScaffold extends ConsumerWidget {
-  final Widget child;
+  /// The tab navigators, one per bottom-nav destination, kept in an
+  /// IndexedStack by [StatefulShellRoute.indexedStack].
+  final StatefulNavigationShell navigationShell;
 
-  const MainScaffold({super.key, required this.child});
-
-  int _currentIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith(RouteNames.gcodeAnalyzer)) return 1;
-    if (location.startsWith(RouteNames.knowledgeBase)) return 2;
-    if (location.startsWith(RouteNames.history))       return 3;
-    return 0;
-  }
+  const MainScaffold({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(appStringsProvider);
 
+    // No AnimatedSwitcher here: it kept the outgoing and incoming child in the
+    // tree at once, and both held the same keyed Navigator ("Duplicate
+    // GlobalKey" on every tab switch).
     return Scaffold(
       appBar: null,
-      // Cross-fade + subtle scale when switching top-level tabs. Keyed by tab
-      // index so navigating into a sub-route within a tab is left untouched
-      // (those keep their own push transition).
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
-            child: child,
-          ),
-        ),
-        child: KeyedSubtree(
-          key: ValueKey(_currentIndex(context)),
-          child: child,
-        ),
-      ),
+      body: navigationShell,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.border, width: 1)),
@@ -65,17 +43,14 @@ class MainScaffold extends ConsumerWidget {
             )),
           ),
           child: NavigationBar(
-            selectedIndex: _currentIndex(context),
+            selectedIndex: navigationShell.currentIndex,
             height: 64,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-            onDestinationSelected: (index) {
-              switch (index) {
-                case 0: context.go(RouteNames.calculator);
-                case 1: context.go(RouteNames.gcodeAnalyzer);
-                case 2: context.go(RouteNames.knowledgeBase);
-                case 3: context.go(RouteNames.history);
-              }
-            },
+            // Tapping the current tab again returns it to its root screen.
+            onDestinationSelected: (index) => navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            ),
             destinations: [
               NavigationDestination(
                 icon: const Icon(Icons.speed_outlined),

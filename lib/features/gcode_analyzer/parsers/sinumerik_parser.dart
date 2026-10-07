@@ -1,63 +1,83 @@
 import '../domain/gcode_line.dart';
 import 'base_parser.dart';
+import 'block.dart';
+import 'haas_parser.dart';
 
+Set<String> _range(int from, int to) => {for (var i = from; i <= to; i++) 'G$i'};
+
+/// Siemens Sinumerik 840D/828D. Comments start with ';'. Parentheses belong to
+/// the code (CYCLE83(…), X=IC(5)). The D number applies tool length
+/// automatically, so there is no G43 rule.
 class SinumerikParser extends BaseParser {
-  static const _knownG = [
-    'G0','G00','G1','G01','G2','G02','G3','G03','G4','G04',
-    'G17','G18','G19','G25','G26',
-    'G40','G41','G42','G43','G44',
-    'G53','G54','G55','G56','G57','G500','G505',
-    'G60','G61','G62','G63','G64',
-    'G70','G71','G90','G91','G94','G95','G96','G97',
-  ];
+  static final Set<String> _knownG = {
+    ..._range(0, 5), 'G7', 'G9', ..._range(15, 21), 'G25', 'G26', 'G28',
+    'G33', 'G331', 'G332', 'G34', 'G35', ..._range(40, 42), 'G46', 'G51',
+    ..._range(53, 64), 'G601', 'G602', 'G603', 'G621',
+    'G641', 'G642', 'G643', 'G644', 'G645', 'G68', 'G70', 'G71', 'G700', 'G710',
+    'G74', 'G75', ..._range(80, 99), 'G961', 'G962', 'G971', 'G972', 'G973',
+    'G110', 'G111', 'G112', 'G140', 'G141', 'G142', 'G143', 'G147', 'G148',
+    'G153', 'G247', 'G248', 'G290', 'G291', 'G340', 'G341', 'G347', 'G348',
+    'G450', 'G451', 'G460', 'G461', 'G462', 'G500', ..._range(505, 599),
+  };
 
-  static const _knownM = [
-    'M0','M00','M1','M01','M2','M02','M3','M03','M4','M04','M5','M05',
-    'M6','M06','M7','M07','M8','M08','M9','M09',
-    'M17','M30','M40','M41','M42',
-  ];
+  static const _types = {'REAL', 'INT', 'BOOL', 'STRING', 'CHAR', 'AXIS', 'FRAME'};
+  static final _cycleName = RegExp(r'^CYCLE\d+$');
 
-  static const _sinumerikKeywords = [
-    'CYCLE81','CYCLE82','CYCLE83','CYCLE84','CYCLE85','CYCLE840',
-    'CYCLE86','CYCLE88','CYCLE90',
-    'TRANS','ATRANS','ROT','AROT','SCALE','ASCALE','MIRROR','AMIRROR',
-    'DEF','REAL','INT','BOOL','STRING',
-    'GOTOB','GOTOF','LABEL',
-    'REPEAT','ENDLOOP','LOOP','FOR','TO','ENDFOR','IF','ELSE','ENDIF',
-    'PROC','ENDPROC','CALL',
-    'SPCON','SPCOF','SPOSA',
-    'WAITM','WAITE','SETMS',
+  static const _keywords = [
+    'CYCLE81', 'CYCLE82', 'CYCLE83', 'CYCLE84', 'CYCLE85', 'CYCLE840',
+    'CYCLE86', 'CYCLE88', 'CYCLE90', 'TRANS', 'ATRANS', 'ROT', 'AROT',
+    'SCALE', 'ASCALE', 'MIRROR', 'AMIRROR', 'DEF', 'REAL', 'INT', 'BOOL',
+    'STRING', 'GOTOB', 'GOTOF', 'LABEL', 'REPEAT', 'ENDLOOP', 'LOOP', 'FOR',
+    'TO', 'ENDFOR', 'IF', 'ELSE', 'ENDIF', 'PROC', 'ENDPROC', 'CALL',
+    'SPCON', 'SPCOF', 'SPOSA', 'WAITM', 'WAITE', 'SETMS',
   ];
 
   @override
-  List<String> knownGCodes() => _knownG;
+  final BlockReader reader = const BlockReader(semicolonComments: true);
 
   @override
-  List<String> knownMCodes() => _knownM;
-
-  bool isSinumerikKeyword(String token) {
-    final upper = token.toUpperCase().split('(').first;
-    return _sinumerikKeywords.contains(upper);
-  }
+  String get dialectName => 'Sinumerik';
 
   @override
-  LineSeverity validateLine(String line, List<String> tokens) {
-    final trimmed = line.trim();
-    if (trimmed.isEmpty || trimmed.startsWith(';') || trimmed == '%') return LineSeverity.ok;
+  Set<String>? get knownGCodes => _knownG;
 
-    // DEF without type keyword is suspicious
-    if (trimmed.toUpperCase().startsWith('DEF') &&
-        !RegExp(r'DEF\s+(REAL|INT|BOOL|STRING)', caseSensitive: false).hasMatch(trimmed)) {
-      return LineSeverity.warning;
+  @override
+  Set<String> get programEnds => const {'M30', 'M2', 'M17'};
+
+  @override
+  String get programEndText => 'M30 / M2 (M17 or RET in a subprogram)';
+
+  @override
+  Set<String> get unitCodes => const {'G70', 'G71', 'G700', 'G710', 'G20', 'G21'};
+
+  /// Sinumerik units come from machine data; programs rarely set them.
+  @override
+  bool get warnMissingUnits => false;
+
+  /// Settable frames are optional on Sinumerik, so no work-offset rule.
+  @override
+  Set<String> get workOffsetCodes => const {};
+
+  bool isSinumerikKeyword(String token) =>
+      _keywords.contains(token.toUpperCase().split('(').first);
+
+  @override
+  void checkBlock(Block b, List<LineIssue> out, ProgramShape shape) {
+    checkCommon(b, out);
+    checkCutterCompStart(b, out);
+
+    // DEF needs a data type: DEF REAL R_DEPTH.
+    final def = b.keywords.indexOf('DEF');
+    if (def >= 0 && (def + 1 >= b.keywords.length || !_types.contains(b.keywords[def + 1]))) {
+      out.add(const LineIssue(LineSeverity.warning, 'sin_def_type'));
     }
 
-    // CYCLE calls should have parentheses
-    if (RegExp(r'\bCYCLE\d+\b', caseSensitive: false).hasMatch(trimmed) &&
-        !trimmed.contains('(')) {
-      return LineSeverity.warning;
+    // Cycles take their parameters in parentheses.
+    for (final k in b.keywords) {
+      if (_cycleName.hasMatch(k) && !b.keywordsWithArgs.contains(k)) {
+        out.add(LineIssue(LineSeverity.warning, 'sin_cycle_parens', {'cycle': k}));
+      }
     }
-
-    return LineSeverity.ok;
   }
 
   static bool looksLikeSinumerik(String gcode) {

@@ -1,9 +1,13 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { adminClient, requireUser } from "../_shared/auth.ts";
+import { applySubscription } from "../_shared/entitlement.ts";
+import {
+  acknowledgeSubscription,
+  getSubscription,
+  hasServiceAccount,
+  PlayApiError,
+  PRO_PRODUCT_IDS,
+} from "../_shared/google_play.ts";
+import { error, internalError, json, preflight } from "../_shared/http.ts";
 
 interface VerifyRequest {
   purchaseToken: string;
@@ -11,109 +15,77 @@ interface VerifyRequest {
   platform:      "android" | "ios";
 }
 
+// Verifies a Google Play subscription with the Play Developer API and, if it is
+// paid for, grants Pro until Google's expiry time. Called by the app after a
+// purchase and whenever it finds an existing purchase on the device (restore,
+// app start), so renewals and reinstalls keep working.
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  const pre = preflight(req);
+  if (pre) return pre;
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")      ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const user = await requireUser(req);
+    if (user instanceof Response) return user;
 
     const body: VerifyRequest = await req.json();
-    const { purchaseToken, productId, platform } = body;
+    const { purchaseToken, productId, platform = "android" } = body;
 
     if (!purchaseToken || !productId) {
-      return new Response(JSON.stringify({ error: "Missing purchase data" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return error(400, "bad_request", "Missing purchase data");
+    }
+    if (platform !== "android") {
+      return error(400, "bad_request", "Unsupported platform");
+    }
+    if (!PRO_PRODUCT_IDS.includes(productId)) {
+      return error(400, "bad_request", "Invalid product");
+    }
+    if (!hasServiceAccount()) {
+      // Fail closed. Never grant Pro from a token we cannot check.
+      console.error("verify-purchase: GOOGLE_PLAY_SERVICE_ACCOUNT_KEY is not set");
+      return error(503, "verification_unavailable", "Purchase verification is not configured");
     }
 
-    const validProducts = ["cnc_assist_pro_monthly", "cnc_assist_pro_yearly"];
-    if (!validProducts.includes(productId)) {
-      return new Response(JSON.stringify({ error: "Invalid product" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // For Android: verify with Google Play Developer API if service account key is set
-    // Falls back to token-presence check (acceptable for initial launch)
-    const googleKey = Deno.env.get("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY");
-    let verified = false;
-
-    if (platform === "android" && googleKey) {
-      try {
-        const keyData   = JSON.parse(googleKey);
-        const packageName = "com.cncassist.app";
-        const verifyUrl   = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`;
-
-        // Use the service account to get an access token
-        // (Simplified — full JWT flow omitted for brevity; use google-auth-library in production)
-        // For now, trust the token if Google key exists and token is non-empty
-        verified = purchaseToken.length > 10;
-      } catch (_) {
-        verified = purchaseToken.length > 10;
+    let sub;
+    try {
+      sub = await getSubscription(purchaseToken);
+    } catch (e) {
+      if (e instanceof PlayApiError && e.isInvalidToken) {
+        return error(402, "invalid_purchase", "Purchase verification failed");
       }
-    } else {
-      // No server-side key: trust client (acceptable for MVP; harden before scaling)
-      verified = purchaseToken.length > 10;
+      throw e;
     }
 
-    if (!verified) {
-      return new Response(JSON.stringify({ error: "Purchase verification failed" }), {
-        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const lineItem = sub.lineItems?.find((li) => li.productId === productId);
+    if (!lineItem) {
+      return error(402, "invalid_purchase", "Purchase does not match product");
+    }
+
+    const admin = adminClient();
+    const ent = await applySubscription(admin, user.id, purchaseToken, sub);
+
+    if (ent.active && sub.acknowledgementState === "ACKNOWLEDGEMENT_STATE_PENDING") {
+      try {
+        await acknowledgeSubscription(productId, purchaseToken);
+      } catch (e) {
+        // The app acknowledges too (completePurchase); log and carry on.
+        console.error("verify-purchase acknowledge failed:", e);
+      }
+    }
+
+    if (!ent.active) {
+      // A real token that is no longer paid for (expired, on hold, pending).
+      return error(402, "not_active", "Subscription is not active", {
+        state: ent.state,
+        expires_at: ent.expiresAt?.toISOString() ?? null,
       });
     }
 
-    // Compute expiry: monthly = 31 days, yearly = 366 days
-    const isYearly   = productId.includes("yearly");
-    const expiresAt  = new Date();
-    expiresAt.setDate(expiresAt.getDate() + (isYearly ? 366 : 31));
-
-    // Update the user's subscription tier using service-role client
-    const adminSupabase = createClient(
-      Deno.env.get("SUPABASE_URL")          ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
-
-    await adminSupabase
-      .from("profiles")
-      .upsert({
-        id:                      user.id,
-        email:                   user.email ?? "",
-        subscription_tier:       "pro",
-        subscription_expires_at: expiresAt.toISOString(),
-      }, { onConflict: "id" });
-
-    return new Response(JSON.stringify({
+    return json({
       success:    true,
       tier:       "pro",
-      expires_at: expiresAt.toISOString(),
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      expires_at: ent.expiresAt!.toISOString(),
     });
-
-  } catch (error) {
-    console.error("verify-purchase error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (e) {
+    return internalError("verify-purchase", e);
   }
 });

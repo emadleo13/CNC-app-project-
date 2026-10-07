@@ -233,6 +233,7 @@ class _GcodeProgramLibraryScreenState extends ConsumerState<GcodeProgramLibraryS
               ),
               child: SelectableText(
                 program.code,
+                textDirection: TextDirection.ltr,
                 style: const TextStyle(
                   fontFamily: 'JetBrainsMono',
                   fontSize: 12,

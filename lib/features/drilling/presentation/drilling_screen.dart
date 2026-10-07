@@ -83,7 +83,7 @@ class _DrillTabState extends ConsumerState<_DrillTab> {
         holeDepth: _depth,
         pointAngle: _angle,
         units: widget.units,
-      ));
+      ), maxRpm: ref.read(maxRpmProvider));
     });
   }
 
@@ -163,6 +163,13 @@ class _DrillTabState extends ConsumerState<_DrillTab> {
                 value: _result!.cutTimeFormatted,
                 icon: Icons.timer_outlined),
           ]),
+          if (_result!.limitedFromRpm != null)
+            RpmLimitNote(
+              template: s.resRpmLimited,
+              cappedRpm: _result!.rpm,
+              requestedRpm: _result!.limitedFromRpm!,
+              cuttingSpeed: '${_result!.cuttingSpeed.toStringAsFixed(0)} ${widget.units.cuttingSpeedLabel}',
+            ),
         ],
       ],
     );
@@ -226,7 +233,9 @@ class _TapTabState extends ConsumerState<_TapTab> {
             const SizedBox(height: 12),
             CalcSegment<double>(
               label: 'Thread engagement',
-              options: {60.0: '60%', 75.0: '75%', 100.0: '100%'},
+              // No 100%: on this scale it drills below the minimum minor
+              // diameter and overloads the tap.
+              options: {50.0: '50%', 60.0: '60%', 65.0: '65%', 75.0: '75%'},
               selected: _pct,
               onChanged: (v) => setState(() => _pct = v),
             ),
