@@ -43,11 +43,15 @@ Feature-based clean architecture. Each feature under `lib/features/<name>/` has 
 
 ### Navigation
 
-`go_router` with a `ShellRoute` wrapping all three top-level screens inside `MainScaffold`. The result screen for G-code analysis (`/gcode/result`) is a child route that receives analysis data via `state.extra`.
+`go_router` with a `StatefulShellRoute.indexedStack`: each bottom-nav tab (tools hub, G-code, knowledge base, history) is a branch with its own navigator, so switching tabs keeps each tab's state. `MainScaffold` gets the `StatefulNavigationShell`; don't wrap it in an `AnimatedSwitcher`, because the two children would share the shell's keyed Navigator (duplicate GlobalKey). Settings and Subscription are top-level routes outside the shell, always opened with `context.push`. The G-code result screen (`/gcode/result`) is a child route that receives analysis data via `state.extra`.
+
+Persian and Arabic are right-to-left via `MaterialApp.locale` and the `flutter_localizations` delegates (`lib/app.dart`). A `Directionality` around `MaterialApp` has no effect. Code views (the G-code editor, analysis lines, generated programs) force `TextDirection.ltr`.
 
 ### State management
 
-Riverpod throughout. Providers are generated via `riverpod_generator` — add `@riverpod` annotations and run `build_runner`. No `ChangeNotifier` or `setState` in feature code.
+Riverpod (`flutter_riverpod` 2) with hand-written providers: `Provider`, `FutureProvider`, `StateProvider`, `StateNotifierProvider`. No code generation is in use: `riverpod_generator`, `freezed` and `json_serializable` are declared but unused. Screens keep local UI state in `setState`.
+
+Numeric inputs use `DecimalInputFormatter` (`lib/core/widgets/`), which turns `,` `٫` and Persian/Arabic digits into a parseable number. Never filter characters out of a number field: dropping the comma turned "0,15" into 15.
 
 ### G-code parsing
 
@@ -59,18 +63,20 @@ Riverpod throughout. Providers are generated via `riverpod_generator` — add `@
 
 ### Backend (Supabase)
 
-- Auth → auto-creates a `profiles` row via a DB trigger
-- Edge Functions hold server-side secrets (Anthropic API key for Q&A, Pinecone for vector search) — these are **never** in the Flutter app
-- RLS is enabled on all tables; every policy gates on `auth.uid()`
+- Auth: anonymous sign-in; a DB trigger creates the `profiles` row
+- Edge Functions hold every server-side secret (AI provider keys, the Google Play service account). These are **never** in the Flutter app. Call them through `invokeEdgeFunction()` (`lib/core/net/`), which turns non-2xx responses into a typed `EdgeFunctionError`; `functions.invoke` throws on non-2xx, so checking `response.status` afterwards never works.
+- Pro: `public.purchases`, written only from Google Play data by `verify-purchase` and `play-rtdn`, is the source of truth. `profiles.subscription_tier` / `subscription_expires_at` are a cache of it; Pro needs a future expiry (`profileGrantsPro` in the app, `isPro` in `_shared/entitlement.ts`). `PurchaseController` owns the Play purchase stream for the whole session.
+- RLS is on for all tables. App users may only update preference columns of their own profile; `qa_logs` and `purchases` are written by the service role only (quota is counted in `_shared/quota.ts`). `supabase/tests/rls_test.mjs` checks this against every migration.
+- Deploying the backend: `supabase/DEPLOY.md` (order matters)
 - Local offline storage uses Hive + `flutter_secure_storage`
 
 ## Environment setup
 
-Copy `.env.example` to `.env` and fill in `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The Anthropic and Pinecone keys live only in Supabase Dashboard → Edge Functions → Secrets.
+The Supabase URL and anon key are compiled in (`lib/core/config/supabase_config.dart`); the anon key is public by design, and RLS is what protects the data. Server secrets live only in Supabase Dashboard → Edge Functions → Secrets (see `supabase/DEPLOY.md`).
 
 ## Code generation note
 
-`freezed` and `json_serializable` models require generated `.freezed.dart` / `.g.dart` files. After adding or modifying annotated classes, always re-run `build_runner`.
+No generated code is checked in or used today. If you add `freezed` / `json_serializable` / `@riverpod` annotations, run `build_runner` afterwards (the outputs are gitignored).
 
 ## Assets
 
@@ -96,9 +102,11 @@ These sit outside the Flutter app and never ship in the APK, but they read the s
 - **`tools/daily_promo.py`** → writes `marketing/daily/<date>.md`, a day's social copy for
   Facebook, TikTok, LinkedIn and YouTube in English and Romanian. It **skips a day whose file
   already exists** so it cannot clobber copy the daily agent rewrote; `--force` overrides.
-- **`tools/post_social.py`** → posts the Facebook and LinkedIn blocks via API, run by
-  `.github/workflows/daily-post.yml`. Credentials come from GitHub repository secrets and must
-  never be committed. See `marketing/automation-setup.md`.
+- **`tools/post_social.py`** → posts the Facebook and LinkedIn blocks via API, meant to run from
+  `.github/workflows/daily-post.yml`. That workflow file is **not in the repo yet**: pushing
+  `.github/workflows` needs a GitHub token with the `workflow` scope (commit 2ee64b6), so
+  nothing posts automatically until it is added. Credentials come from GitHub repository
+  secrets and must never be committed. See `marketing/automation-setup.md`.
 - **`tools/listing.py`** → prints one language's Play Console fields with live character counts
   against the 30 / 80 / 4000 limits. Source of truth is `docs/store-listing.md`.
 
