@@ -7,7 +7,7 @@ import {
   signJwt,
   type SubscriptionPurchaseV2,
 } from "../_shared/google_play.ts";
-import { profileEntitled } from "../_shared/entitlement.ts";
+import { entitlementActive } from "../_shared/entitlement.ts";
 
 const NOW = new Date("2026-10-06T12:00:00Z");
 const future = "2026-11-06T12:00:00Z";
@@ -59,13 +59,12 @@ Deno.test("entitlement: latest line item wins", () => {
   assertEquals(e.productId, "cnc_assist_pro_yearly");
 });
 
-Deno.test("profile cache: a tier without an expiry grants nothing", () => {
-  assert(!profileEntitled({ subscription_tier: "pro", subscription_expires_at: null }, NOW));
-  assert(!profileEntitled({ subscription_tier: "team", subscription_expires_at: null }, NOW));
-  assert(!profileEntitled({ subscription_tier: "pro", subscription_expires_at: past }, NOW));
-  assert(!profileEntitled({ subscription_tier: "free", subscription_expires_at: future }, NOW));
-  assert(!profileEntitled(null, NOW));
-  assert(profileEntitled({ subscription_tier: "pro", subscription_expires_at: future }, NOW));
+Deno.test("entitlement cache: a tier without an expiry grants nothing", () => {
+  assert(!entitlementActive({ tier: "pro", expires_at: null }, NOW));
+  assert(!entitlementActive({ tier: "pro", expires_at: past }, NOW));
+  assert(!entitlementActive({ tier: "free", expires_at: future }, NOW));
+  assert(!entitlementActive(null, NOW));
+  assert(entitlementActive({ tier: "pro", expires_at: future }, NOW));
 });
 
 async function testKey() {
@@ -168,26 +167,27 @@ function fakeAdmin(results: Record<string, { data: unknown; error: unknown }>): 
   return { from: (table: string) => builder(results[table]) } as unknown as SupabaseClient;
 }
 
-Deno.test("isPro: paid-up profile is Pro without touching purchases", async () => {
+Deno.test("isPro: paid-up entitlement is Pro without touching purchases", async () => {
   const admin = fakeAdmin({
-    profiles: { data: { subscription_tier: "pro", subscription_expires_at: "2999-01-01T00:00:00Z" }, error: null },
-    purchases: { data: null, error: { message: "must not be queried" } },
+    cnc_entitlements: { data: { tier: "pro", expires_at: "2999-01-01T00:00:00Z" }, error: null },
+    cnc_purchases: { data: null, error: { message: "must not be queried" } },
   });
   assert(await isPro(admin, "u1"));
 });
 
-Deno.test("isPro: free user stays free (not a 500) if the purchases table is missing", async () => {
+Deno.test("isPro: free user stays free (not a 500) if the CNC tables are missing", async () => {
+  const missing = (t: string) => ({ data: null, error: { code: "PGRST205", message: `Could not find the table 'public.${t}'` } });
   const admin = fakeAdmin({
-    profiles: { data: { subscription_tier: "free", subscription_expires_at: null }, error: null },
-    purchases: { data: null, error: { code: "PGRST205", message: "Could not find the table 'public.purchases'" } },
+    cnc_entitlements: missing("cnc_entitlements"),
+    cnc_purchases: missing("cnc_purchases"),
   });
   assertEquals(await isPro(admin, "u1"), false);
 });
 
-Deno.test("isPro: free user with no purchases is free", async () => {
+Deno.test("isPro: user with no entitlement row and no purchases is free", async () => {
   const admin = fakeAdmin({
-    profiles: { data: { subscription_tier: "free", subscription_expires_at: null }, error: null },
-    purchases: { data: [], error: null },
+    cnc_entitlements: { data: null, error: null },
+    cnc_purchases: { data: [], error: null },
   });
   assertEquals(await isPro(admin, "u1"), false);
 });

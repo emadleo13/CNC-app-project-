@@ -112,19 +112,8 @@ Rules:
       return error(502, "ai_bad_response", "Failed to parse AI response");
     }
 
-    const lines = Array.isArray(analysisJson.lines) ? analysisJson.lines as Array<{ severity?: string }> : [];
-    const { error: saveError } = await admin.from("gcode_analyses").insert({
-      user_id:       user.id,
-      gcode_content: gcode,
-      dialect:       dialect,
-      analysis_json: analysisJson,
-      error_count:   lines.filter((l) => l.severity === "error").length,
-      warning_count: lines.filter((l) => l.severity === "warning").length,
-      line_count:    lines.length,
-      token_count:   tokens,
-    });
-    if (saveError) console.error("analyze-gcode save failed:", saveError);
-
+    // The program itself is not stored: usage and token cost are already in
+    // qa_logs, and users' G-code stays theirs.
     return json(analysisJson);
   } catch (e) {
     return internalError("analyze-gcode", e);

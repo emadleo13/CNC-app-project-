@@ -1,6 +1,12 @@
-// Who is Pro. The `purchases` table, filled only from verified Google Play data,
-// is the source of truth; profiles.subscription_tier and
-// profiles.subscription_expires_at are a cache of it that the app can read.
+// Who is Pro.
+//
+// The Supabase project is shared with another app, which owns `profiles` and
+// the sign-up trigger. CNC Assist keeps its own two tables (migration 003):
+//   cnc_purchases     verified Google Play subscriptions, the source of truth
+//   cnc_entitlements  one row per user (tier + expiry), a cache of the above
+//                     that the app can read
+// Neither is writable by app users; only these functions (service role)
+// write them.
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { entitlementOf, getSubscription, type Entitlement, type SubscriptionPurchaseV2 } from "./google_play.ts";
 
@@ -8,36 +14,46 @@ import { entitlementOf, getSubscription, type Entitlement, type SubscriptionPurc
 /// lapsed subscriber does not trigger an API call on every AI request.
 const REFRESH_AFTER_MS = 10 * 60 * 1000;
 
-/// True when the profile grants Pro right now. A tier without an expiry date
-/// grants nothing: every legitimate grant comes with one.
-export function profileEntitled(p: { subscription_tier?: string | null; subscription_expires_at?: string | null } | null,
-                                now = new Date()): boolean {
-  if (!p || !p.subscription_tier || p.subscription_tier === "free") return false;
-  if (!p.subscription_expires_at) return false;
-  return new Date(p.subscription_expires_at) > now;
+const ENTITLED_STATES = [
+  "SUBSCRIPTION_STATE_ACTIVE",
+  "SUBSCRIPTION_STATE_IN_GRACE_PERIOD",
+  "SUBSCRIPTION_STATE_CANCELED",
+];
+
+/// True when a cnc_entitlements row grants Pro right now. A tier without an
+/// expiry date grants nothing: every legitimate grant comes with one.
+export function entitlementActive(row: { tier?: string | null; expires_at?: string | null } | null,
+                                  now = new Date()): boolean {
+  if (!row || !row.tier || row.tier === "free") return false;
+  if (!row.expires_at) return false;
+  return new Date(row.expires_at) > now;
 }
 
 /// Whether [userId] has Pro. If the cached expiry has passed but the user has a
 /// purchase on file, Google is asked again: the subscription may have renewed.
+///
+/// A failed lookup counts as "not Pro" (and is logged) rather than an error:
+/// free access must keep working, including in the minutes between deploying
+/// these functions and running the migration that creates the tables.
 export async function isPro(admin: SupabaseClient, userId: string): Promise<boolean> {
-  const { data: profile, error } = await admin
-    .from("profiles")
-    .select("subscription_tier, subscription_expires_at")
-    .eq("id", userId)
+  const { data: cached, error } = await admin
+    .from("cnc_entitlements")
+    .select("tier, expires_at")
+    .eq("user_id", userId)
     .maybeSingle();
-  if (error) throw error;
-  if (profileEntitled(profile)) return true;
+  if (error) {
+    console.error("isPro: entitlement lookup failed:", error);
+    return false;
+  }
+  if (entitlementActive(cached)) return true;
 
   const { data: rows, error: rowsError } = await admin
-    .from("purchases")
+    .from("cnc_purchases")
     .select("purchase_token, updated_at")
     .eq("user_id", userId)
     .order("expires_at", { ascending: false, nullsFirst: false })
     .limit(3);
   if (rowsError) {
-    // Fail closed for Pro, but keep the user's free access working. This also
-    // covers the minutes between deploying these functions and running the
-    // migration that creates the purchases table.
     console.error("isPro: purchases lookup failed:", rowsError);
     return false;
   }
@@ -56,7 +72,7 @@ export async function isPro(admin: SupabaseClient, userId: string): Promise<bool
 }
 
 /// Stores Google's view of [purchaseToken] for [userId] and refreshes the
-/// cached tier of everyone it affects.
+/// cached entitlement of everyone it affects.
 ///
 /// A token belongs to one account at a time. Users are anonymous, so a
 /// reinstall means a new account; when a token shows up from a new account it
@@ -71,13 +87,13 @@ export async function applySubscription(
   const ent = entitlementOf(sub);
 
   const { data: existing, error: readError } = await admin
-    .from("purchases")
+    .from("cnc_purchases")
     .select("user_id")
     .eq("purchase_token", purchaseToken)
     .maybeSingle();
   if (readError) throw readError;
 
-  const { error: upsertError } = await admin.from("purchases").upsert({
+  const { error: upsertError } = await admin.from("cnc_purchases").upsert({
     purchase_token:        purchaseToken,
     user_id:               userId,
     product_id:            ent.productId ?? "unknown",
@@ -91,12 +107,12 @@ export async function applySubscription(
 
   // An upgrade or resubscribe replaces the old token; it must not keep granting.
   if (sub.linkedPurchaseToken) {
-    await admin.from("purchases").delete().eq("purchase_token", sub.linkedPurchaseToken);
+    await admin.from("cnc_purchases").delete().eq("purchase_token", sub.linkedPurchaseToken);
   }
 
-  await recomputeProfile(admin, userId);
+  await recomputeEntitlement(admin, userId);
   if (existing && existing.user_id !== userId) {
-    await recomputeProfile(admin, existing.user_id);
+    await recomputeEntitlement(admin, existing.user_id);
   }
   return ent;
 }
@@ -104,49 +120,39 @@ export async function applySubscription(
 /// Marks a purchase refunded or revoked (voided purchase notification).
 export async function voidPurchase(admin: SupabaseClient, purchaseToken: string): Promise<void> {
   const { data: row } = await admin
-    .from("purchases")
+    .from("cnc_purchases")
     .select("user_id")
     .eq("purchase_token", purchaseToken)
     .maybeSingle();
   if (!row) return;
-  await admin.from("purchases").update({
+  await admin.from("cnc_purchases").update({
     state:      "VOIDED",
     expires_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }).eq("purchase_token", purchaseToken);
-  await recomputeProfile(admin, row.user_id);
+  await recomputeEntitlement(admin, row.user_id);
 }
 
-/// Sets the profile's cached tier from the user's purchases: Pro until the
+/// Sets the user's cached entitlement from their purchases: Pro until the
 /// latest expiry of an entitled purchase, otherwise free.
-export async function recomputeProfile(admin: SupabaseClient, userId: string): Promise<void> {
+export async function recomputeEntitlement(admin: SupabaseClient, userId: string): Promise<void> {
   const nowIso = new Date().toISOString();
   const { data: rows, error } = await admin
-    .from("purchases")
+    .from("cnc_purchases")
     .select("expires_at, state")
     .eq("user_id", userId)
     .gt("expires_at", nowIso)
-    .in("state", ["SUBSCRIPTION_STATE_ACTIVE", "SUBSCRIPTION_STATE_IN_GRACE_PERIOD", "SUBSCRIPTION_STATE_CANCELED"])
+    .in("state", ENTITLED_STATES)
     .order("expires_at", { ascending: false })
     .limit(1);
   if (error) throw error;
 
   const latest = rows?.[0]?.expires_at ?? null;
-  const fields = {
-    subscription_tier:       latest ? "pro" : "free",
-    subscription_expires_at: latest,
-    updated_at:              nowIso,
-  };
-  const { data: updated, error: updateError } = await admin
-    .from("profiles")
-    .update(fields)
-    .eq("id", userId)
-    .select("id");
-  if (updateError) throw updateError;
-  if (!updated?.length) {
-    // The sign-up trigger normally creates the row; don't drop a paid
-    // entitlement on the floor if it is missing.
-    const { error: insertError } = await admin.from("profiles").insert({ id: userId, email: "", ...fields });
-    if (insertError) throw insertError;
-  }
+  const { error: upsertError } = await admin.from("cnc_entitlements").upsert({
+    user_id:    userId,
+    tier:       latest ? "pro" : "free",
+    expires_at: latest,
+    updated_at: nowIso,
+  }, { onConflict: "user_id" });
+  if (upsertError) throw upsertError;
 }

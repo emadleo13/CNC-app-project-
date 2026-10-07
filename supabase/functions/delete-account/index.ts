@@ -16,10 +16,11 @@ Deno.serve(async (req) => {
 
     const admin = adminClient();
 
-    // Delete owned data. Tables that reference auth.users or profiles with
-    // ON DELETE CASCADE (profiles, gcode_analyses, saved_calculations,
-    // qa_sessions, purchases) go with the auth user; qa_logs has no foreign
-    // key, so it is cleared explicitly. Add any future user-scoped table here.
+    // Delete owned data. cnc_entitlements and cnc_purchases reference
+    // auth.users ON DELETE CASCADE and go with the auth user. qa_logs has no
+    // foreign key, so it is cleared explicitly, as is the profiles row the
+    // project's sign-up trigger created for this user. Add any future
+    // user-scoped table here.
     await admin.from("qa_logs").delete().eq("user_id", user.id);
     await admin.from("profiles").delete().eq("id", user.id);
 

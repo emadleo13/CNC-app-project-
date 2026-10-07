@@ -204,29 +204,28 @@ void main() {
     expect(flow(), PurchaseFlow.purchased);
   });
 
-  group('profileGrantsPro', () {
+  group('entitlementGrantsPro', () {
     final now = DateTime.utc(2026, 10, 7);
     Map<String, dynamic> row(String tier, String? expires) => {
-      'subscription_tier': tier,
-      'subscription_expires_at': expires,
+      'tier': tier,
+      'expires_at': expires,
     };
 
     test('Pro only with a future expiry', () {
       expect(
-        profileGrantsPro(row('pro', '2026-11-07T00:00:00Z'), now: now),
+        entitlementGrantsPro(row('pro', '2026-11-07T00:00:00Z'), now: now),
         isTrue,
       );
       expect(
-        profileGrantsPro(row('pro', '2026-10-01T00:00:00Z'), now: now),
+        entitlementGrantsPro(row('pro', '2026-10-01T00:00:00Z'), now: now),
         isFalse,
       );
-      expect(profileGrantsPro(row('pro', null), now: now), isFalse);
-      expect(profileGrantsPro(row('team', null), now: now), isFalse);
+      expect(entitlementGrantsPro(row('pro', null), now: now), isFalse);
       expect(
-        profileGrantsPro(row('free', '2027-01-01T00:00:00Z'), now: now),
+        entitlementGrantsPro(row('free', '2027-01-01T00:00:00Z'), now: now),
         isFalse,
       );
-      expect(profileGrantsPro(null, now: now), isFalse);
+      expect(entitlementGrantsPro(null, now: now), isFalse);
     });
   });
 }

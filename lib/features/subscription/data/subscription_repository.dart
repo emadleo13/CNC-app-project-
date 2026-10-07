@@ -10,15 +10,16 @@ final kManageSubscriptionUrl = Uri.parse(
   '?sku=$kProMonthlyId&package=com.cncassist.cnc_assist',
 );
 
-/// Whether a `profiles` row grants Pro right now. The server sets the tier
+/// Whether a `cnc_entitlements` row grants Pro right now. The server writes it
 /// from Google Play with an expiry; a tier without a future expiry is not Pro.
-/// This mirrors profileEntitled() in supabase/functions/_shared/entitlement.ts.
-bool profileGrantsPro(Map<String, dynamic>? profile, {DateTime? now}) {
-  final tier = profile?['subscription_tier'] as String?;
+/// This mirrors entitlementActive() in supabase/functions/_shared/entitlement.ts.
+///
+/// The Supabase project is shared with another app, which owns `profiles`;
+/// CNC Assist keeps its subscription state in its own table.
+bool entitlementGrantsPro(Map<String, dynamic>? row, {DateTime? now}) {
+  final tier = row?['tier'] as String?;
   if (tier == null || tier == 'free') return false;
-  final expires = DateTime.tryParse(
-    profile?['subscription_expires_at'] as String? ?? '',
-  );
+  final expires = DateTime.tryParse(row?['expires_at'] as String? ?? '');
   return expires != null && expires.isAfter(now ?? DateTime.now());
 }
 
@@ -44,14 +45,12 @@ class SubscriptionRepository {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) return 'free';
-      final profile = await _supabase
-          .from('profiles')
-          .select('subscription_tier, subscription_expires_at')
-          .eq('id', user.id)
+      final row = await _supabase
+          .from('cnc_entitlements')
+          .select('tier, expires_at')
+          .eq('user_id', user.id)
           .maybeSingle();
-      return profileGrantsPro(profile)
-          ? profile!['subscription_tier'] as String
-          : 'free';
+      return entitlementGrantsPro(row) ? row!['tier'] as String : 'free';
     } catch (_) {
       return 'free';
     }

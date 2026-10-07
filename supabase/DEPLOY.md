@@ -1,174 +1,167 @@
 # Deploying the backend
 
-Verified Play purchases, locked-down RLS and server-side AI quota
-(commit "Verify Play purchases with Google and lock down Pro and usage data").
+Verified Play purchases, locked-down usage data and server-side AI quota.
 
 Project ref: `colahcvziorjkqckqdlt`. Package name: `com.cncassist.cnc_assist`.
 
-**Order matters.** Do the steps top to bottom. In particular:
+## Read this first: the project is shared
 
-- The service account must work (step 2) before the functions are deployed
-  (step 4). The new `verify-purchase` refuses to grant Pro without it.
-- The functions are deployed (step 4) before the migration runs (step 5).
-  The old functions wrote usage rows with the user's own token, which the
-  migration forbids.
+The live Supabase project also serves **another app** (bookings, contacts,
+documents, …). That app owns `public.profiles`, the `on_auth_user_created`
+trigger and `public.handle_new_user()`. CNC Assist must never change them.
 
-App versions up to 1.1.6 keep working against the new backend. The request
-formats are unchanged, and the error bodies still carry `quota_exceeded` and
-`pro_required`.
+CNC Assist's own objects are `qa_logs` and the `cnc_*` tables
+(`cnc_entitlements`, `cnc_purchases`, created by migration 003).
+`001_initial_schema.sql` and `002_usage_tracking.sql` are the original design.
+They do not match what is live and must not be applied.
 
-### Two phases, if the service account is not ready yet
+- **Never run `supabase db push` from this repo.** The remote migration
+  history belongs to the other app. Apply CNC migrations with
+  `supabase db query -f` (step 4).
+- `supabase/tests/live_baseline.sql` is a snapshot of the relevant live
+  objects of both apps. `supabase/tests/rls_test.mjs` applies it plus 003 and
+  checks that the CNC holes are closed and the other app still works.
 
-A new Play Console invitation can take up to a day to apply. The RLS hole
-does not need to wait for it:
+## Order
 
-- **Phase A, now** (no Google access needed): deploy every function except
-  `verify-purchase` and `play-rtdn`, then run the migration (steps 1, 4, 5).
-  Self-granted Pro and quota tampering stop. The old `verify-purchase` stays
-  live, so faking a purchase is still possible until phase B.
-- **Phase B, when `check_play_access.ts` passes**: steps 2–3, then deploy
-  `verify-purchase` and `play-rtdn`, then step 6.
+1. Read-only checks (step 1)
+2. Deploy the functions (step 3)
+3. Run the migration (step 4)
+4. Verify (step 5)
 
-The new functions treat a missing `purchases` table as "no purchases", so the
-minutes between step 4 and step 5 cause no errors.
+Steps 2 and 6 (Google Play service account, notifications) can happen before
+or after. Until the service account is set, `verify-purchase` refuses every
+purchase (503). That is safe: the app keeps the purchase unacknowledged and
+re-verifies on every start, and Google refunds it after three days if it is
+never confirmed. The function it replaces reported success without granting
+anything.
+
+App versions up to 1.1.6 keep working against the new functions. They read Pro
+from a column that does not exist, so they always see free, as before.
+
+All commands below assume the CLI is logged in (`npx supabase login`, with the
+account that owns the project).
 
 ---
 
 ## 1. Look at production first (read-only)
 
-SQL Editor → run:
-
-```sql
--- How many Pro rows exist, and how many have no expiry (cannot come from a real purchase)
-select subscription_tier, subscription_expires_at is null as no_expiry,
-       subscription_expires_at > now() + interval '32 days' as too_far, count(*)
-from public.profiles group by 1, 2, 3 order by 1, 2, 3;
-
--- Current policies on the two tables this release changes
-select tablename, policyname, cmd, qual, with_check
-from pg_policies where schemaname = 'public' and tablename in ('profiles', 'qa_logs');
+```bash
+npx supabase db query --linked --project-ref colahcvziorjkqckqdlt \
+  "select tablename, policyname, cmd, qual, with_check from pg_policies where schemaname = 'public' order by 1, 2;"
+npx supabase functions list --project-ref colahcvziorjkqckqdlt
+npx supabase secrets list   --project-ref colahcvziorjkqckqdlt   # names only
 ```
 
-Rows with `no_expiry` or `too_far` will be reset to free by the migration.
+## 2. Google Play service account (one time; can take a day to apply)
 
-## 2. Google Play service account (one time)
-
-1. **Google Cloud Console** (console.cloud.google.com). Pick a project; the
-   Firebase project for this app is fine.
-2. *APIs & Services → Library*: enable **Google Play Android Developer API**.
-3. *IAM & Admin → Service Accounts → Create service account*, e.g.
-   `play-verify`. It needs no Cloud roles.
-4. Open it → *Keys → Add key → Create new key → JSON*. Treat the downloaded
-   file as a password. Never commit it and never paste it into a chat.
-5. **Play Console → Users and permissions → Invite new users**:
-   - Email: the service account's address (`…@….iam.gserviceaccount.com`)
-   - *App permissions → Add app → CNC Assist*, with:
-     - View app information (read-only)
-     - **View financial data, orders, and cancellation survey responses**
-     - **Manage orders and subscriptions**
-   - Invite. (If Play Console shows a *Setup → API access* page asking you to
-     link a Cloud project, link the one from step 1.)
-6. Check that the access works, on your own computer:
+1. **Google Cloud Console**: enable **Google Play Android Developer API** in
+   any project you own.
+2. *IAM & Admin → Service Accounts → Create service account* (e.g.
+   `play-verify`; it needs no Cloud roles). Then *Keys → Add key → JSON*.
+   Treat the file as a password. Never commit it and never paste it into a
+   chat.
+3. **Play Console → Users and permissions → Invite new users**: enter the
+   service account's email. Under *App permissions → CNC Assist*, grant
+   **View financial data, orders, and cancellation survey responses** and
+   **Manage orders and subscriptions**.
+4. Check the access on your own computer:
 
    ```bash
    npx deno run --allow-read --allow-env --allow-net \
      supabase/scripts/check_play_access.ts ~/Downloads/<key>.json
    ```
 
-   `✓ Access works` means continue. `✗ … lacks permission` means the
-   invitation has not applied yet; it can take up to 24 hours. Saving any edit
-   to an in-app product in Play Console sometimes makes it apply sooner.
+   `✓ Access works`: continue. `✗ … lacks permission`: the invitation has not
+   applied yet; it can take up to 24 hours.
+5. Store the key as a secret, without printing it:
 
-## 3. Secrets
+   ```bash
+   npx supabase secrets set --project-ref colahcvziorjkqckqdlt \
+     GOOGLE_PLAY_SERVICE_ACCOUNT_KEY="$(cat ~/Downloads/<key>.json)"
+   ```
 
-Dashboard → *Edge Functions → Secrets* (or `npx supabase secrets set …`):
-
-| Secret | Value |
-|---|---|
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` | The entire content of the JSON key file |
-| `PLAY_RTDN_SECRET` | A long random string, e.g. `openssl rand -hex 32` (only needed for step 7) |
-| `PLAY_PACKAGE_NAME` | Optional; defaults to `com.cncassist.cnc_assist` |
-
-`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and the AI keys already exist.
-
-## 4. Deploy the Edge Functions
-
-The functions share code in `_shared/`, so deploy with the CLI:
+## 3. Deploy the Edge Functions
 
 ```bash
-npx supabase login                  # opens the browser once
 npx supabase functions deploy --use-api --project-ref colahcvziorjkqckqdlt
-# phase A only:
-npx supabase functions deploy --use-api --project-ref colahcvziorjkqckqdlt \
-  ask-claude analyze-image analyze-pdf analyze-gcode tooling-recs delete-account
 ```
 
-`--use-api` bundles on Supabase's side, so Docker is not needed. Without
-function names it deploys all eight. `play-rtdn` gets JWT verification turned
-off from `supabase/config.toml`, because Pub/Sub cannot send a Supabase JWT.
+`--use-api` bundles on Supabase's side, so Docker is not needed. This deploys
+all eight functions. `play-rtdn` gets JWT verification turned off from
+`supabase/config.toml` (Pub/Sub cannot send a Supabase JWT). Until
+`PLAY_RTDN_SECRET` is set it rejects every request.
 
-## 5. Apply the migration
+The new functions treat a missing `cnc_*` table as "not Pro", so the minutes
+before step 4 cause no errors.
 
-SQL Editor → paste all of `supabase/migrations/003_security_hardening.sql` →
-*Run*. Or, with the CLI logged in:
-`npx supabase db query --project-ref colahcvziorjkqckqdlt -f supabase/migrations/003_security_hardening.sql`.
-It can be run again safely.
+## 4. Apply the migration
 
-(Avoid `supabase db push` unless 001 and 002 are recorded in the remote
-migration history. If they were applied by hand, `db push` would try to re-run
-them. Use `npx supabase migration repair --status applied 001 002` first.)
+```bash
+npx supabase db query --linked --project-ref colahcvziorjkqckqdlt \
+  -f supabase/migrations/003_security_hardening.sql
+```
 
-## 6. Verify
+It touches only CNC objects (qa_logs, get_monthly_usage, the cnc_* tables) and
+can be run again safely.
 
-- Re-run the policies query from step 1. Expected for `profiles`:
-  `Users read own profile` (SELECT) and `Users update own preferences`
-  (UPDATE). Expected for `qa_logs`: only `Users read own qa_logs`.
-- Make a purchase as a **license tester** (Play Console → *Settings → License
-  testing*). Then:
+## 5. Verify
 
-  ```sql
-  select purchase_token, user_id, state, expires_at, is_test from public.purchases;
-  select id, subscription_tier, subscription_expires_at from public.profiles
-  where subscription_tier <> 'free';
-  ```
+```bash
+npx supabase db query --linked --project-ref colahcvziorjkqckqdlt \
+  "select tablename, policyname, cmd from pg_policies where tablename in ('qa_logs','cnc_entitlements','cnc_purchases','profiles') order by 1, 2;"
+```
 
-  Test subscriptions renew every few minutes. Watching `expires_at` move on
-  later AI calls exercises the renewal check too.
-- Logs: Dashboard → *Edge Functions → verify-purchase → Logs*.
-- Cancel the test subscription in the Play Store. After it ends, the next AI
-  call should treat the user as free.
+- Expected for `qa_logs`: only `Users read own qa_logs`.
+- Expected for `cnc_entitlements`: `Users read own entitlement`.
+- Expected for `cnc_purchases`: none.
+- `profiles` must be unchanged (`profiles self insert/read/update`).
 
-## 7. Real-time developer notifications (recommended)
+Then, once step 2 is done, make a purchase as a **license tester** (Play
+Console → *Settings → License testing*) and check:
 
-Without these, an expiry is noticed at the cached expiry date and a refund at
-the next re-check. With them, both take effect immediately.
+```bash
+npx supabase db query --linked --project-ref colahcvziorjkqckqdlt \
+  "select user_id, state, expires_at, is_test from public.cnc_purchases;
+   select user_id, tier, expires_at from public.cnc_entitlements where tier = 'pro';"
+```
+
+Test subscriptions renew every few minutes, so `expires_at` moving on later AI
+calls exercises the renewal check. Logs: Dashboard → *Edge Functions →
+verify-purchase → Logs*.
+
+## 6. Real-time developer notifications (recommended)
 
 1. Cloud Console → *Pub/Sub → Topics → Create topic*: `play-rtdn`.
 2. Topic → *Permissions → Add principal*
    `google-play-developer-notifications@system.gserviceaccount.com`, role
    **Pub/Sub Publisher**.
-3. *Create subscription* on the topic. Delivery type: **Push**. Endpoint:
+3. Generate a secret and store it:
+   `npx supabase secrets set --project-ref colahcvziorjkqckqdlt PLAY_RTDN_SECRET="$(openssl rand -hex 32)"`.
+   Note the value; the next step needs it.
+4. *Create subscription* on the topic. Delivery type **Push**, endpoint
    `https://colahcvziorjkqckqdlt.supabase.co/functions/v1/play-rtdn?secret=<PLAY_RTDN_SECRET>`.
-4. Play Console → *Monetize with Play → Monetization setup → Real-time
+5. Play Console → *Monetize with Play → Monetization setup → Real-time
    developer notifications*. Set the topic to
    `projects/<cloud-project-id>/topics/play-rtdn` → *Send test notification*.
    The play-rtdn logs should show `test notification received`.
 
 ## Rolling back
 
-- Functions: `git checkout <previous-commit> -- supabase/functions` and deploy
-  again. Rolling back `verify-purchase` reopens free Pro, so prefer fixing
-  forward.
-- Migration: if a legitimate client write is now denied (`permission denied
-  for table profiles`), add that column to the `grant update (…)` list. Do not
-  restore the old `FOR ALL` policy.
+- Functions: `git checkout <previous-commit> -- supabase/functions`, then
+  deploy again. The previous `verify-purchase` reports success without granting
+  anything, so prefer fixing forward.
+- Migration: the cnc_* tables can be dropped
+  (`drop table public.cnc_purchases, public.cnc_entitlements;`). Do not
+  re-create the qa_logs INSERT policy.
 
 ## Tests
 
 ```bash
-# Edge Function logic: entitlement states, JWT signing, Play API flow
+# Edge Function logic: entitlement states, JWT signing, Play API flow, isPro
 npx deno test --allow-env supabase/functions/tests/
 
-# Every migration on a real Postgres (PGlite), with each attack tried as a user
+# Live baseline + 003 on a real Postgres (PGlite), both apps checked
 cd supabase/tests && npm install && npm test
+node rls_test.mjs --before   # shows the holes in the baseline (expected to fail)
 ```

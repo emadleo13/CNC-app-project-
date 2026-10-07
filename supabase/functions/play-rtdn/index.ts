@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     // Whose purchase is it? The row written when the app verified it, or, if
     // the app never got that far, the account id it attached at checkout.
     const { data: row } = await admin
-      .from("purchases")
+      .from("cnc_purchases")
       .select("user_id")
       .eq("purchase_token", token)
       .maybeSingle();

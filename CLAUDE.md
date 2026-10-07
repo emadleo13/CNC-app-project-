@@ -63,11 +63,12 @@ Numeric inputs use `DecimalInputFormatter` (`lib/core/widgets/`), which turns `,
 
 ### Backend (Supabase)
 
-- Auth: anonymous sign-in; a DB trigger creates the `profiles` row
+- **The Supabase project is shared with another app** (bookings, contacts, documents). That app owns `public.profiles`, the `on_auth_user_created` trigger and `handle_new_user()`. Never change them from here. CNC Assist's objects are `qa_logs` and the `cnc_*` tables. Never run `supabase db push` from this repo (the remote migration history is the other app's); apply CNC migrations with `supabase db query -f`. `supabase/migrations/001`/`002` are historical and do not match what is live.
+- Auth: anonymous sign-in.
 - Edge Functions hold every server-side secret (AI provider keys, the Google Play service account). These are **never** in the Flutter app. Call them through `invokeEdgeFunction()` (`lib/core/net/`), which turns non-2xx responses into a typed `EdgeFunctionError`; `functions.invoke` throws on non-2xx, so checking `response.status` afterwards never works.
-- Pro: `public.purchases`, written only from Google Play data by `verify-purchase` and `play-rtdn`, is the source of truth. `profiles.subscription_tier` / `subscription_expires_at` are a cache of it; Pro needs a future expiry (`profileGrantsPro` in the app, `isPro` in `_shared/entitlement.ts`). `PurchaseController` owns the Play purchase stream for the whole session.
-- RLS is on for all tables. App users may only update preference columns of their own profile; `qa_logs` and `purchases` are written by the service role only (quota is counted in `_shared/quota.ts`). `supabase/tests/rls_test.mjs` checks this against every migration.
-- Deploying the backend: `supabase/DEPLOY.md` (order matters)
+- Pro: `cnc_purchases`, written only from Google Play data by `verify-purchase` and `play-rtdn`, is the source of truth. `cnc_entitlements` (tier + expiry per user) is a cache of it that the app reads. Pro needs a future expiry (`entitlementGrantsPro` in the app, `isPro` in `_shared/entitlement.ts`). `PurchaseController` owns the Play purchase stream for the whole session.
+- RLS: app users can read only their own `qa_logs` and `cnc_entitlements` rows and cannot write either; `cnc_purchases` is service-role only. Quota is counted in `_shared/quota.ts`. `supabase/tests/rls_test.mjs` applies `live_baseline.sql` (a snapshot of the live objects of both apps) plus 003 and checks both apps.
+- Deploying the backend: `supabase/DEPLOY.md`
 - Local offline storage uses Hive + `flutter_secure_storage`
 
 ## Environment setup

@@ -29,23 +29,23 @@ class UsageRepository {
       final now        = DateTime.now().toUtc();
       final monthStart = DateTime.utc(now.year, now.month).toIso8601String();
 
-      // Fetch usage rows and profile in parallel
+      // Fetch usage rows and the Pro entitlement in parallel
       final usageFuture = _supabase
           .from('qa_logs')
           .select('id')
           .eq('user_id', user.id)
           .gte('created_at', monthStart);
 
-      final profileFuture = _supabase
-          .from('profiles')
-          .select('subscription_tier, subscription_expires_at')
-          .eq('id', user.id)
+      final entitlementFuture = _supabase
+          .from('cnc_entitlements')
+          .select('tier, expires_at')
+          .eq('user_id', user.id)
           .maybeSingle();
 
-      final usageRows = await usageFuture;
-      final profile   = await profileFuture;
+      final usageRows   = await usageFuture;
+      final entitlement = await entitlementFuture;
 
-      final isPro = profileGrantsPro(profile);
+      final isPro = entitlementGrantsPro(entitlement);
       final used  = (usageRows as List).length;
 
       return UsageStatus(used: used, limit: UsageStatus.freeLimit, isPro: isPro);
