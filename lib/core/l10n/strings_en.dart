@@ -133,7 +133,7 @@ class AppStringsEn implements AppStrings {
       'It is used only for the Knowledge Base feature.';
   @override String get settingsSaved        => 'Settings saved';
   @override String get settingsAbout        => 'About';
-  @override String get settingsVersion      => 'Version 1.0.0';
+  @override String get settingsVersion      => 'Version';
   @override String get settingsTheme        => 'Theme';
   @override String get settingsThemeDark    => 'Dark (Industrial)';
 

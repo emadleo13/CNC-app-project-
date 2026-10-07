@@ -135,7 +135,7 @@ class AppStringsAr implements AppStrings {
       'يستخدم فقط لميزة قاعدة المعرفة.';
   @override String get settingsSaved        => 'تم حفظ الإعدادات';
   @override String get settingsAbout        => 'حول';
-  @override String get settingsVersion      => 'الإصدار 1.0.0';
+  @override String get settingsVersion      => 'الإصدار';
   @override String get settingsTheme        => 'المظهر';
   @override String get settingsThemeDark    => 'داكن (صناعي)';
 

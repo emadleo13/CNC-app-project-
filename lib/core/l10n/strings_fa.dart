@@ -135,7 +135,7 @@ class AppStringsFa implements AppStrings {
       'فقط برای ویژگی پایگاه دانش استفاده می‌شود.';
   @override String get settingsSaved        => 'تنظیمات ذخیره شد';
   @override String get settingsAbout        => 'درباره';
-  @override String get settingsVersion      => 'نسخه ۱.۰.۰';
+  @override String get settingsVersion      => 'نسخه';
   @override String get settingsTheme        => 'پوسته';
   @override String get settingsThemeDark    => 'تیره (صنعتی)';
 

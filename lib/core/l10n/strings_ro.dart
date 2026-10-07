@@ -133,7 +133,7 @@ class AppStringsRo implements AppStrings {
       'Este utilizată doar pentru funcția Baza de Cunoștințe.';
   @override String get settingsSaved        => 'Setări salvate';
   @override String get settingsAbout        => 'Despre';
-  @override String get settingsVersion      => 'Versiunea 1.0.0';
+  @override String get settingsVersion      => 'Versiunea';
   @override String get settingsTheme        => 'Temă';
   @override String get settingsThemeDark    => 'Întunecat (Industrial)';
 
