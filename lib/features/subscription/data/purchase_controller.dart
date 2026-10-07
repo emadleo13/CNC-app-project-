@@ -95,7 +95,7 @@ class PurchaseController extends StateNotifier<PurchaseFlow> {
   final PurchaseVerifier _verify;
 
   StreamSubscription<List<PurchaseDetails>>? _sub;
-  bool _started = false;
+  Future<void>? _starting;
 
   /// True while a purchase or restore the user started is in progress: only
   /// then do updates change [state].
@@ -104,12 +104,18 @@ class PurchaseController extends StateNotifier<PurchaseFlow> {
   /// Completes when the batch answering the user's restore has been handled.
   Completer<void>? _restoreBatch;
 
-  Future<void> start() async {
-    if (_started) return;
-    _started = true;
+  /// Subscribes to the purchase stream and syncs existing purchases. Safe to
+  /// call repeatedly. If billing was unavailable, the next call tries again,
+  /// so a Buy after a bad start still gets its result.
+  Future<void> start() {
+    if (_sub != null) return Future.value();
+    return _starting ??= _start().whenComplete(() => _starting = null);
+  }
+
+  Future<void> _start() async {
     try {
       if (!await _store.isAvailable()) return;
-      _sub = _store.purchaseStream.listen(
+      _sub ??= _store.purchaseStream.listen(
         _onUpdates,
         onError: (Object _) {
           if (_interactive) _finish(PurchaseFlow.error);

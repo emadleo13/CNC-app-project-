@@ -8,6 +8,7 @@ import 'package:cnc_assist/features/subscription/data/subscription_repository.da
 
 /// Play Billing stand-in: the test decides what the purchase stream emits.
 class FakeStore implements PurchaseStore {
+  bool available = true;
   final updates = StreamController<List<PurchaseDetails>>.broadcast();
   final completed = <PurchaseDetails>[];
   List<PurchaseDetails> onRestore = const [];
@@ -15,7 +16,7 @@ class FakeStore implements PurchaseStore {
   String? lastAccountId;
 
   @override
-  Future<bool> isAvailable() async => true;
+  Future<bool> isAvailable() async => available;
   @override
   Stream<List<PurchaseDetails>> get purchaseStream => updates.stream;
   @override
@@ -100,6 +101,20 @@ void main() {
     // Nothing the user started, so no message on screen.
     expect(flow(), PurchaseFlow.idle);
   });
+
+  test(
+    'billing unavailable at launch: a later purchase still gets its result',
+    () async {
+      store.available = false;
+      await controller().start();
+      store.available = true;
+      store.onBuy = [purchase(PurchaseStatus.purchased)];
+      await controller().buy(product);
+      await settle();
+      await settle();
+      expect(flow(), PurchaseFlow.purchased);
+    },
+  );
 
   test(
     'cancelling the Play dialog ends the purchase (no endless spinner)',
