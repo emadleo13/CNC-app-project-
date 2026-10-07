@@ -444,6 +444,14 @@ abstract class AppStrings {
   String get settingsMaxRpmHint;
   String get resRpmLimited;
 
+  // Three-point arc
+  String get arcCenterX;
+  String get arcCenterZ;
+  String get arcRadius;
+  String get arcSweep;
+  String get arcCw;
+  String get arcCcw;
+
   // Purchase flow
   String get subCanceled;
   String get subPending;

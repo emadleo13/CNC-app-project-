@@ -89,6 +89,23 @@ void main() {
       expect(r.center.z, closeTo(0, 1e-6));
       expect(r.radius, closeTo(10, 1e-6));
     });
+    test('sweep follows the arc through the middle point', () {
+      // Quarter circle from (10,0) clockwise through (7.07,-7.07) to (0,-10).
+      final cw = ArcCalculator.threePoint(const ArcPoint(10, 0),
+          const ArcPoint(7.0710678, -7.0710678), const ArcPoint(0, -10))!;
+      expect(cw.sweepAngle, closeTo(90, 1e-6));
+      expect(cw.clockwise, isTrue);
+      // Same end points the other way round: 270° counter-clockwise.
+      final ccw = ArcCalculator.threePoint(const ArcPoint(10, 0),
+          const ArcPoint(-10, 0), const ArcPoint(0, -10))!;
+      expect(ccw.sweepAngle, closeTo(270, 1e-6));
+      expect(ccw.clockwise, isFalse);
+      // Upper half circle, (0,0) → (10,10) → (20,0), runs clockwise.
+      final top = ArcCalculator.threePoint(
+          const ArcPoint(0, 0), const ArcPoint(10, 10), const ArcPoint(20, 0))!;
+      expect(top.sweepAngle, closeTo(180, 1e-6));
+      expect(top.clockwise, isTrue);
+    });
     test('collinear points return null', () {
       expect(
         ArcCalculator.threePoint(

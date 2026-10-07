@@ -9,9 +9,24 @@ class ArcPoint {
 class ArcResult {
   final ArcPoint center;
   final double radius;
-  final double sweepAngle; // degrees, p1→p3 about the centre
-  const ArcResult(
-      {required this.center, required this.radius, required this.sweepAngle});
+
+  /// Degrees from p1 to p3 along the arc that passes through p2.
+  final double sweepAngle;
+
+  /// Direction from p1 through p2 to p3, with X to the right and Z up (as the
+  /// preview draws it).
+  final bool clockwise;
+
+  /// Start angle of p1 about the centre, radians, same frame.
+  final double startAngle;
+
+  const ArcResult({
+    required this.center,
+    required this.radius,
+    required this.sweepAngle,
+    required this.clockwise,
+    required this.startAngle,
+  });
 }
 
 class ArcCalculator {
@@ -36,12 +51,28 @@ class ArcCalculator {
     final radius =
         math.sqrt((ax - ux) * (ax - ux) + (az - uz) * (az - uz));
 
-    final a1 = math.atan2(az - uz, ax - ux);
-    final a3 = math.atan2(cz - uz, cx - ux);
-    var sweep = (a3 - a1) * 180 / math.pi;
-    if (sweep < 0) sweep += 360;
+    // Angles about the centre. The counter-clockwise sweep from p1 to p3 is
+    // the right arc only if p2 lies inside it; otherwise the arc runs the
+    // other way. (Always taking the CCW sweep showed 270° for a 90° CW arc.)
+    double ccw(double from, double to) {
+      var d = (to - from) % (2 * math.pi);
+      if (d < 0) d += 2 * math.pi;
+      return d;
+    }
+    final t1 = math.atan2(az - uz, ax - ux);
+    final t2 = math.atan2(bz - uz, bx - ux);
+    final t3 = math.atan2(cz - uz, cx - ux);
+    final ccwSweep = ccw(t1, t3);
+    final clockwise = ccw(t1, t2) > ccwSweep;
+    final sweep = (clockwise ? 2 * math.pi - ccwSweep : ccwSweep) * 180 / math.pi;
 
-    return ArcResult(center: center, radius: radius, sweepAngle: sweep);
+    return ArcResult(
+      center: center,
+      radius: radius,
+      sweepAngle: sweep,
+      clockwise: clockwise,
+      startAngle: t1,
+    );
   }
 
   /// Radius from a chord length and the included (sweep) angle in degrees.

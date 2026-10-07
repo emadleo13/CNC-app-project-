@@ -18,6 +18,17 @@ import '../domain/gcode_line.dart';
 import '../parsers/gcode_parser.dart';
 import 'gcode_syntax.dart';
 
+/// Text of a G-code file. Most are UTF-8 or plain ASCII, but files from older
+/// controls and CAM posts are often Latin-1 / Windows-1252 (Ø or ° in
+/// comments), which the UTF-8 decoder rejects outright.
+String decodeProgramFile(List<int> bytes) {
+  try {
+    return utf8.decode(bytes);
+  } on FormatException {
+    return latin1.decode(bytes);
+  }
+}
+
 /// Runs in a background isolate (via [compute]) so parsing a large program
 /// never blocks the UI thread.
 List<GcodeLine> _parseGcodeIsolate(Map<String, dynamic> args) {
@@ -86,7 +97,8 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
         allowedExtensions: ['nc', 'cnc', 'gcode', 'txt', 'mpf', 'spf'],
       );
       if (result != null && result.files.single.path != null) {
-        final content = await File(result.files.single.path!).readAsString();
+        final content = decodeProgramFile(await File(result.files.single.path!).readAsBytes());
+        if (!mounted) return;
         final detected = GcodeParser.autoDetect(content);
         setState(() {
           _detected = detected;

@@ -525,4 +525,11 @@ class AppStringsAr implements AppStrings {
       'تُحدّ السرعات المحسوبة بهذه القيمة. اتركه فارغاً أو 0 لعدم التحديد.';
   @override String get resRpmLimited      =>
       'تم التحديد بأقصى سرعة للماكينة {max} RPM (المحسوبة: {rpm} RPM). سرعة القطع عند الحد: {vc}.';
+
+  @override String get arcCenterX => 'المركز X';
+  @override String get arcCenterZ => 'المركز Z';
+  @override String get arcRadius  => 'نصف القطر';
+  @override String get arcSweep   => 'زاوية القوس';
+  @override String get arcCw      => 'مع عقارب الساعة';
+  @override String get arcCcw     => 'عكس عقارب الساعة';
 }

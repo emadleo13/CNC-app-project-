@@ -7,6 +7,7 @@ import 'package:cnc_assist/features/gcode_analyzer/domain/gcode_rule_text.dart';
 import 'package:cnc_assist/features/gcode_analyzer/parsers/gcode_parser.dart';
 import 'package:cnc_assist/features/gcode_analyzer/parsers/haas_parser.dart';
 import 'package:cnc_assist/features/gcode_analyzer/parsers/sinumerik_parser.dart';
+import 'package:cnc_assist/features/gcode_analyzer/presentation/gcode_input_screen.dart';
 
 /// Every (line number, rule) the analyzer reports for [program].
 List<(int, String)> findings(String program, [CncDialect dialect = CncDialect.haas]) => [
@@ -361,5 +362,11 @@ G28 Z0.
         expect(sinumerik, contains(code), reason: 'Sinumerik reference lists $code');
       }
     }
+  });
+
+  test('G-code files in UTF-8 and in Latin-1 both open', () {
+    expect(decodeProgramFile(utf8.encode('(Ø10 DRILL)\nG81')), '(Ø10 DRILL)\nG81');
+    // Latin-1 bytes for "(Ø10 DRILL)": 0xD8 is not valid UTF-8 on its own.
+    expect(decodeProgramFile([0x28, 0xD8, 0x31, 0x30, 0x29]), '(Ø10)');
   });
 }

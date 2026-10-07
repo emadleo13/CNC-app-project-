@@ -525,4 +525,11 @@ class AppStringsFa implements AppStrings {
       'دورهای محاسبه‌شده به این مقدار محدود می‌شوند. برای بدون محدودیت، خالی یا ۰ بگذارید.';
   @override String get resRpmLimited      =>
       'به حداکثر دور ماشین ({max} RPM) محدود شد (محاسبه‌شده: {rpm} RPM). سرعت برش در این دور: {vc}.';
+
+  @override String get arcCenterX => 'مرکز X';
+  @override String get arcCenterZ => 'مرکز Z';
+  @override String get arcRadius  => 'شعاع';
+  @override String get arcSweep   => 'زاویهٔ کمان';
+  @override String get arcCw      => 'ساعتگرد';
+  @override String get arcCcw     => 'پادساعتگرد';
 }

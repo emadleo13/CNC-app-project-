@@ -527,4 +527,11 @@ class AppStringsEn implements AppStrings {
       'Calculated speeds are capped at this. Leave empty or 0 for no limit.';
   @override String get resRpmLimited      =>
       'Capped at the machine maximum of {max} RPM (calculated: {rpm} RPM). Cutting speed at the cap: {vc}.';
+
+  @override String get arcCenterX => 'Centre X';
+  @override String get arcCenterZ => 'Centre Z';
+  @override String get arcRadius  => 'Radius';
+  @override String get arcSweep   => 'Sweep';
+  @override String get arcCw      => 'clockwise';
+  @override String get arcCcw     => 'counter-clockwise';
 }

@@ -527,4 +527,11 @@ class AppStringsRo implements AppStrings {
       'Turațiile calculate sunt limitate la această valoare. Lasă gol sau 0 pentru fără limită.';
   @override String get resRpmLimited      =>
       'Limitat la maximul mașinii de {max} RPM (calculat: {rpm} RPM). Viteza de așchiere la limită: {vc}.';
+
+  @override String get arcCenterX => 'Centru X';
+  @override String get arcCenterZ => 'Centru Z';
+  @override String get arcRadius  => 'Rază';
+  @override String get arcSweep   => 'Unghi arc';
+  @override String get arcCw      => 'în sens orar';
+  @override String get arcCcw     => 'în sens antiorar';
 }
