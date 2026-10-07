@@ -62,4 +62,22 @@ void main() {
       );
     });
   });
+
+  test('machine RPM limit caps turning RPM and lowers the real surface speed', () {
+    // Ø10 at 200 m/min wants 6366 RPM.
+    const input = TurningInput(
+      workDiameter: 10, cuttingSpeed: 200, feedPerRev: 0.2, cutLength: 50,
+      depthOfCut: 1, passes: 1, units: UnitSystem.metric,
+    );
+    final free = TurningCalculator.calculate(input)!;
+    expect(free.rpm, 6366);
+    expect(free.limitedFromRpm, isNull);
+    final capped = TurningCalculator.calculate(input, maxRpm: 4000)!;
+    expect(capped.rpm, 4000);
+    expect(capped.limitedFromRpm, 6366);
+    expect(capped.feedPerMin, closeTo(800, 1e-9));
+    expect(capped.cuttingSpeed, closeTo(3.14159265 * 10 * 4000 / 1000, 1e-3));
+    // MRR uses the speed actually reached.
+    expect(capped.mrr, closeTo(capped.cuttingSpeed * 1 * 0.2, 1e-9));
+  });
 }

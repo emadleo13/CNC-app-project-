@@ -520,4 +520,11 @@ class AppStringsEn implements AppStrings {
       'Peck depth must be greater than 0.';
   @override String get genErrTool       =>
       'Tool number must be 1 to 99.';
+
+  @override String get settingsMaxRpm     =>
+      'Machine max spindle RPM';
+  @override String get settingsMaxRpmHint =>
+      'Calculated speeds are capped at this. Leave empty or 0 for no limit.';
+  @override String get resRpmLimited      =>
+      'Capped at the machine maximum of {max} RPM (calculated: {rpm} RPM). Cutting speed at the cap: {vc}.';
 }

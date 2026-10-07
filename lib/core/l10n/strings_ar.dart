@@ -518,4 +518,11 @@ class AppStringsAr implements AppStrings {
       'يجب أن يكون عمق النقرة أكبر من 0.';
   @override String get genErrTool       =>
       'يجب أن يكون رقم الأداة من 1 إلى 99.';
+
+  @override String get settingsMaxRpm     =>
+      'أقصى سرعة لمغزل الماكينة';
+  @override String get settingsMaxRpmHint =>
+      'تُحدّ السرعات المحسوبة بهذه القيمة. اتركه فارغاً أو 0 لعدم التحديد.';
+  @override String get resRpmLimited      =>
+      'تم التحديد بأقصى سرعة للماكينة {max} RPM (المحسوبة: {rpm} RPM). سرعة القطع عند الحد: {vc}.';
 }

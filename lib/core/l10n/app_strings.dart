@@ -439,6 +439,11 @@ abstract class AppStrings {
   String get genErrPeck;
   String get genErrTool;
 
+  // Machine spindle limit
+  String get settingsMaxRpm;
+  String get settingsMaxRpmHint;
+  String get resRpmLimited;
+
   // Purchase flow
   String get subCanceled;
   String get subPending;
@@ -452,6 +457,9 @@ final localeProvider = StateProvider<String>((ref) => 'en');
 
 // Default calculator units: 'metric' | 'imperial'
 final defaultUnitsProvider = StateProvider<String>((ref) => 'metric');
+
+// Machine's maximum spindle RPM; calculators cap their RPM at it. 0 = none.
+final maxRpmProvider = StateProvider<int>((ref) => 0);
 
 // Default G-code dialect: 'haas' | 'sinumerik' | 'generic'
 final defaultDialectProvider = StateProvider<String>((ref) => 'haas');

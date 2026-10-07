@@ -518,4 +518,11 @@ class AppStringsFa implements AppStrings {
       'عمق هر مرحله باید بزرگ‌تر از ۰ باشد.';
   @override String get genErrTool       =>
       'شمارهٔ ابزار باید بین ۱ تا ۹۹ باشد.';
+
+  @override String get settingsMaxRpm     =>
+      'حداکثر دور اسپیندل ماشین';
+  @override String get settingsMaxRpmHint =>
+      'دورهای محاسبه‌شده به این مقدار محدود می‌شوند. برای بدون محدودیت، خالی یا ۰ بگذارید.';
+  @override String get resRpmLimited      =>
+      'به حداکثر دور ماشین ({max} RPM) محدود شد (محاسبه‌شده: {rpm} RPM). سرعت برش در این دور: {vc}.';
 }

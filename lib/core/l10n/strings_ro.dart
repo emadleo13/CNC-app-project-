@@ -520,4 +520,11 @@ class AppStringsRo implements AppStrings {
       'Pasul de găurire trebuie să fie mai mare decât 0.';
   @override String get genErrTool       =>
       'Numărul sculei trebuie să fie între 1 și 99.';
+
+  @override String get settingsMaxRpm     =>
+      'Turația maximă a mașinii';
+  @override String get settingsMaxRpmHint =>
+      'Turațiile calculate sunt limitate la această valoare. Lasă gol sau 0 pentru fără limită.';
+  @override String get resRpmLimited      =>
+      'Limitat la maximul mașinii de {max} RPM (calculat: {rpm} RPM). Viteza de așchiere la limită: {vc}.';
 }

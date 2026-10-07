@@ -41,6 +41,10 @@ class CutParameters {
   final String materialNotes;
   final bool coolantRequired;
 
+  /// The RPM the material and tool asked for, when the machine limit capped
+  /// it to [rpm]. Null when not capped.
+  final int? limitedFromRpm;
+
   const CutParameters({
     required this.rpm,
     required this.feedRatePerMin,
@@ -50,6 +54,7 @@ class CutParameters {
     required this.units,
     required this.materialNotes,
     required this.coolantRequired,
+    this.limitedFromRpm,
   });
 
   String get rpmFormatted => rpm.toString();

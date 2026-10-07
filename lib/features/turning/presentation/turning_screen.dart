@@ -51,7 +51,7 @@ class _TurningScreenState extends ConsumerState<TurningScreen> {
       depthOfCut: _ap,
       passes: _passes,
       units: _units,
-    ));
+    ), maxRpm: ref.read(maxRpmProvider));
     setState(() => _result = r);
   }
 
@@ -166,6 +166,13 @@ class _TurningScreenState extends ConsumerState<TurningScreen> {
                     icon: Icons.trending_up),
               ],
             ),
+            if (_result!.limitedFromRpm != null)
+              RpmLimitNote(
+                template: s.resRpmLimited,
+                cappedRpm: _result!.rpm,
+                requestedRpm: _result!.limitedFromRpm!,
+                cuttingSpeed: '${_result!.cuttingSpeed.toStringAsFixed(0)} $vcUnit',
+              ),
           ],
         ],
       ),

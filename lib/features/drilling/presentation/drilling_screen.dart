@@ -83,7 +83,7 @@ class _DrillTabState extends ConsumerState<_DrillTab> {
         holeDepth: _depth,
         pointAngle: _angle,
         units: widget.units,
-      ));
+      ), maxRpm: ref.read(maxRpmProvider));
     });
   }
 
@@ -163,6 +163,13 @@ class _DrillTabState extends ConsumerState<_DrillTab> {
                 value: _result!.cutTimeFormatted,
                 icon: Icons.timer_outlined),
           ]),
+          if (_result!.limitedFromRpm != null)
+            RpmLimitNote(
+              template: s.resRpmLimited,
+              cappedRpm: _result!.rpm,
+              requestedRpm: _result!.limitedFromRpm!,
+              cuttingSpeed: '${_result!.cuttingSpeed.toStringAsFixed(0)} ${widget.units.cuttingSpeedLabel}',
+            ),
         ],
       ],
     );

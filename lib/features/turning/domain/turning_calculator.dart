@@ -28,12 +28,20 @@ class TurningResult {
   final double mrr; // cm³/min (metric) or in³/min (imperial)
   final UnitSystem units;
 
+  /// Surface speed actually reached (lower than asked when RPM is capped).
+  final double cuttingSpeed;
+
+  /// Requested RPM when the machine limit capped it, else null.
+  final int? limitedFromRpm;
+
   const TurningResult({
     required this.rpm,
     required this.feedPerMin,
     required this.cutTimeMin,
     required this.mrr,
     required this.units,
+    required this.cuttingSpeed,
+    this.limitedFromRpm,
   });
 
   bool get isMetric => units.isMetric;
@@ -55,15 +63,22 @@ class TurningResult {
 
 /// Pure turning feed/speed + cycle-time calculator.
 class TurningCalculator {
-  static TurningResult? calculate(TurningInput input) {
+  /// [maxRpm] is the machine's spindle limit (0 = none), as set with G50 S on
+  /// the control. At small diameters the requested RPM often exceeds it.
+  static TurningResult? calculate(TurningInput input, {int maxRpm = 0}) {
     if (input.workDiameter <= 0 || input.cuttingSpeed <= 0) return null;
     final isMetric = input.units.isMetric;
 
-    final rpm = SpeedFormulas.rpm(
+    final requestedRpm = SpeedFormulas.rpm(
       cuttingSpeed: input.cuttingSpeed,
       diameter: input.workDiameter,
       isMetric: isMetric,
     );
+    final limited = maxRpm > 0 && requestedRpm > maxRpm;
+    final rpm = limited ? maxRpm : requestedRpm;
+    final vc = limited
+        ? SpeedFormulas.cuttingSpeed(rpm: rpm, diameter: input.workDiameter, isMetric: isMetric)
+        : input.cuttingSpeed;
     final feedPerMin =
         SpeedFormulas.feedPerMin(rpm: rpm, feedPerRev: input.feedPerRev);
 
@@ -74,8 +89,8 @@ class TurningCalculator {
     // Q = vc × ap × fn        [cm³/min]  (metric)
     // Q = 12 × SFM × ap × fn  [in³/min]  (imperial)
     final mrr = isMetric
-        ? input.cuttingSpeed * input.depthOfCut * input.feedPerRev
-        : 12 * input.cuttingSpeed * input.depthOfCut * input.feedPerRev;
+        ? vc * input.depthOfCut * input.feedPerRev
+        : 12 * vc * input.depthOfCut * input.feedPerRev;
 
     return TurningResult(
       rpm: rpm,
@@ -83,6 +98,8 @@ class TurningCalculator {
       cutTimeMin: cutTimeMin,
       mrr: mrr,
       units: input.units,
+      cuttingSpeed: vc,
+      limitedFromRpm: limited ? requestedRpm : null,
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:country_flags/country_flags.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/decimal_input_formatter.dart';
 import '../data/settings_repository.dart';
 import '../data/account_repository.dart';
 import '../../subscription/data/subscription_repository.dart';
@@ -28,17 +29,27 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late final TextEditingController _nameCtrl;
+  late final TextEditingController _maxRpmCtrl;
 
   @override
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: ref.read(userNameProvider));
+    final maxRpm = ref.read(maxRpmProvider);
+    _maxRpmCtrl = TextEditingController(text: maxRpm > 0 ? '$maxRpm' : '');
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _maxRpmCtrl.dispose();
     super.dispose();
+  }
+
+  void _setMaxRpm(String text) {
+    final rpm = (double.tryParse(text) ?? 0).round().clamp(0, 100000);
+    ref.read(maxRpmProvider.notifier).state = rpm;
+    ref.read(_settingsRepoProvider).saveMaxRpm(rpm);
   }
 
   void _setName(String name) {
@@ -204,6 +215,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: 'imperial', groupValue: units, onChanged: _setUnits,
               ),
             ]),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Machine spindle limit ─────────────────────────────────────────
+          _SectionHeader(s.settingsMaxRpm),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: TextField(
+                controller: _maxRpmCtrl,
+                keyboardType: TextInputType.number,
+                inputFormatters: const [DecimalInputFormatter()],
+                decoration: InputDecoration(
+                  labelText: 'RPM',
+                  helperText: s.settingsMaxRpmHint,
+                  helperMaxLines: 3,
+                ),
+                onChanged: _setMaxRpm,
+              ),
+            ),
           ),
           const SizedBox(height: 20),
 

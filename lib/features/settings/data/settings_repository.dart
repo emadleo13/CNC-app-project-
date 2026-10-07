@@ -7,6 +7,7 @@ class SettingsRepository {
   static const _keyUnits   = 'units';
   static const _keyDialect = 'dialect';
   static const _keyName    = 'user_name';
+  static const _keyMaxRpm  = 'max_rpm';
 
   Future<Map<String, String?>> loadAll() async {
     return {
@@ -21,4 +22,5 @@ class SettingsRepository {
   Future<void> saveUnits(String units)     => _storage.write(key: _keyUnits,   value: units);
   Future<void> saveDialect(String dialect) => _storage.write(key: _keyDialect, value: dialect);
   Future<void> saveName(String name)       => _storage.write(key: _keyName,    value: name);
+  Future<void> saveMaxRpm(int rpm)         => _storage.write(key: _keyMaxRpm,  value: '$rpm');
 }

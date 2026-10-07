@@ -37,6 +37,16 @@ void main() {
       expect(r.pointLength, closeTo(2.403, 0.01));
       expect(r.cutTimeMin, closeTo(0.2714, 0.005));
     });
+    test('machine RPM limit caps drilling RPM', () {
+      final r = DrillingCalculator.drilling(
+        const DrillingInput(diameter: 2, cuttingSpeed: 60, feedPerRev: 0.04,
+            holeDepth: 6, units: UnitSystem.metric),
+        maxRpm: 6000,
+      )!;
+      expect(r.limitedFromRpm, 9549); // 60·1000/(π·2)
+      expect(r.rpm, 6000);
+      expect(r.feedPerMin, closeTo(240, 1e-9));
+    });
     test('tap drill at 75% matches the standard drill sizes', () {
       // M6×1 → 5.0 mm, M10×1.5 → 8.5 mm, 1/4-20 → #7 (0.201").
       expect(
