@@ -55,11 +55,17 @@ Numeric inputs use `DecimalInputFormatter` (`lib/core/widgets/`), which turns `,
 
 ### G-code parsing
 
-`GcodeParser` is a factory that selects between `HaasParser` and `SinumerikParser` (both extend `BaseParser`). Auto-detection inspects the raw G-code string. `BaseParser.parse()` tokenizes lines and delegates validation to the dialect-specific subclass via `validateLine()`, `knownGCodes()`, and `knownMCodes()`.
+`GcodeParser` picks `HaasParser`, `SinumerikParser` or `GenericParser` (Fanuc/ISO), all extending `BaseParser`; auto-detection inspects the raw text. `BlockReader` turns each line into a `Block` (G/M codes, address words, keywords) using the dialect's comment syntax: `()` on Haas/Fanuc, `;` on Sinumerik, where parentheses are code (`CYCLE83(…)`, `X=IC(5)`). `BaseParser.parse()` runs the dialect's per-line `checkBlock()`, then walks the program with the modal state (spindle, feed, canned cycle, cutter/length comp, units, work offset). State findings are reported once per situation and stop after a call or jump.
+
+Findings are `LineIssue(severity, rule, args)`. Their text, a message plus a fix, lives in `GcodeRuleText` for all four languages; a test fails if a rule or placeholder is missing in any of them. Another test requires every code in `assets/data/gcode_reference.json` to be known to the matching parser, and real Haas mill, Haas lathe and Sinumerik programs to produce no findings. Add a rule = add it to a parser, to all four tables in `GcodeRuleText`, and a positive and a negative test.
+
+The AI review (`analyze-gcode`) is a second opinion. It gets the numbered program, the app's own findings and the UI language, and returns at most 30 findings plus a summary (`AiReview`). Code from `GcodeGenerator` must pass the analyzer with zero findings (tested).
 
 ### Feed/Speed calculator
 
 `MillingCalculator.calculate()` in `domain/calculators/` takes a `CalculatorInput` + `MaterialSpec` and returns `CutParameters`. Material data is loaded lazily from `assets/data/materials.json` by `MaterialsRepository` (in-memory cache after first load). RPM formula: metric `(Vc×1000)/(π×D)`, imperial `(SFM×3.82)/D`.
+
+The chip loads in `materials.json` are the values for a ½" tool. `chipLoadScale()` scales them linearly below ½" and by `(D/½)^0.7` above; face mills are not scaled. Milling, turning and drilling take `maxRpm` (the machine limit from Settings, `maxRpmProvider`, 0 = none). Above it they cap RPM, keep chip load and feed per rev, and report `limitedFromRpm` for the note under the result.
 
 ### Backend (Supabase)
 

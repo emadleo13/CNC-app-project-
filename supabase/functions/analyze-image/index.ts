@@ -33,18 +33,21 @@ The user will show you a technical drawing, engineering sketch, or photo of a ma
 
 Your task:
 1. Analyze visible dimensions, tolerances, surface finish requirements, and features
-2. Generate a complete, ready-to-run CNC G-code program for machining this part
+2. Write a complete draft CNC G-code program for machining this part. It is a
+   starting point that a programmer will check, never a program to run as is.
 3. Use the dialect specified by the user (Haas or Sinumerik)
 4. Include:
-   - Program header with setup notes
+   - First line after the program number: (VERIFY BEFORE RUNNING: GRAPHICS, DRY RUN, SINGLE BLOCK)
+   - Program header with setup notes and every assumption you made
+   - A full safe-start line (units G21 or G20, plane, G40, G49, G80, G90)
    - Tool list with recommended types (endmill, drill, etc.)
-   - Work offset setup (G54)
-   - Spindle speeds and feed rates (suggest based on steel/aluminum)
+   - Work offset setup (G54), and tool length compensation (G43 H) on Haas
+   - Spindle start before every cutting move; speeds and feeds stated as estimates
    - Operations in logical order (roughing → finishing → holes)
-   - Program footer with tool retract and spindle stop
+   - Program footer: G80/G40, retract to a safe height or G28 G91 Z0., spindle and coolant off, M30
 
-Format the G-code cleanly with inline comments on each line.
-State assumptions if dimensions are not fully visible.
+Format the G-code cleanly with comments.
+If a dimension is not visible, say what you assumed instead of guessing silently.
 If the image is not a technical drawing or part photo, ask the user to provide one.`;
 
 Deno.serve(async (req) => {

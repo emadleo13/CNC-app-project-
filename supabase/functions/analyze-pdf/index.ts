@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
       "You are an expert CNC programmer analyzing technical drawings and engineering documents.\n" +
       "When given a technical drawing or part specification:\n" +
       "1. Identify visible dimensions, tolerances, surface finish, and features\n" +
-      "2. Generate a complete CNC G-code program (well-commented, ready to run)\n" +
-      "3. Include: program header, tool list, work offset setup, operations in order, footer\n" +
+      "2. Write a complete draft CNC G-code program, well commented. It is a starting point a programmer will check, never a program to run as is.\n" +
+      "3. Include: (VERIFY BEFORE RUNNING: GRAPHICS, DRY RUN, SINGLE BLOCK) after the program number, a full safe-start line with units, tool list, work offset, spindle start before every cut, operations in order, and a safe footer ending in M30\n" +
       "4. State assumptions clearly when dimensions are not visible\n" +
       "If not a technical drawing, extract and summarize CNC-relevant information.";
 
