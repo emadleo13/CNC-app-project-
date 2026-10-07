@@ -149,3 +149,45 @@ Deno.test("getSubscription exchanges the JWT, then calls subscriptionsv2 with th
     globalThis.fetch = realFetch;
   }
 });
+
+// ── isPro against a stand-in for the Supabase query builder ─────────────────
+
+import { isPro } from "../_shared/entitlement.ts";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
+
+/// Each table resolves every query on it to one fixed result.
+function fakeAdmin(results: Record<string, { data: unknown; error: unknown }>): SupabaseClient {
+  const builder = (result: { data: unknown; error: unknown }) => {
+    const b: Record<string, unknown> = {};
+    for (const m of ["select", "eq", "gt", "in", "order", "limit"]) b[m] = () => b;
+    b.maybeSingle = () => Promise.resolve(result);
+    b.then = (ok: (r: unknown) => unknown, bad?: (e: unknown) => unknown) =>
+      Promise.resolve(result).then(ok, bad);
+    return b;
+  };
+  return { from: (table: string) => builder(results[table]) } as unknown as SupabaseClient;
+}
+
+Deno.test("isPro: paid-up profile is Pro without touching purchases", async () => {
+  const admin = fakeAdmin({
+    profiles: { data: { subscription_tier: "pro", subscription_expires_at: "2999-01-01T00:00:00Z" }, error: null },
+    purchases: { data: null, error: { message: "must not be queried" } },
+  });
+  assert(await isPro(admin, "u1"));
+});
+
+Deno.test("isPro: free user stays free (not a 500) if the purchases table is missing", async () => {
+  const admin = fakeAdmin({
+    profiles: { data: { subscription_tier: "free", subscription_expires_at: null }, error: null },
+    purchases: { data: null, error: { code: "PGRST205", message: "Could not find the table 'public.purchases'" } },
+  });
+  assertEquals(await isPro(admin, "u1"), false);
+});
+
+Deno.test("isPro: free user with no purchases is free", async () => {
+  const admin = fakeAdmin({
+    profiles: { data: { subscription_tier: "free", subscription_expires_at: null }, error: null },
+    purchases: { data: [], error: null },
+  });
+  assertEquals(await isPro(admin, "u1"), false);
+});

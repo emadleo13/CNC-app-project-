@@ -34,7 +34,13 @@ export async function isPro(admin: SupabaseClient, userId: string): Promise<bool
     .eq("user_id", userId)
     .order("expires_at", { ascending: false, nullsFirst: false })
     .limit(3);
-  if (rowsError) throw rowsError;
+  if (rowsError) {
+    // Fail closed for Pro, but keep the user's free access working. This also
+    // covers the minutes between deploying these functions and running the
+    // migration that creates the purchases table.
+    console.error("isPro: purchases lookup failed:", rowsError);
+    return false;
+  }
 
   for (const row of rows ?? []) {
     if (Date.now() - new Date(row.updated_at).getTime() < REFRESH_AFTER_MS) continue;

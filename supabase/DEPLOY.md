@@ -17,6 +17,21 @@ App versions up to 1.1.6 keep working against the new backend. The request
 formats are unchanged, and the error bodies still carry `quota_exceeded` and
 `pro_required`.
 
+### Two phases, if the service account is not ready yet
+
+A new Play Console invitation can take up to a day to apply. The RLS hole
+does not need to wait for it:
+
+- **Phase A, now** (no Google access needed): deploy every function except
+  `verify-purchase` and `play-rtdn`, then run the migration (steps 1, 4, 5).
+  Self-granted Pro and quota tampering stop. The old `verify-purchase` stays
+  live, so faking a purchase is still possible until phase B.
+- **Phase B, when `check_play_access.ts` passes**: steps 2–3, then deploy
+  `verify-purchase` and `play-rtdn`, then step 6.
+
+The new functions treat a missing `purchases` table as "no purchases", so the
+minutes between step 4 and step 5 cause no errors.
+
 ---
 
 ## 1. Look at production first (read-only)
@@ -82,16 +97,22 @@ The functions share code in `_shared/`, so deploy with the CLI:
 
 ```bash
 npx supabase login                  # opens the browser once
-npx supabase functions deploy --project-ref colahcvziorjkqckqdlt
+npx supabase functions deploy --use-api --project-ref colahcvziorjkqckqdlt
+# phase A only:
+npx supabase functions deploy --use-api --project-ref colahcvziorjkqckqdlt \
+  ask-claude analyze-image analyze-pdf analyze-gcode tooling-recs delete-account
 ```
 
-This deploys all eight functions. `play-rtdn` gets JWT verification turned off
-from `supabase/config.toml`, because Pub/Sub cannot send a Supabase JWT.
+`--use-api` bundles on Supabase's side, so Docker is not needed. Without
+function names it deploys all eight. `play-rtdn` gets JWT verification turned
+off from `supabase/config.toml`, because Pub/Sub cannot send a Supabase JWT.
 
 ## 5. Apply the migration
 
 SQL Editor → paste all of `supabase/migrations/003_security_hardening.sql` →
-*Run*. It can be run again safely.
+*Run*. Or, with the CLI logged in:
+`npx supabase db query --project-ref colahcvziorjkqckqdlt -f supabase/migrations/003_security_hardening.sql`.
+It can be run again safely.
 
 (Avoid `supabase db push` unless 001 and 002 are recorded in the remote
 migration history. If they were applied by hand, `db push` would try to re-run
