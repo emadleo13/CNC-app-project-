@@ -1,12 +1,20 @@
-import { llmComplete } from "../_shared/llm.ts";
+import { llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
+import { answerFormat, historyFrom, styleRules } from "../_shared/answer_style.ts";
+import { answerLanguage } from "../_shared/language.ts";
 
 interface AskRequest {
   question:      string;
   alarmContext?: string;
+  /// App language, en | fa | ro | ar (app 1.3.0+).
+  language?:     string;
+  /// "markdown" when the app renders Markdown (app 1.3.0+).
+  format?:       string;
+  /// Earlier turns of this chat, oldest first: [{role, content}] (app 1.3.0+).
+  history?:      unknown;
 }
 
 Deno.serve(async (req) => {
@@ -37,8 +45,10 @@ Deno.serve(async (req) => {
     });
     if (reservation instanceof Response) return reservation;
 
+    const language = answerLanguage(question, body.language);
     const contextBlock = alarmContext
-      ? `\n\nThe app has found the following alarm data from its local database relevant to this question:\n${alarmContext}Use this data to provide a specific, accurate answer about this alarm code.`
+      ? `\n\nThe app found this alarm data in its local database for the question:\n${alarmContext}\n` +
+        "Use it for a specific, accurate answer about this alarm code."
       : "";
 
     const systemPrompt =
@@ -55,27 +65,31 @@ Deno.serve(async (req) => {
       "Guidelines:\n" +
       "- Be concise and practical — operators need quick, actionable answers\n" +
       "- When answering about alarm codes: what it means, top 2–3 likely causes, first steps to resolve\n" +
-      "- Format code with triple backticks and specify the dialect\n" +
+      "- Give cutting data as starting values with a range, and say what to watch and adjust on the machine\n" +
       "- If a question involves safety risks, mention them clearly\n" +
-      "- When uncertain, say so — do not guess critical safety or machine-specific information\n" +
+      "- When uncertain, say so — do not guess critical safety or machine-specific information\n\n" +
+      styleRules(language, answerFormat(body.format), true) +
       contextBlock;
 
     let result;
     try {
       result = await llmComplete({
-        system:         systemPrompt,
-        parts:          [{ kind: "text", text: question }],
-        maxTokens:      1024,
-        anthropicModel: "claude-haiku-4-5-20251001",
+        system:      systemPrompt,
+        history:     historyFrom(body.history),
+        parts:       [{ kind: "text", text: question }],
+        maxTokens:   2500,
+        claudeModel: "claude-haiku-4-5",
+        language,
       });
     } catch (e) {
       await releaseUsage(admin, reservation.logId);
+      if (e instanceof RefusalError) return error(422, "ai_refused", "The AI declined to answer this question");
       console.error("ask-claude LLM failure:", e);
       return error(503, "ai_unavailable", "AI service temporarily unavailable");
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text });
+    return json({ answer: result.text, provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("ask-claude", e);
   }

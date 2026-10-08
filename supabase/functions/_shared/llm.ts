@@ -1,137 +1,89 @@
-// Shared LLM helper.
+// AI completions with automatic failover between Claude and free models.
 //
-// Routes completions to OpenRouter when OPENROUTER_API_KEY is set, otherwise to
-// Anthropic (the default). This lets the app run on a free OpenRouter model
-// while the Anthropic account is topped up — to switch back to Anthropic, just
-// remove the OPENROUTER_API_KEY secret. No code change required.
+// Every request tries Claude (Anthropic) first when ANTHROPIC_API_KEY is
+// set, then the free OpenRouter models. Nothing is switched by hand:
+// - Claude fails (credit used up, key revoked, overloaded, timeout): this
+//   request is answered by a free model. Failures that would repeat (no
+//   credit, bad key) also make this instance skip Claude for ten minutes,
+//   then try it again. Topping up the Anthropic account therefore brings
+//   Claude back by itself, without a deploy.
+// - A free model is rate-limited, gone or writes garbled text: the next one
+//   is tried (llm_free.ts).
 //
-// Optional: OPENROUTER_MODEL overrides the default free model.
-import Anthropic from "npm:@anthropic-ai/sdk@0.30.0";
+// Secrets (Dashboard → Edge Functions → Secrets; no redeploy needed):
+//   ANTHROPIC_API_KEY    enables Claude
+//   OPENROUTER_API_KEY   enables the free models
+//   AI_MODE              "auto" (default) or "free": never call Claude, for
+//                        example to stop spending credit
+//   CLAUDE_MODEL         optional: one Claude model for every task
+//   OPENROUTER_MODEL     optional: the free model to try first
+import { ACCOUNT_PAUSE_MS, claudeComplete, claudePause, describeClaudeError } from "./llm_claude.ts";
+import { freeComplete } from "./llm_free.ts";
+import { type LLMRequest, type LLMResult, RefusalError } from "./llm_types.ts";
 
-export type Part =
-  | { kind: "text"; text: string }
-  | { kind: "image"; mediaType: string; data: string } // base64
-  | { kind: "pdf"; data: string };                      // base64
+export type { LLMRequest, LLMResult, Part, Turn } from "./llm_types.ts";
+export { RefusalError } from "./llm_types.ts";
 
-export interface LLMRequest {
-  system?: string;
-  parts: Part[];
-  maxTokens: number;
-  anthropicModel: string;
+// Edge Functions get about 150 s of wall time. Claude may use most of it but
+// always leaves the free models enough to answer.
+const TOTAL_BUDGET_MS = 125_000;
+const FREE_RESERVE_MS = 35_000;
+
+/// Time as the Claude pause sees it. Replaceable in tests.
+export const clock = { now: () => Date.now() };
+
+let claudePausedUntil = 0;
+
+export function claudeEnabled(): boolean {
+  return !!Deno.env.get("ANTHROPIC_API_KEY") &&
+    Deno.env.get("AI_MODE") !== "free" &&
+    clock.now() >= claudePausedUntil;
 }
-
-export interface LLMResult {
-  text: string;
-  tokens: number;
-}
-
-const OR_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
-const OR_DEFAULT_MODEL = "google/gemma-4-31b-it:free";
-
-// Fallback chains of free models — tried in order when a model is rate-limited
-// (429), missing (404) or returns an empty/failed response. Vision models must
-// be multimodal.
-//
-// NOTE: OpenRouter rotates its free tier constantly; model IDs disappear without
-// warning and a dead ID returns 404. Re-verify this list against
-// https://openrouter.ai/api/v1/models whenever the AI features start failing.
-// Last verified: 2026-08-27.
-const OR_TEXT_MODELS = [
-  "google/gemma-4-31b-it:free",
-  "z-ai/glm-5.2:free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
-  "minimax/minimax-m2.7:free",
-  "nvidia/nemotron-3.5-lightning:free",
-];
-const OR_VISION_MODELS = [
-  "google/gemma-4-31b-it:free",
-  "google/gemma-4-26b-a4b-it:free",
-  "minimax/minimax-m3:free",
-  "thinkingmachines/inkling-small:free",
-  "dots-studio/dots-3-note-preview:free",
-];
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function llmComplete(req: LLMRequest): Promise<LLMResult> {
-  const orKey = Deno.env.get("OPENROUTER_API_KEY");
-  return orKey ? viaOpenRouter(req, orKey) : viaAnthropic(req);
-}
-
-async function viaAnthropic(req: LLMRequest): Promise<LLMResult> {
-  const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") ?? "" });
-  const content = req.parts.map((p) => {
-    if (p.kind === "text")  return { type: "text", text: p.text };
-    if (p.kind === "image") return { type: "image", source: { type: "base64", media_type: p.mediaType, data: p.data } };
-    return { type: "document", source: { type: "base64", media_type: "application/pdf", data: p.data } };
-  });
-  const message = await client.messages.create({
-    model:      req.anthropicModel,
-    max_tokens: req.maxTokens,
-    ...(req.system ? { system: req.system } : {}),
-    messages:   [{ role: "user", content: content as never }],
-  });
-  const text = message.content[0]?.type === "text" ? message.content[0].text : "";
-  return { text, tokens: message.usage.input_tokens + message.usage.output_tokens };
-}
-
-async function viaOpenRouter(req: LLMRequest, key: string): Promise<LLMResult> {
-  let hasPdf = false;
-  let hasImage = false;
-  const content = req.parts.map((p) => {
-    if (p.kind === "text")  return { type: "text", text: p.text };
-    if (p.kind === "image") { hasImage = true; return { type: "image_url", image_url: { url: `data:${p.mediaType};base64,${p.data}` } }; }
-    hasPdf = true;
-    return { type: "file", file: { filename: "document.pdf", file_data: `data:application/pdf;base64,${p.data}` } };
-  });
-
-  const messages: Array<Record<string, unknown>> = [];
-  if (req.system) messages.push({ role: "system", content: req.system });
-  messages.push({ role: "user", content });
-
-  // Build the candidate model list: configured/default model first, then fallbacks.
-  const configured = Deno.env.get("OPENROUTER_MODEL") ?? OR_DEFAULT_MODEL;
-  const chain = (hasImage || hasPdf) ? OR_VISION_MODELS : OR_TEXT_MODELS;
-  const candidates = [configured, ...chain.filter((m) => m !== configured)];
-
+  const start = Date.now();
+  const deadline = start + TOTAL_BUDGET_MS;
   const failures: string[] = [];
-  for (const model of candidates) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const payload: Record<string, unknown> = { model, max_tokens: req.maxTokens, messages };
-      if (hasPdf) payload.plugins = [{ id: "file-parser", pdf: { engine: "pdf-text" } }];
+  let rejected: LLMResult | null = null;
 
-      const resp = await fetch(OR_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${key}`,
-          "Content-Type":  "application/json",
-          "HTTP-Referer":  "https://cncassist.app",
-          "X-Title":       "CNC Assist",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (resp.status === 429 || resp.status >= 500) {
-        failures.push(`${model} -> HTTP ${resp.status}: ${(await resp.text()).slice(0, 160)}`);
-        if (attempt === 0) { await sleep(1500); continue; } // quick retry, then next model
-        break;
+  if (claudeEnabled()) {
+    try {
+      const result = await claudeComplete(req, deadline - FREE_RESERVE_MS);
+      if (!req.accept || req.accept(result.text)) {
+        log(result, start);
+        return result;
       }
-      if (!resp.ok) {
-        failures.push(`${model} -> HTTP ${resp.status}: ${(await resp.text()).slice(0, 160)}`);
-        break; // non-retryable (e.g. 400/404) — try next model
-      }
-
-      const data = await resp.json();
-      const raw = data.choices?.[0]?.message?.content;
-      const text = typeof raw === "string" ? raw : "";
-      if (!text.trim()) { failures.push(`${model} -> empty response`); break; }
-      const tokens = data.usage?.total_tokens ??
-        ((data.usage?.prompt_tokens ?? 0) + (data.usage?.completion_tokens ?? 0));
-      return { text, tokens };
+      failures.push(`claude ${result.model}: reply rejected`);
+      rejected = result;
+    } catch (e) {
+      if (e instanceof RefusalError) throw e;
+      const pause = claudePause(e);
+      if (pause > 0) claudePausedUntil = clock.now() + pause;
+      failures.push(`claude: ${describeClaudeError(e)}`);
+      console.warn(
+        `ai: Claude failed (${describeClaudeError(e)}); ` +
+          (pause >= ACCOUNT_PAUSE_MS ? `skipping it for ${pause / 60_000} min; ` : "") +
+          "answering with a free model",
+      );
     }
   }
-  throw new Error(
-    `OpenRouter: all ${candidates.length} candidate models failed -- ` +
-    (failures.join(" | ") || "no detail")
+
+  if (Deno.env.get("OPENROUTER_API_KEY")) {
+    try {
+      const result = await freeComplete(req, deadline);
+      log(result, start);
+      return result;
+    } catch (e) {
+      failures.push(String(e));
+    }
+  }
+
+  if (rejected) return rejected;
+  throw new Error(`No AI provider answered -- ${failures.join(" | ") || "none configured"}`);
+}
+
+function log(r: LLMResult, start: number) {
+  console.log(
+    `ai: ${r.provider} ${r.model} ${Date.now() - start} ms, ${r.tokens} tokens${r.truncated ? ", cut off" : ""}`,
   );
 }

@@ -1,8 +1,10 @@
-import { llmComplete } from "../_shared/llm.ts";
+import { llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
+import { answerFormat, gcodeCommentRule, styleRules } from "../_shared/answer_style.ts";
+import { answerLanguage } from "../_shared/language.ts";
 
 const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -12,6 +14,10 @@ interface AnalyzeImageRequest {
   mode:        "error_diagnosis" | "drawing_to_gcode";
   question?:   string;
   dialect?:    string;
+  /// App language, en | fa | ro | ar (app 1.3.0+).
+  language?:   string;
+  /// "markdown" when the app renders Markdown (app 1.3.0+).
+  format?:     string;
 }
 
 const ERROR_SYSTEM = `You are an expert CNC machine technician and controller specialist.
@@ -26,7 +32,7 @@ Your task:
 
 Be specific and practical — operators need to resolve this quickly.
 If the image is unclear or doesn't show a CNC alarm, say so and ask for a clearer photo.
-Format your response with clear sections: Alarm Identified / What It Means / Likely Causes / How to Fix / Safety Notes.`;
+Use these sections, with their titles in the answer's language: Alarm Identified / What It Means / Likely Causes / How to Fix / Safety Notes.`;
 
 const DRAWING_SYSTEM = `You are an expert CNC programmer with deep knowledge of Haas and Siemens Sinumerik controllers.
 The user will show you a technical drawing, engineering sketch, or photo of a machined part.
@@ -75,9 +81,12 @@ Deno.serve(async (req) => {
     }
 
     const isError   = mode === "error_diagnosis";
-    const maxTokens = isError ? 1024 : 4096;
-    const system    = isError ? ERROR_SYSTEM : DRAWING_SYSTEM;
     const safeDialect = dialect === "sinumerik" ? "SINUMERIK" : "HAAS";
+    const language  = answerLanguage(question ?? "", body.language);
+    const format    = answerFormat(body.format);
+    const system    = isError
+      ? `${ERROR_SYSTEM}\n\n${styleRules(language, format, false)}`
+      : `${DRAWING_SYSTEM}\n\n${styleRules(language, format, false)}\n${gcodeCommentRule(language)}`;
 
     const userText = isError
       ? (question?.trim().substring(0, 2000) || "What CNC alarm or error is shown in this image? Diagnose it and provide solutions.")
@@ -99,17 +108,20 @@ Deno.serve(async (req) => {
           { kind: "image", mediaType, data: imageBase64 },
           { kind: "text",  text: userText },
         ],
-        maxTokens,
-        anthropicModel: "claude-sonnet-4-6",
+        maxTokens:   isError ? 2000 : 6000,
+        claudeModel: "claude-sonnet-5-5",
+        effort:      isError ? "low" : "medium",
+        language,
       });
     } catch (e) {
       await releaseUsage(admin, reservation.logId);
+      if (e instanceof RefusalError) return error(422, "ai_refused", "The AI declined to answer this request");
       console.error("analyze-image LLM failure:", e);
       return error(503, "ai_unavailable", "AI service temporarily unavailable");
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text });
+    return json({ answer: result.text, provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("analyze-image", e);
   }

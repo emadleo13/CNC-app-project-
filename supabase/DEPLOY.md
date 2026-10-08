@@ -136,15 +136,47 @@ verify-purchase → Logs*.
 2. Topic → *Permissions → Add principal*
    `google-play-developer-notifications@system.gserviceaccount.com`, role
    **Pub/Sub Publisher**.
-3. Generate a secret and store it:
-   `npx supabase secrets set --project-ref colahcvziorjkqckqdlt PLAY_RTDN_SECRET="$(openssl rand -hex 32)"`.
-   Note the value; the next step needs it.
-4. *Create subscription* on the topic. Delivery type **Push**, endpoint
-   `https://colahcvziorjkqckqdlt.supabase.co/functions/v1/play-rtdn?secret=<PLAY_RTDN_SECRET>`.
+3. Generate a secret and store it. The push URL goes to a private file, not
+   the screen (set on 2026-10-08; the file is `~/keys/cnc-rtdn-push-url.txt`):
+
+   ```bash
+   umask 077; S=$(openssl rand -hex 32)
+   npx supabase secrets set --project-ref colahcvziorjkqckqdlt PLAY_RTDN_SECRET="$S" &&
+     echo "https://colahcvziorjkqckqdlt.supabase.co/functions/v1/play-rtdn?secret=$S" > ~/keys/cnc-rtdn-push-url.txt
+   unset S
+   ```
+4. *Create subscription* on the topic. Delivery type **Push**, endpoint: the
+   URL from that file.
 5. Play Console → *Monetize with Play → Monetization setup → Real-time
    developer notifications*. Set the topic to
    `projects/<cloud-project-id>/topics/play-rtdn` → *Send test notification*.
    The play-rtdn logs should show `test notification received`.
+6. On the subscription, set *Expiration period* to **Never expire**: an idle
+   subscription is otherwise deleted after 31 days, and notifications stop.
+
+## 7. AI providers
+
+`_shared/llm.ts` tries Claude, then the free OpenRouter models, for every
+request. Secrets (no redeploy needed after changing them):
+
+| Secret | Effect |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | Enables Claude. With no credit left, requests fall through to the free models and Claude is retried every 10 minutes, so a top-up switches back by itself. |
+| `OPENROUTER_API_KEY` | Enables the free models. |
+| `AI_MODE` | `free`: never call Claude (to save credit). Unset or `auto`: Claude first. |
+| `CLAUDE_MODEL` | Optional: one Claude model for every task, e.g. `claude-sonnet-5-5`. Default: Haiku 4.5 for questions and tooling, Sonnet 5.5 for photos, PDFs and G-code reviews. |
+| `OPENROUTER_MODEL` | Optional: the free model to try first. |
+
+```bash
+npx supabase secrets set   --project-ref colahcvziorjkqckqdlt AI_MODE=free
+npx supabase secrets unset --project-ref colahcvziorjkqckqdlt AI_MODE
+```
+
+Which provider answered is in the function logs: `ai: claude …` or
+`ai: free <model> …`, and `ai: Claude failed (…)` when it fell back. A line
+`free model … is gone (404)` means the list in `_shared/llm_free.ts` needs
+updating (current free models: <https://openrouter.ai/api/v1/models>, IDs
+ending in `:free`).
 
 ## Rolling back
 
