@@ -28,6 +28,9 @@ class SavedCalculation {
   });
 }
 
+/// Binary layout, oldest field first. Never reorder or remove fields: add new
+/// ones at the end and read them only `if (reader.availableBytes > 0)`, so
+/// records saved by earlier app versions still load (see local_store.dart).
 class SavedCalculationAdapter extends TypeAdapter<SavedCalculation> {
   @override
   final int typeId = 0;

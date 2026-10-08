@@ -1,13 +1,21 @@
-import { llmComplete } from "../_shared/llm.ts";
+import { budgetFor, llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
+import { answerFormat, gcodeCommentRule, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
+import { answerLanguage } from "../_shared/language.ts";
 
 interface PdfRequest {
   pdfBase64: string;
   question?: string;
   dialect?:  string;
+  /// App language, en | fa | ro | ar (app 1.3.0+).
+  language?: string;
+  /// "markdown" when the app renders Markdown (app 1.3.0+).
+  format?:   string;
+  /// Seconds the app waits for the answer (app 1.3.0+; earlier: 90).
+  clientTimeout?: number;
 }
 
 Deno.serve(async (req) => {
@@ -27,6 +35,8 @@ Deno.serve(async (req) => {
 
     const body: PdfRequest = await req.json();
     const { pdfBase64, question, dialect = "haas" } = body;
+    const language = answerLanguage(question ?? "", body.language);
+    const format = answerFormat(body.format);
 
     if (!pdfBase64 || pdfBase64.length === 0) {
       return error(400, "bad_request", "No PDF provided");
@@ -47,7 +57,9 @@ Deno.serve(async (req) => {
       "2. Write a complete draft CNC G-code program, well commented. It is a starting point a programmer will check, never a program to run as is.\n" +
       "3. Include: (VERIFY BEFORE RUNNING: GRAPHICS, DRY RUN, SINGLE BLOCK) after the program number, a full safe-start line with units, tool list, work offset, spindle start before every cut, operations in order, and a safe footer ending in M30\n" +
       "4. State assumptions clearly when dimensions are not visible\n" +
-      "If not a technical drawing, extract and summarize CNC-relevant information.";
+      "If not a technical drawing, extract and summarize CNC-relevant information.\n\n" +
+      styleRules(language, format, false) + "\n" +
+      gcodeCommentRule(language);
 
     const reservation = await reserveUsage(admin, user.id, pro, {
       question_excerpt: `[pdf] ${userQuestion.substring(0, 200)}`,
@@ -63,17 +75,21 @@ Deno.serve(async (req) => {
           { kind: "pdf",  data: pdfBase64 },
           { kind: "text", text: userQuestion },
         ],
-        maxTokens:      4096,
-        anthropicModel: "claude-sonnet-4-6",
+        maxTokens:   6000,
+        claudeModel: "claude-sonnet-5-5",
+        effort:      "low",
+        language,
+        budgetMs:    budgetFor(body.clientTimeout),
       });
     } catch (e) {
       await releaseUsage(admin, reservation.logId);
+      if (e instanceof RefusalError) return error(422, "ai_refused", "The AI declined to answer this request");
       console.error("analyze-pdf LLM failure:", e);
       return error(503, "ai_unavailable", "AI service temporarily unavailable");
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text });
+    return json({ answer: tidyAnswer(result.text, language, format), provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("analyze-pdf", e);
   }

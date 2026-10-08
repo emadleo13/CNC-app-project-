@@ -5,6 +5,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/net/edge_functions.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/ai_answer.dart';
 import '../domain/cut_parameters.dart';
 import '../domain/material_spec.dart';
 
@@ -42,14 +43,21 @@ class _ToolingRecsScreenState extends ConsumerState<ToolingRecsScreen> {
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final data = await invokeEdgeFunction('tooling-recs', body: {
-        'material':    widget.material.name,
-        'operation':   widget.operation == OperationType.roughing ? 'roughing' : 'finishing',
-        'diameter':    widget.diameter,
-        'units':       widget.units == UnitSystem.metric ? 'metric' : 'imperial',
-        'toolMaterial': 'carbide',
-        'flutes':      widget.flutes,
-      });
+      final data = await ref.read(edgeInvokerProvider)(
+        'tooling-recs',
+        body: {
+          'material':      widget.material.name,
+          'operation':     widget.operation == OperationType.roughing ? 'roughing' : 'finishing',
+          'diameter':      widget.diameter,
+          'units':         widget.units == UnitSystem.metric ? 'metric' : 'imperial',
+          'toolMaterial':  'carbide',
+          'flutes':        widget.flutes,
+          'language':      ref.read(localeProvider),
+          'format':        'markdown',
+          'clientTimeout': kAiTimeout.inSeconds,
+        },
+        timeout: kAiTimeout,
+      );
       if (!mounted) return;
       final answer = data['answer'];
       setState(() {
@@ -122,8 +130,12 @@ class _ToolingRecsScreenState extends ConsumerState<ToolingRecsScreen> {
                           ]),
                         ),
                         const SizedBox(height: 16),
-                        Text(_answer ?? '',
-                          style: const TextStyle(fontSize: 14, height: 1.6)),
+                        AiAnswer(
+                          _answer ?? '',
+                          onCodeCopied: () => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(s.progLibCopied), duration: const Duration(seconds: 1)),
+                          ),
+                        ),
                       ],
                     ),
                   ),

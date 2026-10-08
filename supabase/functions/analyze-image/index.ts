@@ -1,8 +1,10 @@
-import { llmComplete } from "../_shared/llm.ts";
+import { budgetFor, llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
+import { answerFormat, codeBlockOf, gcodeCommentRule, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
+import { answerLanguage, LANGUAGE_NAMES } from "../_shared/language.ts";
 
 const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -12,6 +14,12 @@ interface AnalyzeImageRequest {
   mode:        "error_diagnosis" | "drawing_to_gcode";
   question?:   string;
   dialect?:    string;
+  /// App language, en | fa | ro | ar (app 1.3.0+).
+  language?:   string;
+  /// "markdown" when the app renders Markdown (app 1.3.0+).
+  format?:     string;
+  /// Seconds the app waits for the answer (app 1.3.0+; earlier: 90).
+  clientTimeout?: number;
 }
 
 const ERROR_SYSTEM = `You are an expert CNC machine technician and controller specialist.
@@ -26,7 +34,7 @@ Your task:
 
 Be specific and practical — operators need to resolve this quickly.
 If the image is unclear or doesn't show a CNC alarm, say so and ask for a clearer photo.
-Format your response with clear sections: Alarm Identified / What It Means / Likely Causes / How to Fix / Safety Notes.`;
+Use these sections, with their titles in the answer's language: Alarm Identified / What It Means / Likely Causes / How to Fix / Safety Notes.`;
 
 const DRAWING_SYSTEM = `You are an expert CNC programmer with deep knowledge of Haas and Siemens Sinumerik controllers.
 The user will show you a technical drawing, engineering sketch, or photo of a machined part.
@@ -46,9 +54,12 @@ Your task:
    - Operations in logical order (roughing → finishing → holes)
    - Program footer: G80/G40, retract to a safe height or G28 G91 Z0., spindle and coolant off, M30
 
-Format the G-code cleanly with comments.
-If a dimension is not visible, say what you assumed instead of guessing silently.
-If the image is not a technical drawing or part photo, ask the user to provide one.`;
+The reply goes straight into the app's G-code editor, so reply with the program only: one
+\`\`\` code block and nothing before or after it. Put the setup notes, the tool list and every
+assumption in comments at the top of the program; where a dimension is not visible, say there
+what you assumed instead of guessing silently.
+If the image is not a technical drawing or part photo, reply with one short sentence asking for
+one, and no code.`;
 
 Deno.serve(async (req) => {
   const pre = preflight(req);
@@ -75,9 +86,13 @@ Deno.serve(async (req) => {
     }
 
     const isError   = mode === "error_diagnosis";
-    const maxTokens = isError ? 1024 : 4096;
-    const system    = isError ? ERROR_SYSTEM : DRAWING_SYSTEM;
     const safeDialect = dialect === "sinumerik" ? "SINUMERIK" : "HAAS";
+    const language  = answerLanguage(question ?? "", body.language);
+    const format    = answerFormat(body.format);
+    const system    = isError
+      ? `${ERROR_SYSTEM}\n\n${styleRules(language, format, false)}`
+      : `${DRAWING_SYSTEM}\n${gcodeCommentRule(null)}` +
+        (language ? `\nWrite that one sentence, if needed, in ${LANGUAGE_NAMES[language]}.` : "");
 
     const userText = isError
       ? (question?.trim().substring(0, 2000) || "What CNC alarm or error is shown in this image? Diagnose it and provide solutions.")
@@ -99,17 +114,24 @@ Deno.serve(async (req) => {
           { kind: "image", mediaType, data: imageBase64 },
           { kind: "text",  text: userText },
         ],
-        maxTokens,
-        anthropicModel: "claude-sonnet-4-6",
+        maxTokens:   isError ? 2000 : 6000,
+        claudeModel: "claude-sonnet-5-5",
+        effort:      "low",
+        language,
+        budgetMs:    budgetFor(body.clientTimeout),
       });
     } catch (e) {
       await releaseUsage(admin, reservation.logId);
+      if (e instanceof RefusalError) return error(422, "ai_refused", "The AI declined to answer this request");
       console.error("analyze-image LLM failure:", e);
       return error(503, "ai_unavailable", "AI service temporarily unavailable");
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text });
+    // A drawing's answer replaces the editor's content: the program alone,
+    // without the fence or any words around it.
+    const answer = isError ? tidyAnswer(result.text, language, format) : codeBlockOf(result.text);
+    return json({ answer, provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("analyze-image", e);
   }

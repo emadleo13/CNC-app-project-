@@ -18,6 +18,9 @@ class SavedAnalysis {
   });
 }
 
+/// Binary layout, oldest field first. Never reorder or remove fields: add new
+/// ones at the end and read them only `if (reader.availableBytes > 0)`, so
+/// records saved by earlier app versions still load (see local_store.dart).
 class SavedAnalysisAdapter extends TypeAdapter<SavedAnalysis> {
   @override
   final int typeId = 1;

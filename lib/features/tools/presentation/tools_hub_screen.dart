@@ -80,15 +80,33 @@ class ToolsHubScreen extends ConsumerWidget {
         // An odd trailing tool would leave a dead column, so it spans full width.
         final hasOddTrailing = tools.length.isOdd;
         final gridTools = hasOddTrailing ? tools.sublist(0, tools.length - 1) : tools;
-        children.add(GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.55,
-          children: gridTools.map((t) => entrance(_ToolCard(tool: t, s: s, onTap: open))).toList(),
-        ));
+        // Rows of two equal cards, at least the old 1.55 grid proportions but
+        // taller when the text needs it: a fixed-ratio grid clipped two-line
+        // titles on small phones, with long translations or a large font.
+        // Built here, not in the LayoutBuilder, so the entrance animation
+        // keeps the on-screen order.
+        final cards = [for (final t in gridTools) entrance(_ToolCard(tool: t, s: s, onTap: open))];
+        children.add(LayoutBuilder(builder: (context, constraints) {
+          final cardWidth = (constraints.maxWidth - 10) / 2;
+          return Column(children: [
+            for (var i = 0; i < gridTools.length; i += 2) ...[
+              if (i > 0) const SizedBox(height: 10),
+              ConstrainedBox(
+                constraints: BoxConstraints(minHeight: cardWidth / 1.55),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: cards[i]),
+                      const SizedBox(width: 10),
+                      Expanded(child: cards[i + 1]),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ]);
+        }));
         if (hasOddTrailing) {
           children.add(const SizedBox(height: 10));
           children.add(entrance(_WideToolCard(tool: tools.last, s: s, onTap: open)));
@@ -357,18 +375,24 @@ class _ToolCard extends StatelessWidget {
               const Spacer(),
               Text(
                 tool.title(s),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary),
               ),
               const SizedBox(height: 2),
-              Text(
-                tool.subtitle(s),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 11, color: AppColors.textSecondary),
+              // Never overflows the card, even if a row ends up shorter than
+              // its text.
+              Flexible(
+                child: Text(
+                  tool.subtitle(s),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.textSecondary),
+                ),
               ),
             ],
           ),
