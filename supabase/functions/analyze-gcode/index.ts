@@ -13,7 +13,7 @@ interface AnalyzeRequest {
   language?: string;
   /// What the app's own rule checker already reported, "L12: message" lines.
   localFindings?: string[];
-  /// Seconds the app waits for the answer (app 1.3.0+; earlier: 90).
+  /// Seconds the app waits for the answer (sent from 1.3.0; 1.2.0 waits 120).
   clientTimeout?: number;
 }
 
@@ -104,7 +104,8 @@ Rules:
         language:    lang,
         json:        true,
         accept:      (text) => parseReply(text) !== null,
-        budgetMs:    budgetFor(body.clientTimeout),
+        // App 1.2.0 already waits 120 s for a review.
+        budgetMs:    budgetFor(body.clientTimeout ?? 120),
       }));
     } catch (e) {
       await releaseUsage(admin, reservation.logId);

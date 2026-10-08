@@ -88,6 +88,10 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
     }
   }
 
+  // The server fits its answer in this time, falling back from Claude to the
+  // free models if needed.
+  static const _aiTimeout = Duration(seconds: 120);
+
   Future<void> _runAiReview() async {
     final s = ref.read(appStringsProvider);
     final locale = ref.read(localeProvider);
@@ -105,8 +109,9 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
               for (final i in l.issues)
                 'L${l.lineNumber}: ${GcodeRuleText.of(i, 'en').message}',
           ],
+          'clientTimeout': _aiTimeout.inSeconds,
         },
-        timeout: const Duration(seconds: 120),
+        timeout: _aiTimeout,
       );
       if (!mounted) return;
       setState(() { _review = AiReview.fromJson(data); _reviewing = false; });

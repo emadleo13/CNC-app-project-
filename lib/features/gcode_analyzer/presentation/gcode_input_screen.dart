@@ -199,12 +199,19 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
     // controller chosen in Settings.
     final dialect = _autoDetect ? ref.read(defaultDialectProvider) : _dialect.name;
     try {
-      final data = await invokeEdgeFunction('analyze-image', body: {
-        'imageBase64': base64Encode(bytes),
-        'mediaType':   'image/jpeg',
-        'mode':        'drawing_to_gcode',
-        'dialect':     dialect,
-      });
+      final data = await invokeEdgeFunction(
+        'analyze-image',
+        body: {
+          'imageBase64':   base64Encode(bytes),
+          'mediaType':     'image/jpeg',
+          'mode':          'drawing_to_gcode',
+          'dialect':       dialect,
+          'language':      ref.read(localeProvider),
+          'clientTimeout': 120,
+        },
+        // A whole program takes a while; the server answers within this.
+        timeout: const Duration(seconds: 120),
+      );
       final gcode = data['answer'];
       if (gcode is! String || gcode.trim().isEmpty) {
         throw const EdgeFunctionError(EdgeErrorKind.aiUnavailable);
