@@ -29,7 +29,7 @@
 <div class="wrap">
 
   <h1>Privacy Policy</h1>
-  <p class="muted">CNC Assist &middot; Last updated: June 16, 2026</p>
+  <p class="muted">CNC Assist &middot; Last updated: October 8, 2026</p>
 
   <div class="card">
     <p>This Privacy Policy explains how <strong>CNC Assist</strong> ("the app", "we", "us")
@@ -58,14 +58,23 @@
     <tr>
       <td>Questions, G-code, images and PDFs you submit to AI features</td>
       <td>To generate the answer/analysis you requested</td>
-      <td>Sent to our AI provider for processing. We do not store your images or PDFs.
-          We keep a short text excerpt of your question (up to ~300 characters) plus a
-          usage count, to operate the service and prevent abuse.</td>
+      <td>Sent to an AI provider for processing (see section 3). We do not store your
+          images, PDFs or programs. For each request we keep a short excerpt (up to about
+          300 characters of a question, or the first 100 characters of a G-code program),
+          its size and a usage count, to operate the service and prevent abuse.</td>
+    </tr>
+    <tr>
+      <td>Earlier messages of a conversation</td>
+      <td>So a follow-up question is answered in context</td>
+      <td>The last few messages are sent along with the new question. They are not
+          stored on our backend; the conversation stays on your device.</td>
     </tr>
     <tr>
       <td>Subscription status &amp; purchase token</td>
-      <td>To verify and activate your subscription</td>
-      <td>Yes, on our backend / via Google Play Billing</td>
+      <td>To verify and activate your subscription, and to keep it current when it
+          renews, is cancelled or is refunded</td>
+      <td>Yes, on our backend until you delete your account; Google Play also keeps
+          its own purchase records</td>
     </tr>
     <tr>
       <td>Camera &amp; photo access</td>
@@ -84,12 +93,21 @@
   contacts, or advertising identifiers.</p>
 
   <h2>3. AI processing</h2>
-  <p>The knowledge base and analysis features send the content you submit to
-  <strong>Anthropic</strong> (the Claude API) for processing, and may use
-  <strong>Pinecone</strong> to retrieve relevant reference material. Your content is sent
-  only to generate your result. Under Anthropic's API terms, content submitted through the
-  API is not used to train their models. Please avoid submitting confidential or
-  personally identifying information in your questions, images, or files.</p>
+  <p>The knowledge base and analysis features send the content you submit, and nothing
+  else about you, to one of these services, only to generate your result:</p>
+  <ul>
+    <li><strong>Anthropic</strong> (the Claude API), our main AI provider. Under Anthropic's
+        commercial terms, content submitted through the API is not used to train their
+        models.</li>
+    <li><strong>OpenRouter</strong>, used when Claude is unavailable. It forwards the request
+        to a free AI model run by another company (for example Google or NVIDIA). These
+        providers may log requests and may use them to improve their models, under their
+        own terms; see <a href="https://openrouter.ai/privacy">OpenRouter's privacy
+        policy</a>.</li>
+  </ul>
+  <p>Requests carry no account ID, name or contact details. Please avoid submitting
+  confidential or personally identifying information in your questions, images, or
+  files.</p>
 
   <h2>4. Service providers</h2>
   <p>We rely on the following providers to operate the app. They process data only on our
@@ -97,8 +115,10 @@
   <ul>
     <li><strong>Supabase</strong> — backend, anonymous authentication, and database hosting</li>
     <li><strong>Anthropic (Claude API)</strong> — AI question answering and analysis</li>
-    <li><strong>Pinecone</strong> — knowledge-base search</li>
-    <li><strong>Google Play Billing</strong> — subscription purchases and verification</li>
+    <li><strong>OpenRouter</strong> and the AI model providers it routes to — AI answers
+        when Claude is unavailable</li>
+    <li><strong>Google Play Billing</strong> — subscription purchases, verification and
+        subscription status updates</li>
   </ul>
 
   <h2>5. Data retention</h2>
