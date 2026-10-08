@@ -408,7 +408,10 @@ class _QaScreenState extends ConsumerState<QaScreen> {
               child: Row(children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: Image.memory(_attachedBytes!, width: 56, height: 56, fit: BoxFit.cover),
+                  child: Image.memory(_attachedBytes!, width: 56, height: 56, fit: BoxFit.cover,
+                    // A thumbnail of a photo up to 1280 px; twice the box so
+                    // `cover` never has to enlarge it.
+                    cacheWidth: (112 * MediaQuery.devicePixelRatioOf(context)).round()),
                 ),
                 const SizedBox(width: 10),
                 Expanded(child: Text(s.imgAttached,
@@ -593,6 +596,8 @@ class _EmptyState extends StatelessWidget {
                 child: Image.asset(
                   'assets/images/emad_owl.png',
                   fit: BoxFit.contain,
+                  // Decoded at the size shown (76 dp), not its 732 px.
+                  cacheWidth: (76 * MediaQuery.devicePixelRatioOf(context)).round(),
                 ),
               ),
               const SizedBox(height: 18),
@@ -726,6 +731,8 @@ class _MessageBubble extends StatelessWidget {
                           child: Image.memory(
                             message.imageBytes!,
                             width: 220, height: 160, fit: BoxFit.cover,
+                            // Wide enough to cover 220 × 160 dp even for 16:9.
+                            cacheWidth: (300 * MediaQuery.devicePixelRatioOf(context)).round(),
                           ),
                         ),
                         if (message.text.isNotEmpty) const SizedBox(height: 8),
