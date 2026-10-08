@@ -9,6 +9,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/net/edge_functions.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/ai_answer.dart';
 import '../../../core/widgets/help_card.dart';
 import '../../../core/widgets/quota_dialog.dart';
 import '../data/errors_repository.dart';
@@ -133,7 +134,9 @@ class _QaScreenState extends ConsumerState<QaScreen> {
       _isLoading = true;
     });
     _scrollToBottom();
-    await _runAiCall(() => _answerOf('analyze-pdf', {'pdfBase64': base64Encode(bytes)}));
+    await _runAiCall(
+      () => _answerOf('analyze-pdf', {'pdfBase64': base64Encode(bytes)}),
+    );
   }
 
   void _showError(String text) {
@@ -176,6 +179,8 @@ class _QaScreenState extends ConsumerState<QaScreen> {
   Future<void> _sendMessage(String text) async {
     final bytes = _attachedBytes;
     if (text.trim().isEmpty && bytes == null) return;
+    // What was said before this question, for a follow-up.
+    final history = _history();
 
     setState(() {
       _messages.add(_Message(
@@ -202,26 +207,65 @@ class _QaScreenState extends ConsumerState<QaScreen> {
         return _answerOf('ask-claude', {
           'question': text,
           'alarmContext': ?alarmCtx,
+          if (history.isNotEmpty) 'history': history,
         });
       });
     }
   }
 
-  /// Calls an AI Edge Function and returns its `answer` text.
-  Future<String> _answerOf(String function, Map<String, dynamic> body) async {
-    final data = await invokeEdgeFunction(function, body: body);
+  /// The conversation so far, oldest first: each question (or what was
+  /// attached) and each answer, without error notices. The server keeps the
+  /// last few that fit.
+  List<Map<String, String>> _history() {
+    final turns = <Map<String, String>>[];
+    for (final m in _messages) {
+      if (m.isPending) continue;
+      final text = m.isUser && m.text.isEmpty && m.imageBytes != null
+          ? '[photo of a machine screen]'
+          : m.text;
+      if (text.isEmpty) continue;
+      turns.add({'role': m.isUser ? 'user' : 'assistant', 'content': text});
+    }
+    // A last question that got no answer is not context.
+    while (turns.isNotEmpty && turns.last['role'] == 'user') {
+      turns.removeLast();
+    }
+    return turns.length > 8 ? turns.sublist(turns.length - 8) : turns;
+  }
+
+  void _newChat() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _messages.clear();
+      _attachedBytes = null;
+    });
+  }
+
+  /// Calls an AI Edge Function and returns its answer. Every request says
+  /// the app language, that this app renders Markdown, and how long it waits.
+  Future<_Reply> _answerOf(String function, Map<String, dynamic> body) async {
+    final data = await ref.read(edgeInvokerProvider)(
+      function,
+      body: {
+        ...body,
+        'language': ref.read(localeProvider),
+        'format': 'markdown',
+        'clientTimeout': kAiTimeout.inSeconds,
+      },
+      timeout: kAiTimeout,
+    );
     final answer = data['answer'];
     if (answer is! String || answer.trim().isEmpty) {
       throw const EdgeFunctionError(EdgeErrorKind.aiUnavailable);
     }
-    return answer;
+    return (text: answer, truncated: data['truncated'] == true);
   }
 
   /// Runs one AI request and puts its answer, or a readable error, in the
   /// chat. Quota and Pro limits open the upgrade paths instead.
-  Future<void> _runAiCall(Future<String> Function() call) async {
+  Future<void> _runAiCall(Future<_Reply> Function() call) async {
     final s = ref.read(appStringsProvider);
-    String? answer;
+    _Reply? answer;
     EdgeFunctionError? failure;
     try {
       answer = await call();
@@ -235,7 +279,11 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     setState(() {
       _isLoading = false;
       if (answer != null) {
-        _messages.add(_Message(text: answer, isUser: false));
+        _messages.add(_Message(
+          text:      answer.text,
+          isUser:    false,
+          truncated: answer.truncated,
+        ));
       } else if (failure!.kind == EdgeErrorKind.proRequired) {
         _messages.add(_Message(text: s.pdfProOnly, isUser: false, isPending: true));
       } else if (failure.kind != EdgeErrorKind.quotaExceeded) {
@@ -336,8 +384,17 @@ class _QaScreenState extends ConsumerState<QaScreen> {
                 : ListView.builder(
                     controller:  _scrollCtrl,
                     padding:     const EdgeInsets.all(16),
-                    itemCount:   _messages.length,
-                    itemBuilder: (ctx, i) => _MessageBubble(message: _messages[i], s: s),
+                    itemCount:   _messages.length + 1,
+                    itemBuilder: (ctx, i) => i == 0
+                        ? Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton.icon(
+                              onPressed: _isLoading ? null : _newChat,
+                              icon:  const Icon(Icons.add_comment_outlined, size: 16),
+                              label: Text(s.kbNewChat, style: const TextStyle(fontSize: 12)),
+                            ),
+                          )
+                        : _MessageBubble(message: _messages[i - 1], s: s),
                   ),
           ),
           if (_isLoading) const LinearProgressIndicator(
@@ -452,14 +509,19 @@ class _QuotaBar extends StatelessWidget {
 
 // ─── Data Models ─────────────────────────────────────────────────────────────
 
+typedef _Reply = ({String text, bool truncated});
+
 class _Message {
   final String     text;
   final bool       isUser;
   final bool       isPending;
   final Uint8List? imageBytes;
+
+  /// The answer hit the server's length limit.
+  final bool       truncated;
   const _Message({
     required this.text, required this.isUser,
-    this.isPending = false, this.imageBytes,
+    this.isPending = false, this.imageBytes, this.truncated = false,
   });
 }
 
@@ -668,8 +730,17 @@ class _MessageBubble extends StatelessWidget {
                         ),
                         if (message.text.isNotEmpty) const SizedBox(height: 8),
                       ],
-                      if (message.text.isNotEmpty)
-                        Text(
+                      if (message.text.isNotEmpty && !message.isUser && !message.isPending)
+                        AiAnswer(
+                          message.text,
+                          onCodeCopied: () => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(s.progLibCopied), duration: const Duration(seconds: 1)),
+                          ),
+                        )
+                      else if (message.text.isNotEmpty)
+                        // A question in English reads left to right in the
+                        // Persian app; "0.3-0.5" stays in order.
+                        AiText(
                           message.text,
                           style: TextStyle(
                             fontSize:  14,
@@ -680,6 +751,13 @@ class _MessageBubble extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (message.truncated)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                    child: Text(s.kbAnswerCutOff,
+                      style: const TextStyle(
+                        fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.textSecondary)),
+                  ),
                 if (_canCopy)
                   InkWell(
                     onTap: () => _copy(context),

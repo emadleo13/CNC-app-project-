@@ -207,10 +207,9 @@ class _GcodeInputScreenState extends ConsumerState<GcodeInputScreen> {
           'mode':          'drawing_to_gcode',
           'dialect':       dialect,
           'language':      ref.read(localeProvider),
-          'clientTimeout': 120,
+          'clientTimeout': kAiTimeout.inSeconds,
         },
-        // A whole program takes a while; the server answers within this.
-        timeout: const Duration(seconds: 120),
+        timeout: kAiTimeout,
       );
       final gcode = data['answer'];
       if (gcode is! String || gcode.trim().isEmpty) {

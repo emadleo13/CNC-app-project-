@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../l10n/app_strings.dart';
 
@@ -101,3 +102,18 @@ Future<Map<String, dynamic>> invokeEdgeFunction(
     throw const EdgeFunctionError(EdgeErrorKind.network);
   }
 }
+
+/// How long the app waits for an AI answer. Requests send it as
+/// `clientTimeout`: the server fits its answer in this time, falling back
+/// from Claude to the free models when it has to.
+const kAiTimeout = Duration(seconds: 120);
+
+typedef EdgeInvoker =
+    Future<Map<String, dynamic>> Function(
+      String name, {
+      Map<String, dynamic>? body,
+      Duration timeout,
+    });
+
+/// [invokeEdgeFunction], replaceable in widget tests.
+final edgeInvokerProvider = Provider<EdgeInvoker>((ref) => invokeEdgeFunction);

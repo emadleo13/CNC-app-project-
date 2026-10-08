@@ -221,6 +221,8 @@ class AppStringsAr implements AppStrings {
   @override String get setupSheetSectionCutting  => 'معاملات القطع';
   @override String get setupSheetSectionNotes    => 'ملاحظات';
   @override String get setupSheetGeneratedBy     => 'أُنشئت بواسطة CNC Assist';
+  @override String get kbNewChat                 => 'محادثة جديدة';
+  @override String get kbAnswerCutOff            => 'تم اختصار الإجابة. اكتب «تابع» لأكملها.';
 
   // Phase 4 — Tooling Recs
   @override String get toolingTitle        => 'توصيات الأدوات';

@@ -219,6 +219,8 @@ class AppStringsRo implements AppStrings {
   @override String get setupSheetSectionCutting  => 'PARAMETRI DE AȘCHIERE';
   @override String get setupSheetSectionNotes    => 'NOTE';
   @override String get setupSheetGeneratedBy     => 'Generat cu CNC Assist';
+  @override String get kbNewChat                 => 'Conversație nouă';
+  @override String get kbAnswerCutOff            => 'Răspunsul a fost scurtat. Scrie „continuă” ca să-l termin.';
 
   // Phase 4 — Tooling Recs
   @override String get toolingTitle        => 'Recomandări scule';

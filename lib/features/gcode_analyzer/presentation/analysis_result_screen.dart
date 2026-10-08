@@ -5,6 +5,7 @@ import '../../../core/l10n/app_strings.dart';
 import '../../../core/net/edge_functions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/quota_dialog.dart';
+import '../../../core/widgets/ai_answer.dart';
 import '../domain/ai_review.dart';
 import '../domain/cnc_dialect.dart';
 import '../domain/gcode_line.dart';
@@ -88,10 +89,6 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
     }
   }
 
-  // The server fits its answer in this time, falling back from Claude to the
-  // free models if needed.
-  static const _aiTimeout = Duration(seconds: 120);
-
   Future<void> _runAiReview() async {
     final s = ref.read(appStringsProvider);
     final locale = ref.read(localeProvider);
@@ -109,9 +106,9 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
               for (final i in l.issues)
                 'L${l.lineNumber}: ${GcodeRuleText.of(i, 'en').message}',
           ],
-          'clientTimeout': _aiTimeout.inSeconds,
+          'clientTimeout': kAiTimeout.inSeconds,
         },
-        timeout: _aiTimeout,
+        timeout: kAiTimeout,
       );
       if (!mounted) return;
       setState(() { _review = AiReview.fromJson(data); _reviewing = false; });
@@ -525,7 +522,7 @@ class _AiReviewCard extends ConsumerWidget {
               ),
             ] else ...[
               if (r.summary.isNotEmpty)
-                Text(r.summary, style: const TextStyle(fontSize: 13.5, height: 1.5)),
+                AiText(r.summary, style: const TextStyle(fontSize: 13.5, height: 1.5)),
               const SizedBox(height: 10),
               if (r.findings.isEmpty)
                 Text(s.gcodeAiNoFindings,
@@ -542,7 +539,7 @@ class _AiReviewCard extends ConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       const Text('• ', style: TextStyle(color: AppColors.infoBlue)),
-                      Expanded(child: Text(tip, style: const TextStyle(fontSize: 12.5, height: 1.4))),
+                      Expanded(child: AiText(tip, style: const TextStyle(fontSize: 12.5, height: 1.4))),
                     ]),
                   ),
               ],
@@ -578,10 +575,10 @@ class _AiFindingTile extends ConsumerWidget {
             textDirection: TextDirection.ltr,
             style: TextStyle(fontFamily: 'JetBrainsMono', fontSize: 11, color: color, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
-          Text(finding.issue, style: const TextStyle(fontSize: 12.5, height: 1.4)),
+          AiText(finding.issue, style: const TextStyle(fontSize: 12.5, height: 1.4)),
           if (finding.suggestion.isNotEmpty) ...[
             const SizedBox(height: 2),
-            Text(finding.suggestion,
+            AiText(finding.suggestion,
               style: const TextStyle(fontSize: 12, color: AppColors.infoBlue, height: 1.4)),
           ],
         ])),

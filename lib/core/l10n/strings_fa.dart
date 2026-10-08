@@ -221,6 +221,8 @@ class AppStringsFa implements AppStrings {
   @override String get setupSheetSectionCutting  => 'پارامترهای برش';
   @override String get setupSheetSectionNotes    => 'یادداشت‌ها';
   @override String get setupSheetGeneratedBy     => 'تهیه‌شده با CNC Assist';
+  @override String get kbNewChat                 => 'گفتگوی جدید';
+  @override String get kbAnswerCutOff            => 'جواب کوتاه شد. بنویسید «ادامه بده» تا کاملش کنم.';
 
   // Phase 4 — Tooling Recs
   @override String get toolingTitle        => 'پیشنهاد ابزار';
