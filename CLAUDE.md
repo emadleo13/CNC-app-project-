@@ -53,6 +53,10 @@ Riverpod (`flutter_riverpod` 2) with hand-written providers: `Provider`, `Future
 
 Numeric inputs use `DecimalInputFormatter` (`lib/core/widgets/`), which turns `,` `٫` and Persian/Arabic digits into a parseable number. Never filter characters out of a number field: dropping the comma turned "0,15" into 15.
 
+AI text is shown with `AiAnswer` (Markdown, `flutter_markdown_plus`) or `AiText` (plain), both in `lib/core/widgets/ai_answer.dart`. They pick the reading direction from the text itself and pass it through `bidiSafe()`. After an Arabic-script word, the bidi algorithm reverses number ranges ("0.3-0.5" showed as "0.5-0.3"), so never show AI or user text in RTL with a plain `Text`. Code blocks are always LTR with their own copy button. AI requests go through `edgeInvokerProvider` (overridable in tests) and send `language`, `format: 'markdown'` and `clientTimeout` (`kAiTimeout`, 120 s).
+
+Hive boxes open through `openBoxSafely()` (`lib/core/storage/local_store.dart`): an unreadable box is copied to `<name>.hive.broken` and started empty instead of crashing the app on every start. Adapters only ever append fields, read when `reader.availableBytes > 0`.
+
 ### G-code parsing
 
 `GcodeParser` picks `HaasParser`, `SinumerikParser` or `GenericParser` (Fanuc/ISO), all extending `BaseParser`; auto-detection inspects the raw text. `BlockReader` turns each line into a `Block` (G/M codes, address words, keywords) using the dialect's comment syntax: `()` on Haas/Fanuc, `;` on Sinumerik, where parentheses are code (`CYCLE83(…)`, `X=IC(5)`). `BaseParser.parse()` runs the dialect's per-line `checkBlock()`, then walks the program with the modal state (spindle, feed, canned cycle, cutter/length comp, units, work offset). State findings are reported once per situation and stop after a call or jump.
