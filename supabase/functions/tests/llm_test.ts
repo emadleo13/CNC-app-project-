@@ -5,7 +5,7 @@ import { budgetFor, claudeShare, clock, llmComplete, RefusalError } from "../_sh
 import type { LLMRequest } from "../_shared/llm.ts";
 import { TEXT_MODELS } from "../_shared/llm_free.ts";
 import { answerLanguage, foreignScore, GARBLED_SCORE, stripThinking } from "../_shared/language.ts";
-import { historyFrom, MAX_HISTORY_TURNS, styleRules } from "../_shared/answer_style.ts";
+import { codeBlockOf, historyFrom, MAX_HISTORY_TURNS, styleRules } from "../_shared/answer_style.ts";
 
 // The Persian answer a free model gave on 2026-10-08, trimmed.
 const GARBLED_FA =
@@ -504,4 +504,12 @@ Deno.test("style: language and layout rules for old and new app versions", () =>
   assertStringIncludes(text, "language the user writes in");
   assertStringIncludes(text, "No other Markdown");
   assert(!text.includes("Length:"));
+});
+
+Deno.test("style: a drawing's program is taken out of the reply for the editor", () => {
+  const program = "O1000\n(VERIFY BEFORE RUNNING: GRAPHICS, DRY RUN, SINGLE BLOCK)\nG21 G17 G40 G49 G80 G90\nM30";
+  assertEquals(codeBlockOf(`Here is the program:\n\`\`\`gcode\n${program}\n\`\`\`\nCheck it first.`), program);
+  assertEquals(codeBlockOf(`\`\`\`\n${program}`), program, "cut off before the closing fence");
+  assertEquals(codeBlockOf(program), program, "no fence at all");
+  assertEquals(codeBlockOf("Please send a technical drawing."), "Please send a technical drawing.");
 });

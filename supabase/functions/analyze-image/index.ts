@@ -3,8 +3,8 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
-import { answerFormat, gcodeCommentRule, styleRules } from "../_shared/answer_style.ts";
-import { answerLanguage } from "../_shared/language.ts";
+import { answerFormat, codeBlockOf, gcodeCommentRule, styleRules } from "../_shared/answer_style.ts";
+import { answerLanguage, LANGUAGE_NAMES } from "../_shared/language.ts";
 
 const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -54,9 +54,12 @@ Your task:
    - Operations in logical order (roughing → finishing → holes)
    - Program footer: G80/G40, retract to a safe height or G28 G91 Z0., spindle and coolant off, M30
 
-Format the G-code cleanly with comments.
-If a dimension is not visible, say what you assumed instead of guessing silently.
-If the image is not a technical drawing or part photo, ask the user to provide one.`;
+The reply goes straight into the app's G-code editor, so reply with the program only: one
+\`\`\` code block and nothing before or after it. Put the setup notes, the tool list and every
+assumption in comments at the top of the program; where a dimension is not visible, say there
+what you assumed instead of guessing silently.
+If the image is not a technical drawing or part photo, reply with one short sentence asking for
+one, and no code.`;
 
 Deno.serve(async (req) => {
   const pre = preflight(req);
@@ -88,7 +91,8 @@ Deno.serve(async (req) => {
     const format    = answerFormat(body.format);
     const system    = isError
       ? `${ERROR_SYSTEM}\n\n${styleRules(language, format, false)}`
-      : `${DRAWING_SYSTEM}\n\n${styleRules(language, format, false)}\n${gcodeCommentRule(language)}`;
+      : `${DRAWING_SYSTEM}\n${gcodeCommentRule(null)}` +
+        (language ? `\nWrite that one sentence, if needed, in ${LANGUAGE_NAMES[language]}.` : "");
 
     const userText = isError
       ? (question?.trim().substring(0, 2000) || "What CNC alarm or error is shown in this image? Diagnose it and provide solutions.")
@@ -124,7 +128,10 @@ Deno.serve(async (req) => {
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text, provider: result.provider, truncated: result.truncated });
+    // A drawing's answer replaces the editor's content: the program alone,
+    // without the fence or any words around it.
+    const answer = isError ? result.text : codeBlockOf(result.text);
+    return json({ answer, provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("analyze-image", e);
   }

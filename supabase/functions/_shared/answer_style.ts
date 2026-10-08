@@ -43,6 +43,13 @@ export function gcodeCommentRule(lang: Lang | null): string {
     : "Inside the G-code, write comments in ASCII only (controllers reject other characters).";
 }
 
+/// The program inside the first ``` block of [text] (even an unclosed one,
+/// when the reply was cut off), or [text] itself when it has none.
+export function codeBlockOf(text: string): string {
+  const m = text.match(/```[^\n]*\n([\s\S]*?)(?:```|$)/);
+  return (m ? m[1] : text).trim();
+}
+
 export const MAX_HISTORY_TURNS = 6;
 export const MAX_HISTORY_CHARS = 6000;
 const MAX_TURN_CHARS = 2000;
