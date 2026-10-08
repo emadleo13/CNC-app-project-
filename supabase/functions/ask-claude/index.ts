@@ -1,4 +1,4 @@
-import { llmComplete, RefusalError } from "../_shared/llm.ts";
+import { budgetFor, llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
@@ -15,6 +15,8 @@ interface AskRequest {
   format?:       string;
   /// Earlier turns of this chat, oldest first: [{role, content}] (app 1.3.0+).
   history?:      unknown;
+  /// Seconds the app waits for the answer (app 1.3.0+; earlier: 90).
+  clientTimeout?: number;
 }
 
 Deno.serve(async (req) => {
@@ -80,6 +82,7 @@ Deno.serve(async (req) => {
         maxTokens:   2500,
         claudeModel: "claude-haiku-4-5",
         language,
+        budgetMs:    budgetFor(body.clientTimeout),
       });
     } catch (e) {
       await releaseUsage(admin, reservation.logId);

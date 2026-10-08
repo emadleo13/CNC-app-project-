@@ -1,4 +1,4 @@
-import { llmComplete, RefusalError } from "../_shared/llm.ts";
+import { budgetFor, llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
@@ -13,6 +13,8 @@ interface AnalyzeRequest {
   language?: string;
   /// What the app's own rule checker already reported, "L12: message" lines.
   localFindings?: string[];
+  /// Seconds the app waits for the answer (app 1.3.0+; earlier: 90).
+  clientTimeout?: number;
 }
 
 // AI second opinion on a program. The app checks every line itself; this
@@ -102,6 +104,7 @@ Rules:
         language:    lang,
         json:        true,
         accept:      (text) => parseReply(text) !== null,
+        budgetMs:    budgetFor(body.clientTimeout),
       }));
     } catch (e) {
       await releaseUsage(admin, reservation.logId);

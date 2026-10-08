@@ -1,7 +1,7 @@
 // Run: deno test --allow-env supabase/functions/tests/
 // AI router: Claude ⇄ free failover, garbled-reply detection, prompts.
 import { assert, assertEquals, assertRejects, assertStringIncludes } from "jsr:@std/assert@1";
-import { clock, llmComplete, RefusalError } from "../_shared/llm.ts";
+import { budgetFor, claudeShare, clock, llmComplete, RefusalError } from "../_shared/llm.ts";
 import type { LLMRequest } from "../_shared/llm.ts";
 import { TEXT_MODELS } from "../_shared/llm_free.ts";
 import { answerLanguage, foreignScore, GARBLED_SCORE, stripThinking } from "../_shared/language.ts";
@@ -398,6 +398,46 @@ Deno.test("router: nothing configured is an error, not a hang", async () => {
   env({ ...BOTH, ANTHROPIC_API_KEY: null, OPENROUTER_API_KEY: null });
   await assertRejects(() => llmComplete(ask()), Error, "No AI provider answered");
   env(BOTH);
+});
+
+Deno.test("budget: fits inside the time the app waits", () => {
+  assertEquals(budgetFor(undefined), 80_000, "app versions before 1.3.0 wait 90 s");
+  assertEquals(budgetFor(120), 110_000);
+  assertEquals(budgetFor(600), 135_000, "Edge Functions stop at about 150 s");
+  assertEquals(budgetFor(5), 30_000);
+  assertEquals(budgetFor("x"), 80_000);
+});
+
+Deno.test("budget: Claude leaves the free models their share", () => {
+  assertEquals(claudeShare(80_000), 52_000);
+  assertEquals(claudeShare(110_000), 75_000);
+  // Even the smallest budget leaves a free model time for one attempt.
+  assert(30_000 - claudeShare(30_000) >= 8_000);
+});
+
+Deno.test("router: Claude unreachable → free model, short pause", async () => {
+  const t = freshClock();
+  env(BOTH);
+  const real = globalThis.fetch;
+  let anthropicCalls = 0;
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = input instanceof Request ? input.url : String(input);
+    if (url.startsWith("https://api.anthropic.com/")) {
+      anthropicCalls++;
+      throw new TypeError("error sending request: connection reset");
+    }
+    return new Response(JSON.stringify(freeText(CLEAN_FA).body), { headers: { "content-type": "application/json" } });
+  }) as typeof fetch;
+  try {
+    assertEquals((await llmComplete(ask())).provider, "free");
+    assertEquals((await llmComplete(ask())).provider, "free");
+    assertEquals(anthropicCalls, 1, "paused after the failure");
+    t.advance(61_000);
+    await llmComplete(ask());
+    assertEquals(anthropicCalls, 2, "tried again a minute later");
+  } finally {
+    globalThis.fetch = real;
+  }
 });
 
 // ---------------------------------------------------------------- language and style

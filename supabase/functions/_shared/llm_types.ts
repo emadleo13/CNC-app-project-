@@ -33,6 +33,8 @@ export interface LLMRequest {
   /// Extra test of a reply, e.g. that its JSON parses. A rejected reply
   /// makes the next model try.
   accept?: (text: string) => boolean;
+  /// Time for the whole request in ms (budgetFor); 80 s by default.
+  budgetMs?: number;
 }
 
 export interface LLMResult {

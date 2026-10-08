@@ -1,4 +1,4 @@
-import { llmComplete, RefusalError } from "../_shared/llm.ts";
+import { budgetFor, llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
@@ -18,6 +18,8 @@ interface AnalyzeImageRequest {
   language?:   string;
   /// "markdown" when the app renders Markdown (app 1.3.0+).
   format?:     string;
+  /// Seconds the app waits for the answer (app 1.3.0+; earlier: 90).
+  clientTimeout?: number;
 }
 
 const ERROR_SYSTEM = `You are an expert CNC machine technician and controller specialist.
@@ -110,8 +112,9 @@ Deno.serve(async (req) => {
         ],
         maxTokens:   isError ? 2000 : 6000,
         claudeModel: "claude-sonnet-5-5",
-        effort:      isError ? "low" : "medium",
+        effort:      "low",
         language,
+        budgetMs:    budgetFor(body.clientTimeout),
       });
     } catch (e) {
       await releaseUsage(admin, reservation.logId);
