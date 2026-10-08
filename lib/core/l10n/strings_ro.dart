@@ -215,6 +215,10 @@ class AppStringsRo implements AppStrings {
   @override String get setupSheetShare     => 'Distribuie / Printează';
   @override String get setupSheetDate      => 'Data';
   @override String get setupSheetProOnly   => 'Funcție Pro — upgrade pentru fișe de lucru';
+  @override String get setupSheetSectionMaterial => 'MATERIAL ȘI OPERAȚIE';
+  @override String get setupSheetSectionCutting  => 'PARAMETRI DE AȘCHIERE';
+  @override String get setupSheetSectionNotes    => 'NOTE';
+  @override String get setupSheetGeneratedBy     => 'Generat cu CNC Assist';
 
   // Phase 4 — Tooling Recs
   @override String get toolingTitle        => 'Recomandări scule';

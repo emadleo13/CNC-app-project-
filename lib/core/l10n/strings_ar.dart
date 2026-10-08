@@ -217,6 +217,10 @@ class AppStringsAr implements AppStrings {
   @override String get setupSheetShare     => 'مشاركة / طباعة';
   @override String get setupSheetDate      => 'التاريخ';
   @override String get setupSheetProOnly   => 'ميزة Pro — رقّ لإنشاء ورقة الإعداد';
+  @override String get setupSheetSectionMaterial => 'المادة والعملية';
+  @override String get setupSheetSectionCutting  => 'معاملات القطع';
+  @override String get setupSheetSectionNotes    => 'ملاحظات';
+  @override String get setupSheetGeneratedBy     => 'أُنشئت بواسطة CNC Assist';
 
   // Phase 4 — Tooling Recs
   @override String get toolingTitle        => 'توصيات الأدوات';

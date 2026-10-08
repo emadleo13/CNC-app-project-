@@ -98,6 +98,9 @@ flutter:
     - assets/data/gcode_programs.json
     - assets/data/guides.json
     - assets/images/emad_owl.png
+    # Setup sheet PDFs: Persian, Arabic and Romanian letters (OFL, Vazirmatn-OFL.txt)
+    - assets/fonts/Vazirmatn-Regular.ttf
+    - assets/fonts/Vazirmatn-Bold.ttf
 
   fonts:
     - family: JetBrainsMono

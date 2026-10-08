@@ -217,6 +217,10 @@ class AppStringsFa implements AppStrings {
   @override String get setupSheetShare     => 'اشتراک‌گذاری / چاپ';
   @override String get setupSheetDate      => 'تاریخ';
   @override String get setupSheetProOnly   => 'ویژگی Pro — برای تولید فرم ارتقا دهید';
+  @override String get setupSheetSectionMaterial => 'مواد و عملیات';
+  @override String get setupSheetSectionCutting  => 'پارامترهای برش';
+  @override String get setupSheetSectionNotes    => 'یادداشت‌ها';
+  @override String get setupSheetGeneratedBy     => 'تهیه‌شده با CNC Assist';
 
   // Phase 4 — Tooling Recs
   @override String get toolingTitle        => 'پیشنهاد ابزار';

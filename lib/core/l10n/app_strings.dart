@@ -236,6 +236,10 @@ abstract class AppStrings {
   String get setupSheetShare;
   String get setupSheetDate;
   String get setupSheetProOnly;
+  String get setupSheetSectionMaterial;
+  String get setupSheetSectionCutting;
+  String get setupSheetSectionNotes;
+  String get setupSheetGeneratedBy;
 
   // Phase 4 — Tooling Recommendations
   String get toolingTitle;
