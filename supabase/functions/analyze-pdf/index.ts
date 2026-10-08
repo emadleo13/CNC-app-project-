@@ -3,7 +3,7 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
-import { answerFormat, gcodeCommentRule, styleRules } from "../_shared/answer_style.ts";
+import { answerFormat, gcodeCommentRule, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
 import { answerLanguage } from "../_shared/language.ts";
 
 interface PdfRequest {
@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     const body: PdfRequest = await req.json();
     const { pdfBase64, question, dialect = "haas" } = body;
     const language = answerLanguage(question ?? "", body.language);
+    const format = answerFormat(body.format);
 
     if (!pdfBase64 || pdfBase64.length === 0) {
       return error(400, "bad_request", "No PDF provided");
@@ -57,7 +58,7 @@ Deno.serve(async (req) => {
       "3. Include: (VERIFY BEFORE RUNNING: GRAPHICS, DRY RUN, SINGLE BLOCK) after the program number, a full safe-start line with units, tool list, work offset, spindle start before every cut, operations in order, and a safe footer ending in M30\n" +
       "4. State assumptions clearly when dimensions are not visible\n" +
       "If not a technical drawing, extract and summarize CNC-relevant information.\n\n" +
-      styleRules(language, answerFormat(body.format), false) + "\n" +
+      styleRules(language, format, false) + "\n" +
       gcodeCommentRule(language);
 
     const reservation = await reserveUsage(admin, user.id, pro, {
@@ -88,7 +89,7 @@ Deno.serve(async (req) => {
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text, provider: result.provider, truncated: result.truncated });
+    return json({ answer: tidyAnswer(result.text, language, format), provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("analyze-pdf", e);
   }

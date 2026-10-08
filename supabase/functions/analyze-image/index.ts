@@ -3,7 +3,7 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
-import { answerFormat, codeBlockOf, gcodeCommentRule, styleRules } from "../_shared/answer_style.ts";
+import { answerFormat, codeBlockOf, gcodeCommentRule, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
 import { answerLanguage, LANGUAGE_NAMES } from "../_shared/language.ts";
 
 const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
 
     // A drawing's answer replaces the editor's content: the program alone,
     // without the fence or any words around it.
-    const answer = isError ? result.text : codeBlockOf(result.text);
+    const answer = isError ? tidyAnswer(result.text, language, format) : codeBlockOf(result.text);
     return json({ answer, provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("analyze-image", e);

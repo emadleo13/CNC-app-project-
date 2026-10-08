@@ -1,6 +1,6 @@
 // How answers are written: language, layout, chat history. Shared by every
 // function that returns text to the app.
-import { type Lang, LANGUAGE_NAMES } from "./language.ts";
+import { FOREIGN_SCRIPTS, type Lang, LANGUAGE_NAMES } from "./language.ts";
 import type { Turn } from "./llm_types.ts";
 
 /// "markdown": the app renders Markdown (1.3.0 and later ask for it).
@@ -12,7 +12,8 @@ export function answerFormat(v: unknown): AnswerFormat {
 }
 
 const PERSIAN_TERMS =
-  "Use the machining terms Iranian operators use, for example دور اسپیندل، پیشروی، عمق برش، قطر ابزار، بار براده (chip load).";
+  "Use the machining terms Iranian operators use, for example دور اسپیندل، پیشروی، عمق برش، قطر ابزار، " +
+  "براده (chips, never چوب)، بار براده (chip load).";
 
 /// Rules appended to a system prompt. [brief] asks for a short answer, for
 /// questions rather than programs.
@@ -21,7 +22,8 @@ export function styleRules(lang: Lang | null, format: AnswerFormat, brief: boole
     ? `Write the whole answer in ${LANGUAGE_NAMES[lang]}. Keep G-code words (G43, M03), units (mm, m/min, rpm), ` +
       `parameter names and brand or product names as they are normally written, but write everything else in ` +
       `${LANGUAGE_NAMES[lang]}. Never switch to another language or script mid-answer.` +
-      (lang === "fa" ? ` ${PERSIAN_TERMS}` : "")
+      (lang === "fa" ? ` ${PERSIAN_TERMS}` : "") +
+      (lang === "fa" || lang === "ar" ? " Write numbers with the digits 0-9, as the machine shows them." : "")
     : "Answer in the language the user writes in. Never switch to another language or script mid-answer.";
   const layout = format === "markdown"
     ? "Markdown for a small phone screen: short paragraphs, '-' lists or numbered steps, **bold** only for key " +
@@ -83,4 +85,57 @@ export function historyFrom(raw: unknown): Turn[] {
   }
   while (kept.length && kept[0].role === "assistant") kept.shift();
   return kept;
+}
+
+/// Repairs what weaker models still write despite the rules: LaTeX (the app
+/// cannot render it), stray characters from scripts no app language uses
+/// ("هوا吹き"), and for app versions that show plain text, Markdown emphasis
+/// and headings. Code blocks are left exactly as they are.
+export function tidyAnswer(text: string, lang: Lang | null, format: AnswerFormat): string {
+  const tidied = text.split(/(```[\s\S]*?(?:```|$))/).map((part, i) => {
+    if (i % 2 === 1) return part; // a code block
+    let t = latexToText(part);
+    // Unknown language: the user may write in one of those scripts.
+    if (lang) t = t.replace(FOREIGN_SCRIPTS, "");
+    if (format === "text") {
+      t = t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/__(.+?)__/g, "$1")
+        .replace(/^#{1,6}[ \t]+/gm, "")
+        .replace(/[ \t]+$/gm, "");
+    }
+    return t;
+  });
+  return tidied.join("").trim();
+}
+
+const TEX_SYMBOLS: Record<string, string> = {
+  times: "×", cdot: "·", div: "÷", pi: "π", approx: "≈", le: "≤", leq: "≤", ge: "≥", geq: "≥",
+  pm: "±", neq: "≠", circ: "°", degree: "°", mu: "µ", Delta: "Δ", phi: "φ", theta: "θ",
+  alpha: "α", rightarrow: "→", to: "→", infty: "∞", varnothing: "Ø", emptyset: "Ø",
+};
+
+/// "\[ RPM = \frac{Vc \times 1000}{\pi \times D} \]" → "RPM = (Vc × 1000) / (π × D)"
+export function latexToText(s: string): string {
+  const expr = (m: string) => texCommands(m).replace(/\s+/g, " ").trim();
+  const t = s
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => expr(m))
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, m) => expr(m))
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_, m) => expr(m));
+  // Commands outside delimiters too: some models write a bare \times.
+  return texCommands(t);
+}
+
+function texCommands(s: string): string {
+  const group = (x: string) => (/^\s*[\w.]+\s*$/.test(x) ? x.trim() : `(${x.trim()})`);
+  let t = s;
+  // Innermost fractions first; nested ones resolve on the next pass.
+  for (let i = 0; i < 5 && /\\[dt]?frac\{/.test(t); i++) {
+    t = t.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, a, b) => `${group(a)} / ${group(b)}`);
+  }
+  return t
+    .replace(/\\(?:text|mathrm|mathbf|operatorname)\{([^{}]*)\}/g, "$1")
+    .replace(/\\sqrt\{([^{}]*)\}/g, "√($1)")
+    .replace(/\\([a-zA-Z]+)/g, (m, name: string) => TEX_SYMBOLS[name] ?? m)
+    .replace(/\\[,;:! ]/g, " ")
+    .replace(/\^\{([^{}]*)\}/g, "^$1")
+    .replace(/_\{([^{}]*)\}/g, "_$1");
 }

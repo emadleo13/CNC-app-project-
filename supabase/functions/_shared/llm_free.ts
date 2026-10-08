@@ -29,7 +29,11 @@ export const VISION_MODELS = [
 // its choice, and so the quality, varies from call to call.
 export const ANY_FREE_MODEL = "openrouter/free";
 
-const ATTEMPT_TIMEOUT_MS = 45_000;
+// Each attempt may use this share of the time left. A long reply (a G-code
+// review in Persian) from a slow free model can take a minute, and the first
+// model to start usually answers; one that hangs still leaves the next model
+// part of the budget.
+const ATTEMPT_SHARE = 0.7;
 // Not worth starting another model with less time than this left.
 const MIN_ATTEMPT_MS = 8_000;
 
@@ -64,7 +68,6 @@ export async function freeComplete(req: LLMRequest, deadline: number): Promise<L
       top_p: 0.9,
       // Reasoning models: think briefly, and keep the reasoning out of the answer.
       reasoning: { effort: "low", exclude: true },
-      ...(req.json ? { response_format: { type: "json_object" } } : {}),
       ...(hasPdf ? { plugins: [{ id: "file-parser", pdf: { engine: "pdf-text" } }] } : {}),
     };
 
@@ -79,7 +82,7 @@ export async function freeComplete(req: LLMRequest, deadline: number): Promise<L
           "X-Title":       "CNC Assist",
         },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(Math.min(ATTEMPT_TIMEOUT_MS, left - 2_000)),
+        signal: AbortSignal.timeout(Math.max(MIN_ATTEMPT_MS, left * ATTEMPT_SHARE)),
       });
     } catch (e) {
       failures.push(`${model} -> ${e instanceof Error ? e.name : e}`);

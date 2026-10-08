@@ -5,6 +5,7 @@ import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
 import { MAX_FINDINGS, normalise, parseReply } from "../_shared/gcode_review.ts";
 import { isLang, LANGUAGE_NAMES } from "../_shared/language.ts";
+import { tidyAnswer } from "../_shared/answer_style.ts";
 
 interface AnalyzeRequest {
   gcode:     string;
@@ -86,6 +87,7 @@ Rules:
 - Line numbers refer to the numbered program in the user message.
 - Report only real problems that could crash the machine, scrap the part, raise an alarm, or that clearly deviate from good practice. At most ${MAX_FINDINGS} findings, most serious first. An empty list is fine.
 - "error" = will alarm, crash or cut wrong. "warning" = risky or bad practice.
+- Keep each issue and suggestion to one short sentence (about 20 words), and the summary to at most 3 sentences.
 - If something depends on machine settings you cannot see, say so instead of guessing.
 - Never state that the program is safe to run.
 - Write summary, issue, suggestion and suggestions in ${language} only, never mixing in other languages. Keep G-code words exactly as written (G43, H01, M03).${localBlock}`;
@@ -124,7 +126,15 @@ Rules:
 
     // The program itself is not stored: usage and token cost are already in
     // qa_logs, and users' G-code stays theirs.
-    return json(normalise(parsed, lineCount));
+    // The app shows these as plain text.
+    const review = normalise(parsed, lineCount);
+    const tidy = (s: string) => tidyAnswer(s, lang, "text");
+    return json({
+      ...review,
+      summary:     tidy(review.summary),
+      findings:    review.findings.map((f) => ({ ...f, issue: tidy(f.issue), suggestion: tidy(f.suggestion) })),
+      suggestions: review.suggestions.map(tidy),
+    });
   } catch (e) {
     return internalError("analyze-gcode", e);
   }

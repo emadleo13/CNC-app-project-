@@ -3,7 +3,7 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
-import { answerFormat, historyFrom, styleRules } from "../_shared/answer_style.ts";
+import { answerFormat, historyFrom, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
 import { answerLanguage } from "../_shared/language.ts";
 
 interface AskRequest {
@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
     if (reservation instanceof Response) return reservation;
 
     const language = answerLanguage(question, body.language);
+    const format = answerFormat(body.format);
     const contextBlock = alarmContext
       ? `\n\nThe app found this alarm data in its local database for the question:\n${alarmContext}\n` +
         "Use it for a specific, accurate answer about this alarm code."
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
       "- Give cutting data as starting values with a range, and say what to watch and adjust on the machine\n" +
       "- If a question involves safety risks, mention them clearly\n" +
       "- When uncertain, say so — do not guess critical safety or machine-specific information\n\n" +
-      styleRules(language, answerFormat(body.format), true) +
+      styleRules(language, format, true) +
       contextBlock;
 
     let result;
@@ -92,7 +93,7 @@ Deno.serve(async (req) => {
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text, provider: result.provider, truncated: result.truncated });
+    return json({ answer: tidyAnswer(result.text, language, format), provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("ask-claude", e);
   }

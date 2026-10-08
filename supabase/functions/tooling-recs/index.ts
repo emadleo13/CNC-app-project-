@@ -3,7 +3,7 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
 import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
-import { answerFormat, styleRules } from "../_shared/answer_style.ts";
+import { answerFormat, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
 import { answerLanguage } from "../_shared/language.ts";
 
 interface ToolingRequest {
@@ -69,12 +69,13 @@ Name product lines or series. Give an exact catalogue number only when you are s
 
     // The request is built from form fields, so the app language decides.
     const language = answerLanguage("", body.language);
+    const format = answerFormat(body.format);
 
     let result;
     try {
       result = await llmComplete({
         system:      "You are a CNC tooling engineer advising shop floor operators.\n\n" +
-                     styleRules(language, answerFormat(body.format), true),
+                     styleRules(language, format, true),
         parts:       [{ kind: "text", text: prompt }],
         maxTokens:   2000,
         claudeModel: "claude-haiku-4-5",
@@ -89,7 +90,7 @@ Name product lines or series. Give an exact catalogue number only when you are s
     }
     await settleUsage(admin, reservation.logId, result.tokens);
 
-    return json({ answer: result.text, provider: result.provider, truncated: result.truncated });
+    return json({ answer: tidyAnswer(result.text, language, format), provider: result.provider, truncated: result.truncated });
   } catch (e) {
     return internalError("tooling-recs", e);
   }

@@ -5,7 +5,7 @@ import { budgetFor, claudeShare, clock, llmComplete, RefusalError } from "../_sh
 import type { LLMRequest } from "../_shared/llm.ts";
 import { TEXT_MODELS } from "../_shared/llm_free.ts";
 import { answerLanguage, foreignScore, GARBLED_SCORE, stripThinking } from "../_shared/language.ts";
-import { codeBlockOf, historyFrom, MAX_HISTORY_TURNS, styleRules } from "../_shared/answer_style.ts";
+import { codeBlockOf, historyFrom, latexToText, MAX_HISTORY_TURNS, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
 
 // The Persian answer a free model gave on 2026-10-08, trimmed.
 const GARBLED_FA =
@@ -370,7 +370,8 @@ Deno.test("free: a JSON task skips replies that do not parse", async () => {
   try {
     const r = await llmComplete(ask({ json: true, accept: (t) => t.trim().startsWith("{") }));
     assertEquals(r.text, '{"summary":"ok"}');
-    assertEquals(net.calls.openrouter[0].response_format, { type: "json_object" });
+    // JSON mode slowed some free providers down; the reply is checked instead.
+    assertEquals(net.calls.openrouter[0].response_format, undefined);
     assertEquals(net.calls.openrouter[0].temperature, 0.2);
   } finally {
     net.restore();
@@ -512,4 +513,33 @@ Deno.test("style: a drawing's program is taken out of the reply for the editor",
   assertEquals(codeBlockOf(`\`\`\`\n${program}`), program, "cut off before the closing fence");
   assertEquals(codeBlockOf(program), program, "no fence at all");
   assertEquals(codeBlockOf("Please send a technical drawing."), "Please send a technical drawing.");
+});
+
+Deno.test("tidy: LaTeX from the 2026-10-08 free-model answer becomes a plain formula", () => {
+  // String.raw keeps every backslash exactly as the model wrote it.
+  assertEquals(
+    latexToText(String.raw`  \[
+  RPM = \frac{Vc \times 1000}{\pi \times D}
+  \]`),
+    "  RPM = (Vc × 1000) / (π × D)",
+  );
+  assertEquals(
+    latexToText(String.raw`\[ Feed = RPM \times تعداد پر \times chip\;load \]`),
+    "Feed = RPM × تعداد پر × chip load",
+  );
+  assertEquals(latexToText(String.raw`Vc ≈ \(\dfrac{\pi D n}{1000}\)`), "Vc ≈ (π D n) / 1000");
+  assertEquals(latexToText("no math here"), "no math here");
+});
+
+Deno.test("tidy: stray scripts go, Markdown goes for plain-text apps, code stays", () => {
+  assertEquals(tidyAnswer("سطح را با هوا吹き بررسی کنید", "fa", "markdown"), "سطح را با هوا بررسی کنید");
+  // Unknown language: the user may be writing in that script.
+  assertEquals(tidyAnswer("Как дела?", null, "text"), "Как дела?");
+  assertEquals(
+    tidyAnswer("### نکات  \n- **سرعت برش (Vc)**: 80 m/min  ", "fa", "text"),
+    "نکات\n- سرعت برش (Vc): 80 m/min",
+  );
+  assertEquals(tidyAnswer("- **Vc**: 80", "en", "markdown"), "- **Vc**: 80");
+  const code = "```\n#100=5 (**X** " + String.raw`\frac{1}{2}` + ")\n```";
+  assertEquals(tidyAnswer(`**Program:**\n${code}`, "fa", "text"), `Program:\n${code}`);
 });
