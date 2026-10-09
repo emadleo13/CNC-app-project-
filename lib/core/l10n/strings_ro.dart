@@ -164,8 +164,8 @@ class AppStringsRo implements AppStrings {
   @override String get commonClear          => 'Șterge';
   @override String get commonCopy           => 'Copiază';
   @override String get commonRetry          => 'Reîncearcă';
-  @override String get subProductUnavailable => 'Prețul din magazin nu este disponibil. Verifică conexiunea sau încearcă mai târziu.';
-  @override String get subNeedsPlayStore => 'Achizițiile funcționează doar când aplicația e instalată din Google Play (testare internă sau mai sus) cu un cont de tester. Această versiune a fost instalată prin distribuție directă.';
+  @override String get subProductUnavailable => 'Abonamentul nu este disponibil acum. Încearcă din nou mai târziu.';
+  @override String get subNeedsPlayStore => 'Achizițiile funcționează doar dacă aplicația este instalată din Google Play, cu un cont Google conectat în Magazin Play.';
   @override String get commonError          => 'Eroare';
   @override String get commonLoading        => 'Se încarcă...';
 

@@ -164,8 +164,8 @@ class AppStringsEn implements AppStrings {
   @override String get commonClear          => 'Clear';
   @override String get commonCopy           => 'Copy';
   @override String get commonRetry          => 'Retry';
-  @override String get subProductUnavailable => 'Live store price unavailable. Check your connection or try again later.';
-  @override String get subNeedsPlayStore => 'Purchases work only when the app is installed from Google Play (internal testing or higher) with a tester account. This build was installed via direct distribution.';
+  @override String get subProductUnavailable => 'The subscription is not available right now. Please try again later.';
+  @override String get subNeedsPlayStore => 'Purchases need the app installed from Google Play, with a Google account signed in to the Play Store.';
   @override String get commonError          => 'Error';
   @override String get commonLoading        => 'Loading...';
 

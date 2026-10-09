@@ -20,6 +20,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   String?         _errorMsg;   // red — a real failure (e.g. purchase failed)
   String?         _infoMsg;    // amber — a benign notice (store/price unavailable)
 
+  /// Play Billing answered: a missing product then means the subscription is
+  /// not live in Play Console, not that the app was installed elsewhere.
+  bool            _billingAvailable = false;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +38,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       final available = await repo
           .isAvailable()
           .timeout(const Duration(seconds: 8), onTimeout: () => false);
+      _billingAvailable = available;
       if (!available) {
         if (mounted) setState(() => _infoMsg = s.subNotAvailable);
         return;
@@ -92,9 +97,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
     // or the subscription isn't live in Play Console yet). Give clear feedback
     // instead of doing nothing.
     if (_product == null) {
-      setState(() => _infoMsg = s.subNeedsPlayStore);
+      final msg = _billingAvailable ? s.subProductUnavailable : s.subNeedsPlayStore;
+      setState(() => _infoMsg = msg);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(s.subNeedsPlayStore),
+        content: Text(msg),
         backgroundColor: AppColors.warningYellow,
       ));
       return;
