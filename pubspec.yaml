@@ -43,6 +43,8 @@ dependencies:
 
   # In-app purchase / subscription (Phase 2)
   in_app_purchase: ^3.3.0
+  # Subscription offers (base plan, free trial) of the Play product
+  in_app_purchase_android: ^0.5.2
 
   # URL launcher
   url_launcher: ^6.3.1

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,7 +14,7 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 }
 
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
-  ProductDetails? _product;
+  SubscriptionOption? _product;
   bool            _loading    = true;
   String?         _errorMsg;   // red — a real failure (e.g. purchase failed)
   String?         _infoMsg;    // amber — a benign notice (store/price unavailable)
@@ -106,7 +105,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       return;
     }
     setState(() { _errorMsg = null; _infoMsg = null; });
-    await ref.read(purchaseControllerProvider.notifier).buy(_product!);
+    await ref.read(purchaseControllerProvider.notifier).buy(_product!.product);
   }
 
   Future<void> _restore() async {
@@ -232,8 +231,9 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ),
 
           if (!isPro) ...[
-            // Free trial badge
-            Container(
+            // Free trial badge: only when Play actually offers this user the
+            // trial (it is not offered again after one was used).
+            if (_product?.freeTrial ?? false) Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 10),
               margin: const EdgeInsets.only(bottom: 12),
