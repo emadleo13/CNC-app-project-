@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/net/edge_functions.dart';
 import '../../subscription/data/subscription_repository.dart';
 
 class UsageStatus {
@@ -16,11 +17,31 @@ class UsageStatus {
 }
 
 class UsageRepository {
-  final _supabase = Supabase.instance.client;
+  final EdgeInvoker _invoke;
+  UsageRepository(this._invoke);
 
+  /// The server counts the account's calls and the device's (a reinstall
+  /// starts a new account on the same device), so it is asked first. Its
+  /// count is what the quota enforces.
   Future<UsageStatus> getMonthlyUsage() async {
     try {
-      final user = _supabase.auth.currentUser;
+      final r = await _invoke('usage', timeout: const Duration(seconds: 15));
+      return UsageStatus(
+        used:  (r['used'] as num).toInt(),
+        limit: (r['limit'] as num?)?.toInt() ?? UsageStatus.freeLimit,
+        isPro: r['pro'] == true,
+      );
+    } catch (_) {
+      // Backend without the usage function yet, or offline.
+      return _accountUsage();
+    }
+  }
+
+  /// The account's own rows only, read directly.
+  Future<UsageStatus> _accountUsage() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
       if (user == null) {
         return const UsageStatus(used: 0, limit: UsageStatus.freeLimit, isPro: false);
       }
@@ -30,13 +51,13 @@ class UsageRepository {
       final monthStart = DateTime.utc(now.year, now.month).toIso8601String();
 
       // Fetch usage rows and the Pro entitlement in parallel
-      final usageFuture = _supabase
+      final usageFuture = supabase
           .from('qa_logs')
           .select('id')
           .eq('user_id', user.id)
           .gte('created_at', monthStart);
 
-      final entitlementFuture = _supabase
+      final entitlementFuture = supabase
           .from('cnc_entitlements')
           .select('tier, expires_at')
           .eq('user_id', user.id)
@@ -55,7 +76,9 @@ class UsageRepository {
   }
 }
 
-final usageRepositoryProvider = Provider((_) => UsageRepository());
+final usageRepositoryProvider = Provider(
+  (ref) => UsageRepository(ref.read(edgeInvokerProvider)),
+);
 
 final usageProvider = FutureProvider.autoDispose<UsageStatus>((ref) {
   return ref.read(usageRepositoryProvider).getMonthlyUsage();

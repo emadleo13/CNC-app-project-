@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../l10n/app_strings.dart';
+import 'device_id.dart';
 
 /// Why an Edge Function call failed, as far as the UI needs to know.
 enum EdgeErrorKind {
@@ -66,7 +67,8 @@ class EdgeFunctionError implements Exception {
 }
 
 /// Calls the Supabase Edge Function [name] as the current user (signing in
-/// anonymously first if needed) and returns its JSON body.
+/// anonymously first if needed) and returns its JSON body. The device ID goes
+/// along so the free quota is counted per device (see [deviceId]).
 ///
 /// functions_client throws [FunctionException] for every non-2xx response, so
 /// checking `response.status` afterwards never sees a 403 or 429. This turns
@@ -83,8 +85,13 @@ Future<Map<String, dynamic>> invokeEdgeFunction(
         const Duration(seconds: 20),
       );
     }
+    final device = await deviceId();
     final response = await supabase.functions
-        .invoke(name, body: body)
+        .invoke(
+          name,
+          body: body,
+          headers: {'x-device-id': ?device},
+        )
         .timeout(timeout);
     final data = response.data;
     if (data is Map<String, dynamic>) return data;

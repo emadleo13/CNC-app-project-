@@ -29,7 +29,7 @@
 <div class="wrap">
 
   <h1>Privacy Policy</h1>
-  <p class="muted">CNC Assist &middot; Last updated: October 8, 2026</p>
+  <p class="muted">CNC Assist &middot; Last updated: October 11, 2026</p>
 
   <div class="card">
     <p>This Privacy Policy explains how <strong>CNC Assist</strong> ("the app", "we", "us")
@@ -54,6 +54,13 @@
       <td>Anonymous account ID</td>
       <td>Operate the app, enforce free-tier limits, track subscription status</td>
       <td>Yes, on our backend until you delete your account</td>
+    </tr>
+    <tr>
+      <td>Device identifier (a one-way hash of the Android ID that Android gives this app)</td>
+      <td>Count the free monthly AI requests per device, so that reinstalling the app does
+          not reset the free limit (fraud prevention)</td>
+      <td>Only the hash is stored, next to each AI request record. It is not used for
+          advertising and is not shared with AI providers or anyone else.</td>
     </tr>
     <tr>
       <td>Questions, G-code, images and PDFs you submit to AI features</td>
@@ -124,15 +131,19 @@
   <h2>5. Data retention</h2>
   <p>Your anonymous account, usage records, and subscription status are kept while your
   account exists. When you delete your account (see below), this data is removed from our
-  systems. Data stored locally on your device remains until you delete it or uninstall
+  systems, with one exception: for the current month we keep the date of each AI request
+  and the device hash, without any question text and without a link to the deleted
+  account, so that deleting the account does not reset the monthly free limit. These are
+  deleted in a later clean-up after that month ends. Data stored locally on your device remains until you delete it or uninstall
   the app.</p>
 
   <h2>6. Deleting your account and data</h2>
   <p>You can permanently delete your account and all associated data at any time:</p>
   <ul>
     <li><strong>In the app:</strong> open <em>Settings → Account → Delete account &amp; data</em>.
-        This removes your account and your records from our backend and clears the app's
-        local data on your device.</li>
+        This removes your account and your records from our backend (except the anonymous
+        monthly request count described in section 5) and clears the app's local data on
+        your device.</li>
     <li><strong>By email:</strong> you may also request deletion by writing to
         <a href="mailto:hamidleo1984@gmail.com">hamidleo1984@gmail.com</a>.</li>
   </ul>

@@ -1,5 +1,5 @@
 // Applies the live baseline (live_baseline.sql, what production had before
-// 003) and then migration 003 to an in-process Postgres (PGlite), with a
+// 003) and then migrations 003 and 004 to an in-process Postgres (PGlite), with a
 // stand-in for Supabase's auth schema and roles. Checks that the CNC holes are
 // closed AND that the other app sharing the project still works.
 // Fails (exit 1) if any expectation breaks.
@@ -30,9 +30,11 @@ await db.exec(`
 `);
 await db.exec(readFileSync(here("./live_baseline.sql"), "utf8"));
 if (!before) {
-  const m = readFileSync(here("../migrations/003_security_hardening.sql"), "utf8");
-  await db.exec(m);
-  await db.exec(m); // must be safe to run twice
+  for (const f of ["003_security_hardening.sql", "004_device_quota.sql"]) {
+    const m = readFileSync(here(`../migrations/${f}`), "utf8");
+    await db.exec(m);
+    await db.exec(m); // must be safe to run twice
+  }
 }
 
 const A = "11111111-1111-1111-1111-111111111111";
@@ -64,6 +66,8 @@ if (!before) {
   // Edge Functions (service role) write the CNC tables.
   await db.exec(`set role service_role;
     insert into public.qa_logs(user_id, question_excerpt) values ('${A}','svc');
+    insert into public.qa_logs(user_id, device_hash, question_excerpt) values ('${B}','dev-b','b asked');
+    insert into public.qa_logs(user_id, device_hash) values ('00000000-0000-0000-0000-000000000000','dev-b');
     insert into public.cnc_purchases(purchase_token,user_id,product_id,state,expires_at)
       values ('tok','${A}','cnc_assist_pro_monthly','SUBSCRIPTION_STATE_ACTIVE', now()+interval '30 days');
     insert into public.cnc_entitlements(user_id, tier, expires_at) values ('${A}','pro', now()+interval '30 days');
@@ -79,6 +83,9 @@ await expect("anon key inserts a usage row", `insert into public.qa_logs(user_id
 await expect("call get_monthly_usage(B)", `select public.get_monthly_usage('${B}')`, "denied");
 if (!before) {
   await expect("read own usage rows written by the server", `select id from public.qa_logs where user_id='${A}'`, "allowed");
+  await expect("read another device's usage rows", `select id from public.qa_logs where device_hash='dev-b'`, "no rows");
+  await expect("move own usage to another device", `update public.qa_logs set device_hash='x' where user_id='${B}'`, "denied", { user: B });
+  await expect("clear own device usage (reset quota)", `delete from public.qa_logs where device_hash='dev-b'`, "denied", { user: B });
   await expect("read own entitlement", `select tier from public.cnc_entitlements where user_id='${A}'`, "allowed");
   await expect("read another user's entitlement", `select tier from public.cnc_entitlements where user_id='${B}'`, "no rows");
   await expect("grant self Pro (update entitlement)", `update public.cnc_entitlements set tier='pro', expires_at=now()+interval '9 years' where user_id='${B}'`, "denied", { user: B });

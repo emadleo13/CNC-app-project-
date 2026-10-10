@@ -1,5 +1,6 @@
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
+import { forgetUsage } from "../_shared/quota.ts";
 
 // Permanently deletes the calling user's account and all owned data.
 // Google Play requires apps with account creation to offer in-app deletion.
@@ -18,10 +19,11 @@ Deno.serve(async (req) => {
 
     // Delete owned data. cnc_entitlements and cnc_purchases reference
     // auth.users ON DELETE CASCADE and go with the auth user. qa_logs has no
-    // foreign key, so it is cleared explicitly, as is the profiles row the
-    // project's sign-up trigger created for this user. Add any future
+    // foreign key, so it is cleared explicitly (keeping only this month's
+    // anonymous per-device counts, see forgetUsage), as is the profiles row
+    // the project's sign-up trigger created for this user. Add any future
     // user-scoped table here.
-    await admin.from("qa_logs").delete().eq("user_id", user.id);
+    await forgetUsage(admin, user.id);
     await admin.from("profiles").delete().eq("id", user.id);
 
     // Delete the auth user. This is irreversible.

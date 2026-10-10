@@ -2,7 +2,7 @@ import { budgetFor, llmComplete, RefusalError } from "../_shared/llm.ts";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { isPro } from "../_shared/entitlement.ts";
 import { error, internalError, json, preflight } from "../_shared/http.ts";
-import { releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
+import { deviceHash, releaseUsage, reserveUsage, settleUsage } from "../_shared/quota.ts";
 import { answerFormat, gcodeCommentRule, styleRules, tidyAnswer } from "../_shared/answer_style.ts";
 import { answerLanguage } from "../_shared/language.ts";
 
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       styleRules(language, format, false) + "\n" +
       gcodeCommentRule(language);
 
-    const reservation = await reserveUsage(admin, user.id, pro, {
+    const reservation = await reserveUsage(admin, { userId: user.id, device: await deviceHash(req) }, pro, {
       question_excerpt: `[pdf] ${userQuestion.substring(0, 200)}`,
       is_image:         true,
     });

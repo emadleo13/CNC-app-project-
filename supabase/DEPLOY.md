@@ -88,7 +88,7 @@ npx supabase functions deploy --use-api --project-ref colahcvziorjkqckqdlt
 ```
 
 `--use-api` bundles on Supabase's side, so Docker is not needed. This deploys
-all eight functions. `play-rtdn` gets JWT verification turned off from
+all nine functions. `play-rtdn` gets JWT verification turned off from
 `supabase/config.toml` (Pub/Sub cannot send a Supabase JWT). Until
 `PLAY_RTDN_SECRET` is set it rejects every request.
 
@@ -178,6 +178,38 @@ Which provider answered is in the function logs: `ai: claude …` or
 updating (current free models: <https://openrouter.ai/api/v1/models>, IDs
 ending in `:free`).
 
+## 8. Per-device free quota (migration 004)
+
+The free quota used to count only the anonymous account, so reinstalling the
+app (or *Delete account*) gave ten new free questions. The app now sends its
+app-scoped Android ID as `x-device-id`; the functions store a SHA-256 of it in
+`qa_logs.device_hash` and count the account's rows or the device's. The new
+`usage` function returns that count to the app's counter.
+
+Order matters: the functions write `device_hash`, so the column comes first.
+
+```bash
+npx supabase db query --linked --project-ref colahcvziorjkqckqdlt \
+  -f supabase/migrations/004_device_quota.sql
+npx supabase functions deploy --use-api --project-ref colahcvziorjkqckqdlt
+```
+
+Then release the app version that sends the header. Older versions keep
+working; they send no device ID and are counted per account, as before.
+
+Check after a few questions from the new version:
+
+```bash
+npx supabase db query --linked --project-ref colahcvziorjkqckqdlt \
+  "select count(*) filter (where device_hash is not null) as with_device, count(*) from public.qa_logs where created_at > now() - interval '1 day';"
+```
+
+*Delete account* now keeps this month's rows of the device without their text,
+under user id `00000000-0000-0000-0000-000000000000`; later deletions purge
+those from earlier months. The privacy policy says so (section 5), and the Play
+Console *Data safety* form must list **Device or other IDs** (collected, not
+shared, for fraud prevention and security).
+
 ## Rolling back
 
 - Functions: `git checkout <previous-commit> -- supabase/functions`, then
@@ -193,7 +225,7 @@ ending in `:free`).
 # Edge Function logic: entitlement states, JWT signing, Play API flow, isPro
 npx deno test --allow-env supabase/functions/tests/
 
-# Live baseline + 003 on a real Postgres (PGlite), both apps checked
+# Live baseline + 003 + 004 on a real Postgres (PGlite), both apps checked
 cd supabase/tests && npm install && npm test
 node rls_test.mjs --before   # shows the holes in the baseline (expected to fail)
 ```
