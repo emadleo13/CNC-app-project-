@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/calc/units.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/review/review_prompter.dart';
+import '../../../core/routing/route_names.dart';
 import '../../../core/widgets/calc_widgets.dart';
+import '../../history/data/history_repository.dart';
+import '../../history/domain/saved_calculation.dart';
 import '../domain/drilling_calculator.dart';
 
 class DrillingScreen extends ConsumerStatefulWidget {
@@ -75,16 +80,30 @@ class _DrillTabState extends ConsumerState<_DrillTab> {
   }
 
   void _calc() {
-    setState(() {
-      _result = DrillingCalculator.drilling(DrillingInput(
-        diameter: _dia,
-        cuttingSpeed: _vc,
-        feedPerRev: _fr,
-        holeDepth: _depth,
-        pointAngle: _angle,
-        units: widget.units,
-      ), maxRpm: ref.read(maxRpmProvider));
-    });
+    final r = DrillingCalculator.drilling(DrillingInput(
+      diameter: _dia,
+      cuttingSpeed: _vc,
+      feedPerRev: _fr,
+      holeDepth: _depth,
+      pointAngle: _angle,
+      units: widget.units,
+    ), maxRpm: ref.read(maxRpmProvider));
+    setState(() => _result = r);
+    if (r == null) return;
+    ref.read(calculationsProvider.notifier).save(SavedCalculation(
+      kind:           CalcKind.drilling,
+      diameter:       _dia,
+      units:          widget.units.isMetric ? 'mm' : 'in',
+      rpm:            r.rpm,
+      feedRatePerMin: r.feedPerMin,
+      cuttingSpeed:   r.cuttingSpeed,
+      feedPerRev:     _fr,
+      depth:          _depth,
+      pointAngle:     _angle,
+      cutTimeMin:     r.cutTimeMin,
+      savedAt:        DateTime.now(),
+    ));
+    ReviewPrompter.recordSuccess();
   }
 
   @override
@@ -170,6 +189,10 @@ class _DrillTabState extends ConsumerState<_DrillTab> {
               requestedRpm: _result!.limitedFromRpm!,
               cuttingSpeed: '${_result!.cuttingSpeed.toStringAsFixed(0)} ${widget.units.cuttingSpeedLabel}',
             ),
+          SavedToHistoryNote(
+            label: s.historySaved,
+            onTap: () => context.go(RouteNames.history),
+          ),
         ],
       ],
     );

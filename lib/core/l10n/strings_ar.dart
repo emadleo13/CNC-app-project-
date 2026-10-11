@@ -153,15 +153,20 @@ class AppStringsAr implements AppStrings {
   @override String get historyCalculations   => 'الحسابات';
   @override String get historyAnalyses       => 'التحليلات';
   @override String get historyEmpty          => 'لا توجد عناصر محفوظة';
-  @override String get historyEmptyDesc      => 'احفظ الحسابات وتحليلات الجي-كود\nللوصول إليها هنا.';
+  @override String get historyEmptyDesc      => 'تظهر حساباتك وتحليلات الجي-كود\nهنا تلقائياً.';
   @override String get historyEmptyCtaCalc     => 'ابدأ أول عملية حسابية';
   @override String get historyEmptyCtaAnalysis => 'حلّل أول برنامج';
-  @override String get historySave           => 'حفظ';
   @override String get historySaved          => 'تم الحفظ في السجل';
   @override String get historyDeleteAll      => 'حذف الكل';
   @override String get historyConfirmClear   => 'سيتم حذف جميع العناصر المحفوظة في هذا التبويب.';
+  @override String get historyRetentionNote  => 'تُحفظ الحسابات وتحليلات الجي-كود هنا تلقائياً وتبقى {days} يوماً، ثم تُحذف.';
 
   @override String get commonCancel         => 'إلغاء';
+  @override String get commonYes            => 'نعم';
+  @override String get commonNo             => 'لا';
+  @override String get exitAppTitle         => 'هل تريد الخروج من التطبيق؟';
+  @override String get settingsRateApp      => 'قيّم CNC Assist';
+  @override String get settingsRateAppDesc  => 'تقييمك على Google Play يساعد المشغلين الآخرين على إيجاد التطبيق';
   @override String get commonSave           => 'حفظ';
   @override String get commonClear          => 'مسح';
   @override String get commonCopy           => 'نسخ';
@@ -276,7 +281,7 @@ class AppStringsAr implements AppStrings {
     'اختر مادة من القائمة (فولاذ، ألومنيوم، تيتانيوم، إلخ).',
     'أدخل قطر الأداة وعدد الأسنان، ثم حدد عمق القطع وعرض القطع.',
     'اختر مادة الأداة (كربيد أو HSS) ونوع العملية (خشنة أو تشطيب).',
-    'اضغط احسب — تظهر RPM ومعدل التغذية وحمل الرقائق و MRR فوراً.\nاضغط حفظ لتخزين النتيجة في السجل.',
+    'اضغط احسب — تظهر RPM ومعدل التغذية وحمل الرقائق و MRR فوراً.\nتُحفظ كل نتيجة في السجل تلقائياً.',
   ];
 
   @override String get helpGcodeTitle => 'محلل G-Code';
@@ -326,10 +331,8 @@ class AppStringsAr implements AppStrings {
 
   @override String get helpHistoryTitle => 'السجل';
   @override List<String> get helpHistorySteps => [
-    'الحسابات وتحليلات الجي-كود المحفوظة تُخزن هنا.',
-    'بعد الحساب، اضغط حفظ في لوحة النتائج لإضافة إدخال.',
-    'بعد تحليل الجي-كود، اضغط حفظ في تبويب الملخص.',
-    'اضغط أي إدخال لعرض التفاصيل الكاملة؛ اسحب يساراً للحذف.',
+    'يُحفظ هنا تلقائياً كل حساب تفريز وخراطة وثقب وكل تحليل جي-كود.',
+    'اسحب أي إدخال لحذفه؛ أيقونة سلة المهملات في الأعلى تمسح التبويب الحالي.',
   ];
 
   // ── أدوات التصنيع ──

@@ -151,15 +151,20 @@ class AppStringsEn implements AppStrings {
   @override String get historyCalculations   => 'Calculations';
   @override String get historyAnalyses       => 'Analyses';
   @override String get historyEmpty          => 'No saved items yet';
-  @override String get historyEmptyDesc      => 'Save calculations and G-code analyses\nto access them here.';
+  @override String get historyEmptyDesc      => 'Your calculations and G-code analyses\nappear here automatically.';
   @override String get historyEmptyCtaCalc     => 'Start your first calculation';
   @override String get historyEmptyCtaAnalysis => 'Analyze your first program';
-  @override String get historySave           => 'Save';
   @override String get historySaved          => 'Saved to history';
   @override String get historyDeleteAll      => 'Clear all';
   @override String get historyConfirmClear   => 'This will delete all saved items in this tab.';
+  @override String get historyRetentionNote  => 'Calculations and G-code analyses are saved here automatically and kept for {days} days, then deleted.';
 
   @override String get commonCancel         => 'Cancel';
+  @override String get commonYes            => 'Yes';
+  @override String get commonNo             => 'No';
+  @override String get exitAppTitle         => 'Exit CNC Assist?';
+  @override String get settingsRateApp      => 'Rate CNC Assist';
+  @override String get settingsRateAppDesc  => 'Your rating on Google Play helps other machinists find the app';
   @override String get commonSave           => 'Save';
   @override String get commonClear          => 'Clear';
   @override String get commonCopy           => 'Copy';
@@ -278,7 +283,7 @@ class AppStringsEn implements AppStrings {
     'Select a material from the list (steel, aluminum, titanium, etc.).',
     'Enter tool diameter and number of flutes, then set depth of cut and width of cut.',
     'Choose tool material (Carbide or HSS) and operation type (Roughing or Finishing).',
-    'Tap Calculate — RPM, Feed Rate, Chip Load, and MRR are shown instantly.\nTap Save to store the result in History.',
+    'Tap Calculate — RPM, Feed Rate, Chip Load, and MRR are shown instantly.\nEach result is saved to History automatically.',
   ];
 
   @override String get helpGcodeTitle => 'G-Code Analyzer';
@@ -328,10 +333,8 @@ class AppStringsEn implements AppStrings {
 
   @override String get helpHistoryTitle => 'History';
   @override List<String> get helpHistorySteps => [
-    'Your saved calculations and G-code analyses are stored here.',
-    'After calculating, tap Save in the results panel to add an entry.',
-    'After analyzing G-code, tap Save in the summary tab.',
-    'Tap any entry to view full details; swipe left to delete.',
+    'Every milling, turning and drilling calculation and every G-code analysis is saved here automatically.',
+    'Swipe an entry to delete it; the bin icon at the top clears the current tab.',
   ];
 
   // ── Tools Hub ──

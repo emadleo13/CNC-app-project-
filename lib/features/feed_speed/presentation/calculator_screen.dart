@@ -56,29 +56,21 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
     _units = saved == 'imperial' ? UnitSystem.imperial : UnitSystem.metric;
   }
 
-  Future<void> _saveToHistory(List<MaterialSpec> materials) async {
-    if (_result == null || _selectedMaterialCode == null) return;
-    final material = materials.firstWhere((m) => m.code == _selectedMaterialCode);
-    final c = SavedCalculation(
+  /// Every result goes to History; a repeat of the last one is skipped there.
+  void _saveToHistory(MaterialSpec material, CutParameters result) {
+    ref.read(calculationsProvider.notifier).save(SavedCalculation(
       materialName:   material.name,
       toolTypeCode:   _toolTypeCode,
       diameter:       _diameter,
       flutes:         _flutes,
       units:          _units == UnitSystem.metric ? 'mm' : 'in',
-      rpm:            _result!.rpm,
-      feedRatePerMin: _result!.feedRatePerMin,
-      chipLoad:       _result!.chipLoad,
-      mrr:            _result!.mrr,
-      cuttingSpeed:   _result!.cuttingSpeed,
+      rpm:            result.rpm,
+      feedRatePerMin: result.feedRatePerMin,
+      chipLoad:       result.chipLoad,
+      mrr:            result.mrr,
+      cuttingSpeed:   result.cuttingSpeed,
       savedAt:        DateTime.now(),
-    );
-    await ref.read(calculationsProvider.notifier).save(c);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(ref.read(appStringsProvider).historySaved),
-        duration: const Duration(seconds: 2),
-      ));
-    }
+    ));
   }
 
   void _calculate(List<MaterialSpec> materials) {
@@ -104,6 +96,7 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
       return;
     }
     setState(() => _result = result);
+    _saveToHistory(material, result);
     ReviewPrompter.recordSuccess();
   }
 
@@ -253,13 +246,10 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
           if (_result != null) ...[
             const SizedBox(height: 16),
             _ResultCard(result: _result!),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () => _saveToHistory(materials),
-              icon:  const Icon(Icons.bookmark_add_outlined, size: 18),
-              label: Text(s.historySave),
+            SavedToHistoryNote(
+              label: s.historySaved,
+              onTap: () => context.go(RouteNames.history),
             ),
-            const SizedBox(height: 8),
             _ProActionButtons(
               result:       _result!,
               material:     materials.firstWhere((m) => m.code == _selectedMaterialCode!),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/review/review_prompter.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/net/edge_functions.dart';
 import '../../../core/routing/route_names.dart';
@@ -293,6 +294,7 @@ class _QaScreenState extends ConsumerState<QaScreen> {
     _scrollToBottom();
     // The server counts every call, answered or refused.
     ref.invalidate(usageProvider);
+    if (answer != null) ReviewPrompter.recordSuccess();
 
     switch (failure?.kind) {
       case EdgeErrorKind.quotaExceeded:

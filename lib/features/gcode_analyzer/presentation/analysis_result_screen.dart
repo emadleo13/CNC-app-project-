@@ -58,6 +58,11 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
     // Parsed in a background isolate by the input screen; parse here only
     // when opened without it.
     _lines = raw is List<GcodeLine> ? raw : GcodeParser.parse(_gcode, _dialect);
+    // Every analysis goes to History by itself; the user no longer has to
+    // remember a Save button.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _saveToHistory();
+    });
   }
 
   @override
@@ -66,27 +71,19 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
     super.dispose();
   }
 
-  Future<void> _saveToHistory() async {
-    final s      = ref.read(appStringsProvider);
+  /// A repeat of the last saved analysis is skipped by the notifier.
+  void _saveToHistory() {
+    if (_gcode.trim().isEmpty) return;
     final firstLine = _gcode.trim().split('\n').first.trim();
-    final label  = firstLine.isEmpty
-        ? 'Untitled'
-        : firstLine.substring(0, firstLine.length.clamp(0, 40));
-    final a = SavedAnalysis(
+    final label = firstLine.substring(0, firstLine.length.clamp(0, 40));
+    ref.read(analysesProvider.notifier).save(SavedAnalysis(
       label:        label,
       dialectName:  _dialect.displayName,
       lineCount:    _lines.length,
       errorCount:   _lines.where((l) => l.severity == LineSeverity.error).length,
       warningCount: _lines.where((l) => l.severity == LineSeverity.warning).length,
       savedAt:      DateTime.now(),
-    );
-    await ref.read(analysesProvider.notifier).save(a);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(s.historySaved),
-        duration: const Duration(seconds: 2),
-      ));
-    }
+    ));
   }
 
   Future<void> _runAiReview() async {
@@ -134,11 +131,6 @@ class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen>
       appBar: AppBar(
         title: Text('${s.gcodeTitle} — ${_dialect.shortName}'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.bookmark_add_outlined, size: 20),
-            tooltip: s.historySave,
-            onPressed: _saveToHistory,
-          ),
           IconButton(
             icon: const Icon(Icons.copy_outlined, size: 20),
             tooltip: s.gcodeCopyTooltip,

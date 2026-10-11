@@ -153,15 +153,20 @@ class AppStringsFa implements AppStrings {
   @override String get historyCalculations   => 'محاسبات';
   @override String get historyAnalyses       => 'تحلیل‌ها';
   @override String get historyEmpty          => 'هیچ موردی ذخیره نشده';
-  @override String get historyEmptyDesc      => 'محاسبات و تحلیل‌های جی‌کد را ذخیره کنید\nتا اینجا دسترسی داشته باشید.';
+  @override String get historyEmptyDesc      => 'محاسبات و آنالیزهای جی‌کد شما\nبه‌طور خودکار اینجا نمایش داده می‌شوند.';
   @override String get historyEmptyCtaCalc     => 'اولین محاسبه را شروع کن';
   @override String get historyEmptyCtaAnalysis => 'اولین برنامه را تحلیل کن';
-  @override String get historySave           => 'ذخیره';
   @override String get historySaved          => 'در تاریخچه ذخیره شد';
   @override String get historyDeleteAll      => 'حذف همه';
   @override String get historyConfirmClear   => 'تمام موارد ذخیره شده در این تب حذف خواهد شد.';
+  @override String get historyRetentionNote  => 'محاسبات و آنالیزهای جی‌کد به‌طور خودکار اینجا ذخیره می‌شوند و {days} روز می‌مانند؛ بعد از آن پاک می‌شوند.';
 
   @override String get commonCancel         => 'لغو';
+  @override String get commonYes            => 'بله';
+  @override String get commonNo             => 'خیر';
+  @override String get exitAppTitle         => 'از اپ خارج می‌شوید؟';
+  @override String get settingsRateApp      => 'امتیاز به CNC Assist';
+  @override String get settingsRateAppDesc  => 'امتیاز شما در Google Play به اپراتورهای دیگر کمک می‌کند اپ را پیدا کنند';
   @override String get commonSave           => 'ذخیره';
   @override String get commonClear          => 'پاک کردن';
   @override String get commonCopy           => 'کپی';
@@ -276,7 +281,7 @@ class AppStringsFa implements AppStrings {
     'یک ماده از لیست انتخاب کنید (فولاد، آلومینیوم، تیتانیوم و غیره).',
     'قطر ابزار و تعداد لبه‌ها را وارد کنید، سپس عمق و عرض برش را تنظیم کنید.',
     'جنس ابزار (کاربید یا HSS) و نوع عملیات (خشن‌کاری یا پرداخت) را انتخاب کنید.',
-    'محاسبه را بزنید — دور در دقیقه، پیشروی، بار تراشه و MRR فوری نمایش داده می‌شوند.\nبرای ذخیره در تاریخچه «ذخیره» را بزنید.',
+    'محاسبه را بزنید — دور در دقیقه، پیشروی، بار تراشه و MRR فوری نمایش داده می‌شوند.\nهر نتیجه به‌طور خودکار در تاریخچه ذخیره می‌شود.',
   ];
 
   @override String get helpGcodeTitle => 'آنالیزور G-Code';
@@ -326,10 +331,8 @@ class AppStringsFa implements AppStrings {
 
   @override String get helpHistoryTitle => 'تاریخچه';
   @override List<String> get helpHistorySteps => [
-    'محاسبات و تحلیل‌های G-code ذخیره‌شده اینجا نگهداری می‌شوند.',
-    'بعد از محاسبه، «ذخیره» را در پنل نتایج بزنید تا یک آیتم اضافه شود.',
-    'بعد از آنالیز G-code، در تب خلاصه «ذخیره» را بزنید.',
-    'روی هر آیتم بزنید برای مشاهده جزئیات؛ به چپ بکشید برای حذف.',
+    'هر محاسبهٔ فرز، تراش و دریل و هر آنالیز جی‌کد به‌طور خودکار اینجا ذخیره می‌شود.',
+    'برای حذف یک مورد، آن را به کنار بکشید؛ آیکون سطل بالای صفحه همهٔ موارد همین تب را پاک می‌کند.',
   ];
 
   // ── ابزارهای ماشینکاری ──

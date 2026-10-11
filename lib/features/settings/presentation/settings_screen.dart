@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:country_flags/country_flags.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/review/review_prompter.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/decimal_input_formatter.dart';
@@ -343,16 +344,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // ── About ─────────────────────────────────────────────────────────
           _SectionHeader(s.settingsAbout),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.info_outline, color: AppColors.textSecondary),
-              title:   const Text('CNC Assist'),
-              // Read from the installed package, so a test build on the
-              // phone shows exactly which version it is.
-              subtitle: Text(ref.watch(appVersionProvider).maybeWhen(
-                    data:   (v) => '${s.settingsVersion} $v',
-                    orElse: () => s.settingsVersion,
-                  )),
-            ),
+            child: Column(children: [
+              ListTile(
+                leading: const Icon(Icons.info_outline, color: AppColors.textSecondary),
+                title:   const Text('CNC Assist'),
+                // Read from the installed package, so a test build on the
+                // phone shows exactly which version it is.
+                subtitle: Text(ref.watch(appVersionProvider).maybeWhen(
+                      data:   (v) => '${s.settingsVersion} $v',
+                      orElse: () => s.settingsVersion,
+                    )),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              ListTile(
+                leading:  const Icon(Icons.star_outline, color: AppColors.primary),
+                title:    Text(s.settingsRateApp),
+                subtitle: Text(s.settingsRateAppDesc,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                trailing: const Icon(Icons.open_in_new, size: 16, color: AppColors.textMuted),
+                onTap:    ReviewPrompter.openStorePage,
+              ),
+            ]),
           ),
           const SizedBox(height: 20),
 

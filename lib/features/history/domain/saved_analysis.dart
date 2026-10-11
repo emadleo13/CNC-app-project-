@@ -16,6 +16,14 @@ class SavedAnalysis {
     required this.warningCount,
     required this.savedAt,
   });
+
+  /// The same program analysed again, whenever it was saved.
+  bool sameAs(SavedAnalysis o) =>
+      label == o.label &&
+      dialectName == o.dialectName &&
+      lineCount == o.lineCount &&
+      errorCount == o.errorCount &&
+      warningCount == o.warningCount;
 }
 
 /// Binary layout, oldest field first. Never reorder or remove fields: add new

@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/config/supabase_config.dart';
 import 'core/l10n/app_strings.dart';
 import 'core/storage/local_store.dart';
+import 'features/history/data/history_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,12 @@ void main() async {
   }
 
   await openLocalStore();
+  try {
+    // History older than kHistoryRetention (30 days) is deleted at start-up.
+    await HistoryRepository().purgeExpired();
+  } catch (_) {
+    // Never block the app over clean-up.
+  }
 
   String? savedLocale;
   String? savedUnits;

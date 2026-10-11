@@ -307,3 +307,24 @@ class RpmLimitNote extends StatelessWidget {
     );
   }
 }
+
+/// Under a result: it was saved to History automatically. Tapping opens
+/// History.
+class SavedToHistoryNote extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const SavedToHistoryNote({super.key, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: TextButton.icon(
+        onPressed: onTap,
+        icon: const Icon(Icons.check_circle_outline, size: 16, color: AppColors.successGreen),
+        label: Text(label,
+            style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+      ),
+    );
+  }
+}

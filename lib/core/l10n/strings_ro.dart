@@ -151,15 +151,20 @@ class AppStringsRo implements AppStrings {
   @override String get historyCalculations   => 'Calcule';
   @override String get historyAnalyses       => 'Analize';
   @override String get historyEmpty          => 'Niciun element salvat';
-  @override String get historyEmptyDesc      => 'Salvează calcule și analize G-code\npentru a le accesa aici.';
+  @override String get historyEmptyDesc      => 'Calculele și analizele G-code\napar aici automat.';
   @override String get historyEmptyCtaCalc     => 'Începe primul calcul';
   @override String get historyEmptyCtaAnalysis => 'Analizează primul program';
-  @override String get historySave           => 'Salvează';
   @override String get historySaved          => 'Salvat în istoric';
   @override String get historyDeleteAll      => 'Șterge tot';
   @override String get historyConfirmClear   => 'Aceasta va șterge toate elementele salvate din acest tab.';
+  @override String get historyRetentionNote  => 'Calculele și analizele G-code sunt salvate aici automat și păstrate {days} de zile, apoi șterse.';
 
   @override String get commonCancel         => 'Anulează';
+  @override String get commonYes            => 'Da';
+  @override String get commonNo             => 'Nu';
+  @override String get exitAppTitle         => 'Ieșiți din CNC Assist?';
+  @override String get settingsRateApp      => 'Evaluați CNC Assist';
+  @override String get settingsRateAppDesc  => 'Evaluarea dvs. pe Google Play îi ajută pe alți operatori să găsească aplicația';
   @override String get commonSave           => 'Salvează';
   @override String get commonClear          => 'Șterge';
   @override String get commonCopy           => 'Copiază';
@@ -278,7 +283,7 @@ class AppStringsRo implements AppStrings {
     'Selectați un material din listă (oțel, aluminiu, titan, etc.).',
     'Introduceți diametrul sculei și numărul de tăișuri, apoi setați adâncimea și lățimea de tăiere.',
     'Alegeți materialul sculei (Carbură sau HSS) și tipul operației (Degroșare sau Finisare).',
-    'Apăsați Calculează — RPM, Avans, Sarcina pe tăiș și MRR sunt afișate instant.\nApăsați Salvează pentru a stoca rezultatul în Istoric.',
+    'Apăsați Calculează — RPM, Avans, Sarcina pe tăiș și MRR sunt afișate instant.\nFiecare rezultat este salvat automat în Istoric.',
   ];
 
   @override String get helpGcodeTitle => 'Analizor G-Code';
@@ -328,10 +333,8 @@ class AppStringsRo implements AppStrings {
 
   @override String get helpHistoryTitle => 'Istoric';
   @override List<String> get helpHistorySteps => [
-    'Calculele și analizele G-code salvate sunt stocate aici.',
-    'După calcul, apăsați Salvează în panoul de rezultate pentru a adăuga o înregistrare.',
-    'După analiza G-code, apăsați Salvează în fila Rezumat.',
-    'Apăsați orice înregistrare pentru detalii complete; glisați la stânga pentru a șterge.',
+    'Fiecare calcul de frezare, strunjire și găurire și fiecare analiză G-code este salvat aici automat.',
+    'Glisați o înregistrare pentru a o șterge; iconița coș de sus golește fila curentă.',
   ];
 
   // ── Tools Hub ──

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/calc/units.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/review/review_prompter.dart';
+import '../../../core/routing/route_names.dart';
 import '../../../core/widgets/calc_widgets.dart';
+import '../../history/data/history_repository.dart';
+import '../../history/domain/saved_calculation.dart';
 import '../domain/turning_calculator.dart';
 
 class TurningScreen extends ConsumerStatefulWidget {
@@ -53,6 +58,23 @@ class _TurningScreenState extends ConsumerState<TurningScreen> {
       units: _units,
     ), maxRpm: ref.read(maxRpmProvider));
     setState(() => _result = r);
+    if (r == null) return;
+    ref.read(calculationsProvider.notifier).save(SavedCalculation(
+      kind:           CalcKind.turning,
+      diameter:       _dia,
+      units:          _units.isMetric ? 'mm' : 'in',
+      rpm:            r.rpm,
+      feedRatePerMin: r.feedPerMin,
+      mrr:            r.mrr,
+      cuttingSpeed:   r.cuttingSpeed,
+      feedPerRev:     _fr,
+      depth:          _ap,
+      length:         _len,
+      passes:         _passes,
+      cutTimeMin:     r.cutTimeMin,
+      savedAt:        DateTime.now(),
+    ));
+    ReviewPrompter.recordSuccess();
   }
 
   @override
@@ -173,6 +195,10 @@ class _TurningScreenState extends ConsumerState<TurningScreen> {
                 requestedRpm: _result!.limitedFromRpm!,
                 cuttingSpeed: '${_result!.cuttingSpeed.toStringAsFixed(0)} $vcUnit',
               ),
+            SavedToHistoryNote(
+              label: s.historySaved,
+              onTap: () => context.go(RouteNames.history),
+            ),
           ],
         ],
       ),

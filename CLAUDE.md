@@ -43,7 +43,7 @@ Feature-based clean architecture. Each feature under `lib/features/<name>/` has 
 
 ### Navigation
 
-`go_router` with a `StatefulShellRoute.indexedStack`: each bottom-nav tab (tools hub, G-code, knowledge base, history) is a branch with its own navigator, so switching tabs keeps each tab's state. `MainScaffold` gets the `StatefulNavigationShell`; don't wrap it in an `AnimatedSwitcher`, because the two children would share the shell's keyed Navigator (duplicate GlobalKey). Settings and Subscription are top-level routes outside the shell, always opened with `context.push`. The G-code result screen (`/gcode/result`) is a child route that receives analysis data via `state.extra`.
+`go_router` with a `StatefulShellRoute.indexedStack`: each bottom-nav tab (tools hub, G-code, knowledge base, history) is a branch with its own navigator, so switching tabs keeps each tab's state. `MainScaffold` gets the `StatefulNavigationShell`; don't wrap it in an `AnimatedSwitcher`, because the two children would share the shell's keyed Navigator (duplicate GlobalKey). Settings and Subscription are top-level routes outside the shell, always opened with `context.push`. `MainScaffold` wraps the shell in a `PopScope`: Back on a tab's first screen asks before closing the app; the tab's own navigator gets Back first, so inner screens still just go back. The G-code result screen (`/gcode/result`) is a child route that receives analysis data via `state.extra`.
 
 Persian and Arabic are right-to-left via `MaterialApp.locale` and the `flutter_localizations` delegates (`lib/app.dart`). A `Directionality` around `MaterialApp` has no effect. Code views (the G-code editor, analysis lines, generated programs) force `TextDirection.ltr`.
 
@@ -54,6 +54,8 @@ Riverpod (`flutter_riverpod` 2) with hand-written providers: `Provider`, `Future
 Numeric inputs use `DecimalInputFormatter` (`lib/core/widgets/`), which turns `,` `٫` and Persian/Arabic digits into a parseable number. Never filter characters out of a number field: dropping the comma turned "0,15" into 15.
 
 AI text is shown with `AiAnswer` (Markdown, `flutter_markdown_plus`) or `AiText` (plain), both in `lib/core/widgets/ai_answer.dart`. They pick the reading direction from the text itself and pass it through `bidiSafe()`. After an Arabic-script word, the bidi algorithm reverses number ranges ("0.3-0.5" showed as "0.5-0.3"), so never show AI or user text in RTL with a plain `Text`. Code blocks are always LTR with their own copy button. AI requests go through `edgeInvokerProvider` (overridable in tests) and send `language`, `format: 'markdown'` and `clientTimeout` (`kAiTimeout`, 120 s).
+
+History: every milling, turning and drilling result and every G-code analysis is saved automatically (`calculationsProvider` / `analysesProvider`, which skip a repeat of the newest entry; `SavedCalculation.kind` says which calculator). `purgeExpired()` deletes entries older than `kHistoryRetention` (30 days) at start-up, and the History screen says so. Widget tests of screens that save need `openHistoryBoxesInMemory()` (`test/helpers/`).
 
 Hive boxes open through `openBoxSafely()` (`lib/core/storage/local_store.dart`): an unreadable box is copied to `<name>.hive.broken` and started empty instead of crashing the app on every start. Adapters only ever append fields, read when `reader.availableBytes > 0`.
 
@@ -78,7 +80,7 @@ The chip loads in `materials.json` are the values for a ½" tool. `chipLoadScale
 - Edge Functions hold every server-side secret (AI provider keys, the Google Play service account). These are **never** in the Flutter app. Call them through `invokeEdgeFunction()` (`lib/core/net/`), which turns non-2xx responses into a typed `EdgeFunctionError`; `functions.invoke` throws on non-2xx, so checking `response.status` afterwards never works.
 - Pro: `cnc_purchases`, written only from Google Play data by `verify-purchase` and `play-rtdn`, is the source of truth. `cnc_entitlements` (tier + expiry per user) is a cache of it that the app reads. Pro needs a future expiry (`entitlementGrantsPro` in the app, `isPro` in `_shared/entitlement.ts`). `PurchaseController` owns the Play purchase stream for the whole session.
 - AI: every function calls `llmComplete()` (`_shared/llm.ts`), which tries Claude first (`llm_claude.ts`, official SDK) and falls back to free OpenRouter models (`llm_free.ts`) on any failure. No credit or a bad key pauses Claude for 10 minutes per instance, after which it is tried again, so topping up the account switches back without a deploy. `AI_MODE=free` turns Claude off. Free models rotate: a 404 is logged as "gone", and replies that drift into other scripts (`foreignScore`) go to the next model. Prompts end with `styleRules()` (`answer_style.ts`): the answer language and plain text for app versions before 1.3.0, Markdown when the request says `format: "markdown"`. G-code comments must stay ASCII.
-- RLS: app users can read only their own `qa_logs` and `cnc_entitlements` rows and cannot write either; `cnc_purchases` is service-role only. Quota is counted in `_shared/quota.ts`, per account OR per device: `invokeEdgeFunction()` sends the app-scoped Android ID (`deviceId()`, a MethodChannel in `MainActivity`) as `x-device-id`, the functions store its SHA-256 in `qa_logs.device_hash`, so a reinstall or *Delete account* (a new anonymous account) does not reset the free questions. The app's counter asks the `usage` function for the same count. `supabase/tests/rls_test.mjs` applies `live_baseline.sql` (a snapshot of the live objects of both apps) plus 003 and checks both apps.
+- RLS: app users can read only their own `qa_logs` and `cnc_entitlements` rows and cannot write either; `cnc_purchases` is service-role only. Quota is counted in `_shared/quota.ts`, per account OR per device: `invokeEdgeFunction()` sends the app-scoped Android ID (`deviceId()`, a MethodChannel in `MainActivity`) as `x-device-id`, the functions store its SHA-256 in `qa_logs.device_hash`, so a reinstall or *Delete account* (a new anonymous account) does not reset the free questions. The app's counter asks the `usage` function for the same count. `supabase/tests/rls_test.mjs` applies `live_baseline.sql` (a snapshot of the live objects of both apps) plus 003 and 004 and checks both apps.
 - Deploying the backend: `supabase/DEPLOY.md`
 - Local offline storage uses Hive + `flutter_secure_storage`
 
@@ -98,6 +100,8 @@ Static data lives in `assets/data/`:
 - `gcode_reference.json` — G/M-code descriptions for the knowledge base
 
 Font family `JetBrainsMono` is used for all monospaced G-code display (app bar titles and code views).
+
+Splash: navy `#0C1421` (`splash_bg`, the logo tile's color) with the logo without its tile. Android 12+ draws it from `values-v31` / `values-night-v31` (`splash_icon`, 288 dp, masked to a 192 dp circle); older versions from `launch_background.xml` (`splash_logo`).
 
 ## Growth tooling (`tools/`, `docs/`, `marketing/`)
 

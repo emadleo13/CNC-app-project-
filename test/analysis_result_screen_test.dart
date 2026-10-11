@@ -7,6 +7,7 @@ import 'package:cnc_assist/core/l10n/app_strings.dart';
 import 'package:cnc_assist/features/gcode_analyzer/domain/cnc_dialect.dart';
 import 'package:cnc_assist/features/gcode_analyzer/parsers/gcode_parser.dart';
 import 'package:cnc_assist/features/gcode_analyzer/presentation/analysis_result_screen.dart';
+import 'helpers/history_boxes.dart';
 
 const _program = '''
 G90 G21 G54
@@ -42,6 +43,8 @@ Future<void> _pump(WidgetTester tester, String locale, {double width = 411}) asy
 }
 
 void main() {
+  setUpAll(openHistoryBoxesInMemory);
+
   testWidgets('tapping a flagged line shows why and how to fix it, in Persian',
       (tester) async {
     await _pump(tester, 'fa');

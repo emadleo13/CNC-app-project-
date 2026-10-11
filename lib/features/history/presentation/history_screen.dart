@@ -98,6 +98,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
       body: Column(
         children: [
           HelpCard(title: s.helpHistoryTitle, btnLabel: s.helpBtnLabel, steps: s.helpHistorySteps),
+          _RetentionNote(
+            text: s.historyRetentionNote
+                .replaceAll('{days}', '${kHistoryRetention.inDays}'),
+          ),
           Expanded(
             child: TabBarView(
               controller: _tabs,
@@ -143,7 +147,7 @@ class _CalculationsList extends ConsumerWidget {
           background: const _DismissBackground(),
           onDismissed: (_) =>
               ref.read(calculationsProvider.notifier).deleteAt(i),
-          child: _CalcCard(c: c),
+          child: _CalcCard(c: c, s: s),
         );
       },
     );
@@ -152,7 +156,8 @@ class _CalculationsList extends ConsumerWidget {
 
 class _CalcCard extends StatelessWidget {
   final SavedCalculation c;
-  const _CalcCard({required this.c});
+  final AppStrings s;
+  const _CalcCard({required this.c, required this.s});
 
   static String _toolLabel(String code) {
     switch (code) {
@@ -164,10 +169,46 @@ class _CalcCard extends StatelessWidget {
     }
   }
 
+  /// 10 → "10", 0.15 → "0.15".
+  static String _n(double v) =>
+      v == v.roundToDouble() ? v.toStringAsFixed(0) : '$v';
+
+  /// Minutes as "1m 05s", like the calculators show it.
+  static String _time(double minutes) {
+    final total = (minutes * 60).round();
+    return '${total ~/ 60}m ${(total % 60).toString().padLeft(2, '0')}s';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final feedUnit = c.units == 'mm' ? 'mm/min' : 'in/min';
-    final vcUnit   = c.units == 'mm' ? 'm/min'  : 'SFM';
+    final u        = c.units;
+    final feedUnit = u == 'mm' ? 'mm/min' : 'in/min';
+    final frUnit   = u == 'mm' ? 'mm/rev' : 'in/rev';
+    final vcUnit   = u == 'mm' ? 'm/min'  : 'SFM';
+    final rpm  = _Metric(label: 'RPM',  value: c.rpm.toString());
+    final feed = _Metric(label: 'Feed', value: '${c.feedRatePerMin.toStringAsFixed(1)} $feedUnit');
+    final (IconData icon, String title, String details, Widget third) = switch (c.kind) {
+      CalcKind.milling => (
+        Icons.speed,
+        c.materialName,
+        '${_toolLabel(c.toolTypeCode)}  ·  ⌀${c.diameter}${c.units}  ·  ${c.flutes}fl',
+        _Metric(label: 'Vc', value: '${c.cuttingSpeed.toStringAsFixed(0)} $vcUnit'),
+      ),
+      CalcKind.turning => (
+        Icons.album_outlined,
+        s.toolTurning,
+        '⌀${_n(c.diameter)} $u  ·  f ${_n(c.feedPerRev)} $frUnit  ·  ap ${_n(c.depth)} $u'
+            '  ·  L ${_n(c.length)} $u${c.passes > 1 ? '  ×${c.passes}' : ''}',
+        _Metric(label: s.resCutTime, value: _time(c.cutTimeMin)),
+      ),
+      CalcKind.drilling => (
+        Icons.vertical_align_bottom,
+        s.toolDrilling,
+        '⌀${_n(c.diameter)} $u  ·  f ${_n(c.feedPerRev)} $frUnit  ·  depth ${_n(c.depth)} $u'
+            '  ·  ${_n(c.pointAngle)}°',
+        _Metric(label: s.resCutTime, value: _time(c.cutTimeMin)),
+      ),
+    };
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -175,11 +216,11 @@ class _CalcCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              const Icon(Icons.speed, size: 14, color: AppColors.primary),
+              Icon(icon, size: 14, color: AppColors.primary),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  c.materialName,
+                  title,
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                 ),
               ),
@@ -190,19 +231,46 @@ class _CalcCard extends StatelessWidget {
             ]),
             const SizedBox(height: 4),
             Text(
-              '${_toolLabel(c.toolTypeCode)}  ·  ⌀${c.diameter}${c.units}  ·  ${c.flutes}fl',
+              details,
               style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 10),
             Row(children: [
-              _Metric(label: 'RPM',  value: c.rpm.toString()),
+              rpm,
               const SizedBox(width: 16),
-              _Metric(label: 'Feed', value: '${c.feedRatePerMin.toStringAsFixed(1)} $feedUnit'),
+              feed,
               const SizedBox(width: 16),
-              _Metric(label: 'Vc',   value: '${c.cuttingSpeed.toStringAsFixed(0)} $vcUnit'),
+              third,
             ]),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// How long entries are kept, under the help card.
+class _RetentionNote extends StatelessWidget {
+  final String text;
+  const _RetentionNote({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(Icons.schedule, size: 14, color: AppColors.textMuted),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.4)),
+          ),
+        ],
       ),
     );
   }

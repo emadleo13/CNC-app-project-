@@ -170,13 +170,19 @@ abstract class AppStrings {
   String get historyEmptyDesc;
   String get historyEmptyCtaCalc;
   String get historyEmptyCtaAnalysis;
-  String get historySave;
   String get historySaved;
   String get historyDeleteAll;
   String get historyConfirmClear;
+  /// {days}: how long entries are kept (kHistoryRetention).
+  String get historyRetentionNote;
 
   // Common
   String get commonCancel;
+  String get commonYes;
+  String get commonNo;
+  String get exitAppTitle;
+  String get settingsRateApp;
+  String get settingsRateAppDesc;
   String get commonSave;
   String get commonClear;
   String get commonCopy;
